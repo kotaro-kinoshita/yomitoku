@@ -32,7 +32,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=str, default="configs/ocr.yaml")
-    parser.add_argument("--image", type=str, default="dataset/00000528_0894389_62.jpg")
+    parser.add_argument("--image", type=str, default="dataset/00003126_5721251_5.jpg")
     parser.add_argument("--vis", action="store_true")
     parser.add_argument("--outdir", type=str, default="results")
     args = parser.parse_args()
