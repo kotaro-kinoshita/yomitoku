@@ -16,7 +16,7 @@ def load_image(image_path: str) -> np.ndarray:
 
     img = cv2.imread(image_path)
     validate_image(img)
-    img = convert_rgb(img)
+    img = convert_3ch(img)
     return img
 
 
@@ -35,7 +35,7 @@ def validate_image(img: np.ndarray, minimum_thresh=32) -> None:
         raise ValueError("Image size is too small.")
 
 
-def convert_rgb(img: np.ndarray) -> np.ndarray:
+def convert_3ch(img: np.ndarray) -> np.ndarray:
     """
     Convert the image to RGB format
     Args:
@@ -45,9 +45,9 @@ def convert_rgb(img: np.ndarray) -> np.ndarray:
         np.ndarray: converted image
     """
     if len(img.shape) == 2:
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     elif img.shape[2] == 4:
-        img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
     return img
 
@@ -82,7 +82,7 @@ def resize_shortest_edge(
     neww = max(int(new_w / 32) * 32, 32)
     newh = max(int(new_h / 32) * 32, 32)
 
-    img = cv2.resize(img, (neww, newh), interpolation=cv2.INTER_LINEAR)
+    img = cv2.resize(img, (neww, newh))
     return img
 
 

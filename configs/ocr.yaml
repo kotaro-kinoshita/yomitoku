@@ -1,7 +1,7 @@
 DEVICE: "cuda"
 
 DETECTION:
-  WEIGHTS: "weights/dbnet_res50_20241024.pth"
+  WEIGHTS: "weights/checkpoint_17_89999.pth"
   BACKBONE:
     NAME: "resnet50"
     DILATION: True
@@ -10,27 +10,27 @@ DETECTION:
     IN_CHANNELS: [256, 512, 1024, 2048]
     HIDDEN_DIM: 256
     ADAPTIVE: True
-    SERIAL: False
+    SERIAL: True
     SMOOTH: False
     K: 50
 
   DATA:
-    SHORTEST_SIZE: 768
-    LIMIT_SIZE: 1920
+    SHORTEST_SIZE: 1280
+    LIMIT_SIZE: 1600
 
   POST_PROCESS:
     MIN_SIZE: 2
     THRESH: 0.3
     BOX_THRESH: 0.5
     MAX_CANDIDATES: 1500
-    UNCLIP_RATIO: 2.5
+    UNCLIP_RATIO: 1.8
 
   VISUALIZE:
     COLOR: [0, 255, 0] #RGB
     HEATMAP: False
 
 RECOGNITION:
-  WEIGHTS: weights/checkpoint_4_79999.pth
+  WEIGHTS: weights/checkpoint_3_169999.pth
   CHARSET: "resource/charset.txt"
 
   DATA:
@@ -55,7 +55,7 @@ RECOGNITION:
   VISUALIZE:
     FONT: resource/MPLUS1p-Medium.ttf
     COLOR: [0, 0, 255] #RGB
-    FONT_SIZE: 12
+    FONT_SIZE: 18
 
   
 

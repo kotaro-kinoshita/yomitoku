@@ -21,7 +21,7 @@ class SegDetectorRepresenter:
             thresh: [if exists] thresh hold prediction with shape (N, H, W)
             thresh_binary: [if exists] binarized with threshhold, (N, H, W)
         """
-        pred = preds["thresh_binary"][0]
+        pred = preds["binary"][0]
         segmentation = self.binarize(pred)[0]
         height, width = image_size
         quads, scores = self.boxes_from_bitmap(pred, segmentation, width, height)

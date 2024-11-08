@@ -197,6 +197,7 @@ class DBNetDecoder(nn.Module):
         for layer, feature in features.items():
             fp.append(self.out_proj[layer](feature))
         fuse = torch.cat(fp[::-1], dim=1)
+        fuse = self.concat_attention(fuse, fp[::-1])
 
         binary = self.binarize(fuse)
         result = OrderedDict(binary=binary)

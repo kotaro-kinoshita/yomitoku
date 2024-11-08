@@ -1,5 +1,7 @@
 import torch
 
+import numpy as np
+
 from . import BaseModule
 from .models import DBNet
 
@@ -33,6 +35,8 @@ class Detection(BaseModule):
         self.post_processor = SegDetectorRepresenter(self.cfg.POST_PROCESS)
 
     def preprocess(self, img):
+        img = img.copy()
+        img = img[:, :, ::-1].astype(np.float32)
         resized = resize_shortest_edge(
             img, self.cfg.DATA.SHORTEST_SIZE, self.cfg.DATA.LIMIT_SIZE
         )
