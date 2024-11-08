@@ -1,0 +1,15 @@
+site_name: YomiToku
+theme:
+  name: material
+  features:
+    - navigation.tabs
+  icon:
+    repo: fontawesome/brands/github
+  
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Usage: usage.md
+  - FAQ: faq.md
+
+repo_url: https://github.com/kotaro-kinoshita/yomitoku-dev

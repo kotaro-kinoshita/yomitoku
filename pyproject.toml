@@ -31,6 +31,8 @@ version_scheme = "no-guess-dev"
 
 [tool.uv]
 dev-dependencies = [
+    "mkdocs-material>=9.5.44",
+    "mkdocs>=1.6.1",
     "pytest-cov>=5.0.0",
     "pytest>=8.3.3",
     "ruff>=0.7.0",
