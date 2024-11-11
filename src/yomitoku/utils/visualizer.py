@@ -179,7 +179,7 @@ PALETTE = [
 def det_visualizer(
     preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)
 ):
-    preds = preds["thresh_binary"][0]
+    preds = preds["binary"][0]
     binary = preds.detach().cpu().numpy()
     out = img.copy()
     h, w = out.shape[:2]

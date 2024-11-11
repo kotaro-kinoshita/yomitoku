@@ -1,41 +1,33 @@
 import torch
+from omegaconf import OmegaConf
 
-from ..data.dataset import ParseqDataset
-from ..utils.misc import load_charset
-from ..utils.visualizer import rec_visualizer
-from . import BaseModule
-from .models import PARSeq, Tokenizer
+from .base import BaseModule
+from .configs import TextRecognizerConfig
+from .data.dataset import ParseqDataset
+from .models import PARSeq
+from .postprocessor import ParseqTokenizer as Tokenizer
+from .utils.misc import load_charset, load_config
+from .utils.visualizer import rec_visualizer
 
 
-class Recognition(BaseModule):
-    def __init__(self, cfg, device="cpu", visualize=False):
-        super().__init__(cfg)
-        self.cfg = cfg.RECOGNITION
-        self.charset = load_charset(self.cfg.CHARSET)
+class TextRecognizer(BaseModule):
+    def __init__(self, cfg=None, device="cpu", visualize=False):
+        super().__init__()
+        self.cfg = self.set_config(cfg)
+        self.charset = load_charset(self.cfg.charset)
         self.tokenizer = Tokenizer(self.charset)
 
         self.model = PARSeq(
             num_tokens=len(self.tokenizer),
-            max_label_length=self.cfg.MODEL.MAX_LEN,
-            img_size=self.cfg.DATA.IMAGE_SIZE,
-            patch_size=self.cfg.MODEL.PATCH_SIZE,
-            embed_dim=self.cfg.MODEL.HIDDEN_DIM,
-            enc_num_heads=self.cfg.MODEL.ENC_NUM_HEADS,
-            enc_mlp_ratio=self.cfg.MODEL.ENC_MLP_RATIO,
-            enc_depth=self.cfg.MODEL.ENC_DEPTH,
-            dec_num_heads=self.cfg.MODEL.DEC_NUM_HEADS,
-            dec_mlp_ratio=self.cfg.MODEL.DEC_MLP_RATIO,
-            dec_depth=self.cfg.MODEL.DEC_DEPTH,
-            decode_ar=self.cfg.MODEL.DECODE_AR,
-            refine_iters=self.cfg.MODEL.REFINE_ITERS,
-            dropout=self.cfg.MODEL.DROPOUT,
+            img_size=self.cfg.data.img_size,
+            **self.cfg.parseq,
         )
 
         self._device = device
 
-        if self.cfg.WEIGHTS:
+        if self.cfg.weights:
             self.model.load_state_dict(
-                torch.load(self.cfg.WEIGHTS, map_location=self._device)[
+                torch.load(self.cfg.weights, map_location=self._device)[
                     "model"
                 ]
             )
@@ -45,16 +37,26 @@ class Recognition(BaseModule):
 
         self.visualize = visualize
 
+    def set_config(self, path_cfg):
+        cfg = OmegaConf.structured(TextRecognizerConfig)
+        if path_cfg is not None:
+            yaml_config = load_config(path_cfg)
+            cfg = OmegaConf.merge(cfg, yaml_config)
+        return cfg
+
     def preprocess(self, img, polygons):
         dataset = ParseqDataset(self.cfg, img, polygons)
         dataloader = torch.utils.data.DataLoader(
             dataset,
-            batch_size=self.cfg.DATA.BATCH_SIZE,
+            batch_size=self.cfg.data.batch_size,
             shuffle=False,
-            num_workers=self.cfg.DATA.NUM_WORKERS,
+            num_workers=self.cfg.data.num_workers,
         )
 
         return dataloader
+
+    def postprocess(self, p):
+        return self.tokenizer.decode(p)
 
     def __call__(self, img, quads, vis=None):
         """
@@ -78,7 +80,7 @@ class Recognition(BaseModule):
             data = data.to(self._device)
             with torch.inference_mode():
                 p = self.model(self.tokenizer, data).softmax(-1)
-                pred, score = self.tokenizer.decode(p)
+                pred, score = self.postprocess(p)
                 preds.extend(pred)
                 scores.extend(score)
 
@@ -90,9 +92,9 @@ class Recognition(BaseModule):
             vis = rec_visualizer(
                 vis,
                 outputs,
-                font_size=self.cfg.VISUALIZE.FONT_SIZE,
-                font_color=tuple(self.cfg.VISUALIZE.COLOR[::-1]),
-                font_path=self.cfg.VISUALIZE.FONT,
+                font_size=self.cfg.visualize.font_size,
+                font_color=tuple(self.cfg.visualize.color[::-1]),
+                font_path=self.cfg.visualize.font,
             )
 
         return outputs, vis

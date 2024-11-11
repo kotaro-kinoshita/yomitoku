@@ -1,29 +1,32 @@
 import numpy as np
 import torch
+from omegaconf import OmegaConf
 
-from ..data.functions import (
+from .base import BaseModule
+from .configs import TextDetectorConfig
+from .data.functions import (
     array_to_tensor,
     normalize_image,
     resize_shortest_edge,
 )
-from ..utils.visualizer import det_visualizer
-from . import BaseModule
-from .models import DBNet
-from .representer import SegDetectorRepresenter
+from .models import DBNetPlus
+from .postprocessor import DBnetPostProcessor
+from .utils.misc import load_config
+from .utils.visualizer import det_visualizer
 
 
-class Detection(BaseModule):
-    def __init__(self, cfg, device="cpu", visualize=False):
-        super().__init__(cfg)
-        self.cfg = cfg.DETECTION
-        self.model = DBNet(self.cfg)
+class TextDetector(BaseModule):
+    def __init__(self, path_cfg=None, device="cpu", visualize=False):
+        super().__init__()
+        self.cfg = self.set_config(path_cfg)
+        self.model = DBNetPlus(self.cfg)
 
         self._device = device
         self.visualize = visualize
 
-        if self.cfg.WEIGHTS:
+        if self.cfg.weights:
             self.model.load_state_dict(
-                torch.load(self.cfg.WEIGHTS, map_location=self._device)[
+                torch.load(self.cfg.weights, map_location=self._device)[
                     "model"
                 ]
             )
@@ -31,13 +34,20 @@ class Detection(BaseModule):
         self.model.eval()
         self.model.to(self._device)
 
-        self.post_processor = SegDetectorRepresenter(self.cfg.POST_PROCESS)
+        self.post_processor = DBnetPostProcessor(**self.cfg.post_process)
+
+    def set_config(self, path_cfg):
+        cfg = OmegaConf.structured(TextDetectorConfig)
+        if path_cfg is not None:
+            yaml_config = load_config(path_cfg)
+            cfg = OmegaConf.merge(cfg, yaml_config)
+        return cfg
 
     def preprocess(self, img):
         img = img.copy()
         img = img[:, :, ::-1].astype(np.float32)
         resized = resize_shortest_edge(
-            img, self.cfg.DATA.SHORTEST_SIZE, self.cfg.DATA.LIMIT_SIZE
+            img, self.cfg.data.shortest_size, self.cfg.data.limit_size
         )
         normalized = normalize_image(resized)
         tensor = array_to_tensor(normalized)
@@ -73,8 +83,8 @@ class Detection(BaseModule):
                 preds,
                 img,
                 quads,
-                vis_heatmap=self.cfg.VISUALIZE.HEATMAP,
-                line_color=tuple(self.cfg.VISUALIZE.COLOR[::-1]),
+                vis_heatmap=self.cfg.visualize.heatmap,
+                line_color=tuple(self.cfg.visualize.color[::-1]),
             )
 
         return outputs, vis

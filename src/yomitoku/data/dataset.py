@@ -27,7 +27,7 @@ class ParseqDataset(Dataset):
     def __getitem__(self, index):
         polygon = self.quads[index]
         roi_img = extract_roi_with_perspective(self.img, polygon)
-        resized = resize_with_padding(roi_img, self.cfg.DATA.IMAGE_SIZE)
+        resized = resize_with_padding(roi_img, self.cfg.data.img_size)
         tensor = self.transform(resized)
 
         return tensor
