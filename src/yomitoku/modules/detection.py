@@ -1,18 +1,15 @@
+import numpy as np
 import torch
 
-import numpy as np
-
-from . import BaseModule
-from .models import DBNet
-
 from ..data.functions import (
-    resize_shortest_edge,
     array_to_tensor,
     normalize_image,
+    resize_shortest_edge,
 )
-
-from .representer import SegDetectorRepresenter
 from ..utils.visualizer import det_visualizer
+from . import BaseModule
+from .models import DBNet
+from .representer import SegDetectorRepresenter
 
 
 class Detection(BaseModule):
@@ -26,7 +23,9 @@ class Detection(BaseModule):
 
         if self.cfg.WEIGHTS:
             self.model.load_state_dict(
-                torch.load(self.cfg.WEIGHTS, map_location=self._device)["model"]
+                torch.load(self.cfg.WEIGHTS, map_location=self._device)[
+                    "model"
+                ]
             )
 
         self.model.eval()
@@ -66,6 +65,7 @@ class Detection(BaseModule):
             preds = self.model(tensor)
 
         quads, scores = self.postprocess(preds, (ori_h, ori_w))
+        outputs = {"quads": quads, "scores": scores}
 
         vis = None
         if self.visualize:
@@ -77,4 +77,4 @@ class Detection(BaseModule):
                 line_color=tuple(self.cfg.VISUALIZE.COLOR[::-1]),
             )
 
-        return quads, scores, vis
+        return outputs, vis

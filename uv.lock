@@ -1454,7 +1454,7 @@ wheels = [
 
 [[package]]
 name = "yomitoku"
-version = "0.0.post1.dev1"
+version = "0.1.0.post1.dev5"
 source = { editable = "." }
 dependencies = [
     { name = "omegaconf" },

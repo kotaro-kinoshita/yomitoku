@@ -1,9 +1,10 @@
 import torch
-from . import BaseModule
-from .models import PARSeq, Tokenizer
+
 from ..data.dataset import ParseqDataset
 from ..utils.misc import load_charset
 from ..utils.visualizer import rec_visualizer
+from . import BaseModule
+from .models import PARSeq, Tokenizer
 
 
 class Recognition(BaseModule):
@@ -34,7 +35,9 @@ class Recognition(BaseModule):
 
         if self.cfg.WEIGHTS:
             self.model.load_state_dict(
-                torch.load(self.cfg.WEIGHTS, map_location=self._device)["model"]
+                torch.load(self.cfg.WEIGHTS, map_location=self._device)[
+                    "model"
+                ]
             )
 
         self.model.eval()
@@ -79,16 +82,17 @@ class Recognition(BaseModule):
                 preds.extend(pred)
                 scores.extend(score)
 
+        outputs = {"contents": preds, "scores": scores, "quads": quads}
+
         if self.visualize:
             if vis is None:
                 vis = img.copy()
             vis = rec_visualizer(
                 vis,
-                preds,
-                quads,
+                outputs,
                 font_size=self.cfg.VISUALIZE.FONT_SIZE,
                 font_color=tuple(self.cfg.VISUALIZE.COLOR[::-1]),
                 font_path=self.cfg.VISUALIZE.FONT,
             )
 
-        return preds, scores, vis
+        return outputs, vis

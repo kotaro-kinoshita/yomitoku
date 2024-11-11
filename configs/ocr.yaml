@@ -1,7 +1,7 @@
-DEVICE: "cuda"
+DEVICE: "cpu"
 
 DETECTION:
-  WEIGHTS: "weights/checkpoint_17_89999.pth"
+  WEIGHTS: "weights/dbnet_res50_20241111.pth"
   BACKBONE:
     NAME: "resnet50"
     DILATION: True
@@ -30,7 +30,7 @@ DETECTION:
     HEATMAP: False
 
 RECOGNITION:
-  WEIGHTS: weights/checkpoint_3_169999.pth
+  WEIGHTS: weights/parseq_20241111.pth
   CHARSET: "resource/charset.txt"
 
   DATA:
@@ -56,6 +56,3 @@ RECOGNITION:
     FONT: resource/MPLUS1p-Medium.ttf
     COLOR: [0, 0, 255] #RGB
     FONT_SIZE: 18
-
-  
-
