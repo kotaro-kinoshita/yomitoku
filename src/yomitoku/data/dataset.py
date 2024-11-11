@@ -1,20 +1,18 @@
+from torch.utils.data import Dataset
 from torchvision import transforms as T
 
-
-from torch.utils.data import Dataset
-
 from yomitoku.data.functions import (
-    resize_with_padding,
     extract_roi_with_perspective,
+    resize_with_padding,
 )
 
 
 class ParseqDataset(Dataset):
     def __init__(self, cfg, img, quads):
-        self.img = img
+        self.img = img[:, :, ::-1]
         self.quads = quads
         self.cfg = cfg
-        self.img = img[:, :, ::-1]
+        self.img = img
 
         self.transform = T.Compose(
             [
