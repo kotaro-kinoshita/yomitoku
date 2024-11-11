@@ -1,0 +1,27 @@
+weights: "weights/dbnet_res50_20241111.pth"
+backbone:
+  name: "resnet50"
+  dilation: True
+
+decoder:
+  in_channels: [256, 512, 1024, 2048]
+  hidden_dim: 256
+  adaptive: True
+  serial: True
+  smooth: False
+  k: 50
+
+data:
+  shortest_size: 1280
+  limit_size: 1600
+
+post_process:
+  min_size: 2
+  thresh: 0.3
+  box_thresh: 0.5
+  max_candidates: 1500
+  unclip_ratio: 1.8
+
+visualize:
+  color: [0, 255, 0] #RGB
+  heatmap: False

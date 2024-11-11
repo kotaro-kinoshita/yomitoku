@@ -1,16 +1,15 @@
-from .data.functions import load_image
-from .modules import BaseModule, Detection, Recognition
-from .utils.misc import load_config
+from yomitoku.base import BaseModule
+from yomitoku.text_detection import TextDetector
+from yomitoku.text_recognition import TextRecognizer
 
 
 class OCR(BaseModule):
-    def __init__(self, path_cfg, visualize=True):
-        self.cfg = load_config(path_cfg)
-        self.detector = Detection(
-            self.cfg, visualize=visualize, device=self.cfg.DEVICE
+    def __init__(self, det_cfg, rec_cfg, device, visualize=True):
+        self.detector = TextDetector(
+            det_cfg, visualize=visualize, device=device
         )
-        self.recognizer = Recognition(
-            self.cfg, visualize=visualize, device=self.cfg.DEVICE
+        self.recognizer = TextRecognizer(
+            rec_cfg, visualize=visualize, device=device
         )
 
     def format(self, det_outputs, rec_outputs):
@@ -31,8 +30,13 @@ class OCR(BaseModule):
             )
         return words
 
-    def __call__(self, path_img):
-        img = load_image(path_img)
+    def __call__(self, img):
+        """_summary_
+
+        Args:
+            img (np.ndarray): cv2 image(BGR)
+        """
+
         h, w = img.shape[:2]
         det_outputs, vis = self.detector(img)
         rec_outputs, vis = self.recognizer(img, det_outputs["quads"], vis=vis)

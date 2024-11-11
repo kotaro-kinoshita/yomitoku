@@ -1,0 +1,26 @@
+weights: weights/parseq_20241111.pth
+charset: "resource/charset.txt"
+
+data:
+  num_workers: 4
+  batch_size: 128
+  img_size: [32, 800]
+
+parseq:
+  max_label_length: 100
+  patch_size: [8, 8]
+  embed_dim: 512
+  enc_num_heads: 8
+  enc_mlp_ratio: 4
+  enc_depth: 12
+  dec_num_heads: 8
+  dec_mlp_ratio: 4
+  dec_depth: 1
+  decode_ar: True
+  refine_iters: 1
+  dropout: 0.1
+
+visualize:
+  font: resource/MPLUS1p-Medium.ttf
+  color: [0, 0, 255] #RGB
+  font_size: 18

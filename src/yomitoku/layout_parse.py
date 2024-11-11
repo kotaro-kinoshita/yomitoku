@@ -1,26 +1,29 @@
 import cv2
 import torch
 import torchvision.transforms as T
+from omegaconf import OmegaConf
 from PIL import Image
 
-from ..data.functions import load_image
-from ..utils.misc import load_config
-from ..utils.visualizer import layout_visualizer
-from . import BaseModule
-from .models import RTDETR, RTDETRPostProcessor
+from .base import BaseModule
+from .configs import LayoutParserConfig
+from .data.functions import load_image
+from .models import RTDETR
+from .postprocessor import RTDETRPostProcessor
+from .utils.misc import load_config
+from .utils.visualizer import layout_visualizer
 
 
 class LayoutParser(BaseModule):
-    def __init__(self, cfg, device="cpu", visualize=False):
-        super().__init__(cfg)
-        self.cfg = cfg
-        self.model = RTDETR(cfg)
+    def __init__(self, path_cfg=None, device="cpu", visualize=False):
+        super().__init__()
+        self.cfg = self.set_config(path_cfg)
+        self.model = RTDETR(self.cfg)
         self._device = device
         self.visualize = visualize
 
-        if self.cfg.WEIGHTS:
+        if self.cfg.weights:
             self.model.load_state_dict(
-                torch.load(self.cfg.WEIGHTS, map_location=self._device)[
+                torch.load(self.cfg.weights, map_location=self._device)[
                     "model"
                 ]
             )
@@ -29,18 +32,25 @@ class LayoutParser(BaseModule):
         self.model.to(self._device)
 
         self.postprocessor = RTDETRPostProcessor(
-            num_classes=cfg.RTDETRTransformerv2.num_classes,
-            num_top_queries=cfg.RTDETRTransformerv2.num_queries,
+            num_classes=self.cfg.RTDETRTransformerv2.num_classes,
+            num_top_queries=self.cfg.RTDETRTransformerv2.num_queries,
         )
 
         self.transforms = T.Compose(
             [
-                T.Resize(cfg.RTDETRTransformerv2.eval_spatial_size),
+                T.Resize(self.cfg.data.img_size),
                 T.ToTensor(),
             ]
         )
 
-        self.thresh_score = cfg.thresh_score
+        self.thresh_score = self.cfg.thresh_score
+
+    def set_config(self, path_cfg):
+        cfg = OmegaConf.structured(LayoutParserConfig)
+        if path_cfg is not None:
+            yaml_config = load_config(path_cfg)
+            cfg = OmegaConf.merge(cfg, yaml_config)
+        return cfg
 
     def preprocess(self, img):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -83,9 +93,8 @@ class LayoutParser(BaseModule):
         return outputs, vis
 
 
-cfg = "configs/layout.yaml"
-cfg = load_config(cfg)
-layout_parser = LayoutParser(cfg.LayoutParser, visualize=True)
+cfg = "configs/layout_parse.yaml"
+layout_parser = LayoutParser(path_cfg=cfg, visualize=True)
 img = "dataset/test_20241013/00001256_4521283_7.jpg"
 img = load_image(img)
 # img = Image.open(img)

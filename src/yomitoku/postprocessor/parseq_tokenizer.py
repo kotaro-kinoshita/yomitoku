@@ -23,7 +23,10 @@ from torch.nn.utils.rnn import pad_sequence
 
 class BaseTokenizer(ABC):
     def __init__(
-        self, charset: str, specials_first: tuple = (), specials_last: tuple = ()
+        self,
+        charset: str,
+        specials_first: tuple = (),
+        specials_last: tuple = (),
     ) -> None:
         self._itos = specials_first + tuple(charset) + specials_last
         self._stoi = {s: i for i, s in enumerate(self._itos)}
@@ -85,7 +88,7 @@ class BaseTokenizer(ABC):
         return batch_tokens, batch_probs
 
 
-class Tokenizer(BaseTokenizer):
+class ParseqTokenizer(BaseTokenizer):
     BOS = "[B]"
     EOS = "[E]"
     PAD = "[P]"
@@ -119,5 +122,7 @@ class Tokenizer(BaseTokenizer):
             eos_idx = len(ids)  # Nothing to truncate.
         # Truncate after EOS
         ids = ids[:eos_idx]
-        probs = probs[: eos_idx + 1]  # but include prob. for EOS (if it exists)
+        probs = probs[
+            : eos_idx + 1
+        ]  # but include prob. for EOS (if it exists)
         return probs, ids
