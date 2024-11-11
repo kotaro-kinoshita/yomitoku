@@ -9,7 +9,7 @@ from yomitoku.data.functions import (
 
 class ParseqDataset(Dataset):
     def __init__(self, cfg, img, quads):
-        self.img = img
+        self.img = img[:, :, ::-1]
         self.quads = quads
         self.cfg = cfg
         self.img = img
