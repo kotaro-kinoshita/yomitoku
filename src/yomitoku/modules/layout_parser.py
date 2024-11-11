@@ -29,18 +29,18 @@ class LayoutParser(BaseModule):
         self.model.to(self._device)
 
         self.postprocessor = RTDETRPostProcessor(
-            num_classes=3,
-            num_top_queries=300,
+            num_classes=cfg.RTDETRTransformerv2.num_classes,
+            num_top_queries=cfg.RTDETRTransformerv2.num_queries,
         )
 
         self.transforms = T.Compose(
             [
-                T.Resize((640, 640)),
+                T.Resize(cfg.RTDETRTransformerv2.eval_spatial_size),
                 T.ToTensor(),
             ]
         )
 
-        self.confidence_threshold = 0.5
+        self.thresh_score = cfg.thresh_score
 
     def preprocess(self, img):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -55,9 +55,9 @@ class LayoutParser(BaseModule):
 
         preds = outputs[0]
         scores = preds["scores"]
-        boxes = preds["boxes"][scores > self.confidence_threshold]
-        labels = preds["labels"][scores > self.confidence_threshold]
-        scores = scores[scores > self.confidence_threshold]
+        boxes = preds["boxes"][scores > self.thresh_score]
+        labels = preds["labels"][scores > self.thresh_score]
+        scores = scores[scores > self.thresh_score]
 
         return {
             "boxes": boxes,

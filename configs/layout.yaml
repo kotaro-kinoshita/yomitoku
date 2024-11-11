@@ -1,4 +1,6 @@
 LayoutParser:
+  thresh_score: 0.6
+
   PResNet:
     depth: 50
     variant: d
