@@ -26,12 +26,3 @@ jobs:
         run: uv build
       - name: Publish to PyPI
         run: uv publish  --publish-url https://test.pypi.org/legacy/ --token ${{ secrets.PYPI_TEST_TOKEN }}
-  publish_docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.x
-      - run: pip install mkdocs-material
-      - run: mkdocs gh-deploy --force
