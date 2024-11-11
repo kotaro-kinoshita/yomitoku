@@ -86,47 +86,6 @@ class BasicBlock(nn.Module):
         return out
 
 
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(
-        self, ch_in, ch_out, stride, shortcut, act="relu", variant="b"
-    ):
-        super().__init__()
-
-        self.shortcut = shortcut
-
-        if not shortcut:
-            if variant == "d" and stride == 2:
-                self.short = nn.Sequential(
-                    OrderedDict(
-                        [
-                            ("pool", nn.AvgPool2d(2, 2, 0, ceil_mode=True)),
-                            ("conv", ConvNormLayer(ch_in, ch_out, 1, 1)),
-                        ]
-                    )
-                )
-            else:
-                self.short = ConvNormLayer(ch_in, ch_out, 1, stride)
-
-        self.branch2a = ConvNormLayer(ch_in, ch_out, 3, stride, act=act)
-        self.branch2b = ConvNormLayer(ch_out, ch_out, 3, 1, act=None)
-        self.act = nn.Identity() if act is None else get_activation(act)
-
-    def forward(self, x):
-        out = self.branch2a(x)
-        out = self.branch2b(out)
-        if self.shortcut:
-            short = x
-        else:
-            short = self.short(x)
-
-        out = out + short
-        out = self.act(out)
-
-        return out
-
-
 class BottleNeck(nn.Module):
     expansion = 4
 

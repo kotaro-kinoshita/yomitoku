@@ -435,7 +435,6 @@ class TransformerDecoder(nn.Module):
                 dec_out_bboxes.append(inter_ref_bbox)
                 break
 
-            ref_points = inter_ref_bbox
             ref_points_detach = inter_ref_bbox.detach()
 
         return torch.stack(dec_out_bboxes), torch.stack(dec_out_logits)
@@ -797,8 +796,7 @@ class RTDETRTransformerv2(nn.Module):
     def forward(self, feats, targets=None):
         # input projection and embedding
         memory, spatial_shapes = self._get_encoder_input(feats)
-        denoising_logits, denoising_bbox_unact, attn_mask, dn_meta = (
-            None,
+        denoising_logits, denoising_bbox_unact, attn_mask = (
             None,
             None,
             None,
