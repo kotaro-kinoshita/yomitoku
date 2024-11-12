@@ -17,16 +17,9 @@ class TableStructureRecognizer(BaseModule):
     def __init__(self, path_cfg=None, device="cpu", visualize=False):
         super().__init__()
         self.cfg = self.set_config(path_cfg)
-        self.model = RTDETR(self.cfg)
+        self.model = RTDETR.from_pretrained(self.cfg.hf_hub_repo, cfg=self.cfg)
         self._device = device
         self.visualize = visualize
-
-        if self.cfg.weights:
-            self.model.load_state_dict(
-                torch.load(self.cfg.weights, map_location=self._device)[
-                    "model"
-                ]
-            )
 
         self.model.eval()
         self.model.to(self._device)
@@ -94,7 +87,7 @@ class TableStructureRecognizer(BaseModule):
 
 
 cfg = "configs/table_structure_recognition.yaml"
-layout_parser = TableStructureRecognizer(path_cfg=cfg, visualize=True)
+layout_parser = TableStructureRecognizer(path_cfg=None, visualize=True)
 img = "dataset/val_20241014_better_table/0000/00001342_6845526_12_0.jpg"
 img = load_image(img)
 

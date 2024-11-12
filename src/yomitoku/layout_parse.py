@@ -17,16 +17,9 @@ class LayoutParser(BaseModule):
     def __init__(self, path_cfg=None, device="cpu", visualize=False):
         super().__init__()
         self.cfg = self.set_config(path_cfg)
-        self.model = RTDETR(self.cfg)
+        self.model = RTDETR.from_pretrained(self.cfg.hf_hub_repo, cfg=self.cfg)
         self._device = device
         self.visualize = visualize
-
-        if self.cfg.weights:
-            self.model.load_state_dict(
-                torch.load(self.cfg.weights, map_location=self._device)[
-                    "model"
-                ]
-            )
 
         self.model.eval()
         self.model.to(self._device)
@@ -94,7 +87,7 @@ class LayoutParser(BaseModule):
 
 
 cfg = "configs/layout_parse.yaml"
-layout_parser = LayoutParser(path_cfg=cfg, visualize=True)
+layout_parser = LayoutParser(path_cfg=None, visualize=True)
 img = "dataset/test_20241013/00001256_4521283_7.jpg"
 img = load_image(img)
 # img = Image.open(img)

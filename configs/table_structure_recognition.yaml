@@ -1,3 +1,4 @@
+hf_hub_repo: "KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta"
 thresh_score: 0.6
 
 data:
@@ -49,5 +50,3 @@ RTDETRTransformerv2:
   num_points: [4, 4, 4] # [3,3,3] [2,2,2]
   cross_attn_method: default # default, discrete
   query_select_method: default # default, agnostic
-
-weights: "weights/table_20241111.pth"

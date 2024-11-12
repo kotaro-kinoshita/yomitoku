@@ -1,11 +1,12 @@
 import torch.nn as nn
+from huggingface_hub import PyTorchModelHubMixin
 
 from .layers.rtdetr_backbone import PResNet
 from .layers.rtdetr_hybrid_encoder import HybridEncoder
 from .layers.rtdetrv2_decoder import RTDETRTransformerv2
 
 
-class RTDETR(nn.Module):
+class RTDETR(nn.Module, PyTorchModelHubMixin):
     __inject__ = [
         "backbone",
         "encoder",

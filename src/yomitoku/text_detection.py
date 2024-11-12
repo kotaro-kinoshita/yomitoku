@@ -19,17 +19,12 @@ class TextDetector(BaseModule):
     def __init__(self, path_cfg=None, device="cpu", visualize=False):
         super().__init__()
         self.cfg = self.set_config(path_cfg)
-        self.model = DBNetPlus(self.cfg)
+        self.model = DBNetPlus.from_pretrained(
+            self.cfg.hf_hub_repo, cfg=self.cfg
+        )
 
         self._device = device
         self.visualize = visualize
-
-        if self.cfg.weights:
-            self.model.load_state_dict(
-                torch.load(self.cfg.weights, map_location=self._device)[
-                    "model"
-                ]
-            )
 
         self.model.eval()
         self.model.to(self._device)

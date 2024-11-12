@@ -62,7 +62,9 @@ class Decoder:
 
 @dataclass
 class LayoutParserConfig:
-    weights: str = "weights/layout_20241111.pth"
+    hf_hub_repo: str = (
+        "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
+    )
     thresh_score: float = 0.6
     data: Data = Data()
     PResNet: BackBone = BackBone()

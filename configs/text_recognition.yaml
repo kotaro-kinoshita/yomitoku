@@ -1,4 +1,4 @@
-weights: weights/parseq_20241111.pth
+hf_hub_repo: "KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta"
 charset: "resource/charset.txt"
 
 data:

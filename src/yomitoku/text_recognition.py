@@ -17,20 +17,14 @@ class TextRecognizer(BaseModule):
         self.charset = load_charset(self.cfg.charset)
         self.tokenizer = Tokenizer(self.charset)
 
-        self.model = PARSeq(
+        self.model = PARSeq.from_pretrained(
+            self.cfg.hf_hub_repo,
             num_tokens=len(self.tokenizer),
             img_size=self.cfg.data.img_size,
             **self.cfg.parseq,
         )
 
         self._device = device
-
-        if self.cfg.weights:
-            self.model.load_state_dict(
-                torch.load(self.cfg.weights, map_location=self._device)[
-                    "model"
-                ]
-            )
 
         self.model.eval()
         self.model.to(self._device)

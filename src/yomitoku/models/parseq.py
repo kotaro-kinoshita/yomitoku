@@ -18,6 +18,7 @@ from typing import Optional, Sequence
 
 import torch
 import torch.nn as nn
+from huggingface_hub import PyTorchModelHubMixin
 from timm.models.helpers import named_apply
 from torch import Tensor
 
@@ -55,7 +56,7 @@ def init_weights(
         nn.init.zeros_(module.bias)
 
 
-class PARSeq(nn.Module):
+class PARSeq(nn.Module, PyTorchModelHubMixin):
     def __init__(
         self,
         num_tokens: int,

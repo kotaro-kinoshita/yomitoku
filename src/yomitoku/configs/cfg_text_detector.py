@@ -3,7 +3,7 @@ from typing import List
 
 
 @dataclass
-class BackBorn:
+class BackBone:
     name: str = "resnet50"
     dilation: bool = True
 
@@ -43,8 +43,8 @@ class Visualize:
 
 @dataclass
 class TextDetectorConfig:
-    weights: str = "weights/dbnet_res50_20241111.pth"
-    backbone: BackBorn = BackBorn()
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-detector-dbnet-open-beta"
+    backbone: BackBone = BackBone()
     decoder: Decoder = Decoder()
     data: Data = Data()
     post_process: PostProcess = PostProcess()
