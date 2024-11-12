@@ -3,13 +3,13 @@ from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognitizer import TextRecognizer
 
 
-class OCR(BaseModule):
+class OCR:
     def __init__(self, det_cfg, rec_cfg, device, visualize=True):
         self.detector = TextDetector(
-            det_cfg, visualize=visualize, device=device
+            path_cfg=det_cfg, visualize=visualize, device=device
         )
         self.recognizer = TextRecognizer(
-            rec_cfg, visualize=visualize, device=device
+            path_cfg=rec_cfg, visualize=visualize, device=device
         )
 
     def format(self, det_outputs, rec_outputs):

@@ -1,24 +1,32 @@
 import numpy as np
 import torch
 
-from .base import BaseModule
+from .base import BaseModelCatalog, BaseModule
+from .configs import TextDetectorDBNetConfig
 from .data.functions import (
     array_to_tensor,
     normalize_image,
     resize_shortest_edge,
 )
-from .models import DBNetPlus
+from .models import DBNet
 from .postprocessor import DBnetPostProcessor
 from .utils.visualizer import det_visualizer
 
 
-class TextDetector(BaseModule):
-    def __init__(self, path_cfg=None, device="cuda", visualize=False):
+class TextDetectorModelCatalog(BaseModelCatalog):
+    def __init__(self):
         super().__init__()
-        self.set_config(path_cfg)
-        self.model = DBNetPlus.from_pretrained(
-            self._cfg.hf_hub_repo, cfg=self._cfg
-        )
+        self.register("dbnet", TextDetectorDBNetConfig, DBNet)
+
+
+class TextDetector(BaseModule):
+    model_catalog = TextDetectorModelCatalog()
+
+    def __init__(
+        self, model_name="dbnet", path_cfg=None, device="cuda", visualize=False
+    ):
+        super().__init__()
+        self.load_model(model_name, path_cfg)
 
         self.device = device
         self.visualize = visualize

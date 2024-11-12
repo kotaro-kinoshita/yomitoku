@@ -34,7 +34,7 @@ class Visualize:
 
 
 @dataclass
-class TextRecognizerConfig:
+class TextRecognizerPARSeqConfig:
     hf_hub_repo: str = (
         "KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta"
     )

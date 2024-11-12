@@ -61,7 +61,7 @@ class Decoder:
 
 
 @dataclass
-class LayoutParserConfig:
+class LayoutParserRTDETRv2Config:
     hf_hub_repo: str = (
         "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
     )
