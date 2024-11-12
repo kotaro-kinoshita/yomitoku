@@ -1,5 +1,6 @@
 from importlib.metadata import version
 
+from .layout_parser import LayoutParser
 from .ocr import OCR
 
 __all__ = [
