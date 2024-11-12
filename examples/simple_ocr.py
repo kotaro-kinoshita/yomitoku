@@ -28,20 +28,21 @@ def main(args):
             out_vis = os.path.join(args.outdir, f"{filename}")
             cv2.imwrite(out_vis, vis)
 
+        name, _ = os.path.splitext(os.path.basename(image))
+        with open(os.path.join(args.outdir, f"{name}_result.json"), "w") as f:
+            json.dump(
+                preds,
+                f,
+                ensure_ascii=False,
+                indent=4,
+                sort_keys=True,
+                separators=(",", ": "),
+            )
+
     ocr.detector.save_config(os.path.join(args.outdir, "text_detector.yaml"))
     ocr.recognizer.save_config(
         os.path.join(args.outdir, "text_recognizer.yaml")
     )
-
-    with open(os.path.join(args.outdir, f"{name}_result.json"), "w") as f:
-        json.dump(
-            preds,
-            f,
-            ensure_ascii=False,
-            indent=4,
-            sort_keys=True,
-            separators=(",", ": "),
-        )
 
 
 if __name__ == "__main__":
