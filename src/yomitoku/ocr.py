@@ -1,4 +1,3 @@
-from yomitoku.base import BaseModule
 from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognitizer import TextRecognizer
 
