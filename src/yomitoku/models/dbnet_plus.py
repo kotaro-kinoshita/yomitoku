@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
+from huggingface_hub import PyTorchModelHubMixin
 from torchvision.models._utils import IntermediateLayerGetter
 
 from .layers.dbnet_feature_attention import ScaleFeatureSelection
@@ -255,8 +256,11 @@ class DBNetDecoder(nn.Module):
         return result
 
 
-class DBNetPlus(nn.Module):
-    def __init__(self, cfg):
+class DBNetPlus(nn.Module, PyTorchModelHubMixin):
+    def __init__(
+        self,
+        cfg,
+    ):
         super().__init__()
         self.cfg = cfg
         self.backbone = Backbone(**cfg.backbone)

@@ -62,7 +62,9 @@ class Decoder:
 
 @dataclass
 class TableStructureRecognizerConfig:
-    weights: str = "weights/table_20241111.pth"
+    hf_hub_repo: str = (
+        "KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta"
+    )
     thresh_score: float = 0.6
     data: Data = Data()
     PResNet: BackBone = BackBone()

@@ -34,7 +34,9 @@ class Visualize:
 
 @dataclass
 class TextRecognizerConfig:
-    weights: str = "weights/parseq_20241111.pth"
+    hf_hub_repo: str = (
+        "KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta"
+    )
     charset: str = "resource/charset.txt"
     data: Data = Data()
     parseq: Parseq = Parseq()

@@ -1,4 +1,4 @@
-weights: "weights/dbnet_res50_20241111.pth"
+hf_hub_repo: "KotaroKinoshita/yomitoku-text-detector-dbnet-open-beta"
 backbone:
   name: "resnet50"
   dilation: True
