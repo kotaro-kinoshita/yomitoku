@@ -1,5 +1,6 @@
 import time
 
+import torch
 from omegaconf import OmegaConf
 
 from yomitoku.utils.logger import set_logger
@@ -48,3 +49,18 @@ class BaseModule:
 
     def log_config(self):
         logger.info(OmegaConf.to_yaml(self._cfg))
+
+    @property
+    def device(self):
+        return self._device
+
+    @device.setter
+    def device(self, device):
+        if "cuda" in device:
+            if torch.cuda.is_available():
+                self._device = torch.device(device)
+            else:
+                self._device = torch.device("cpu")
+                logger.warning("CUDA is not available. Use CPU instead.")
+        else:
+            self._device = torch.device("cpu")
