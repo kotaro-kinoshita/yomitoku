@@ -1,9 +1,7 @@
 import numpy as np
 import torch
-from omegaconf import OmegaConf
 
 from .base import BaseModule
-from .configs import TextDetectorConfig
 from .data.functions import (
     array_to_tensor,
     normalize_image,
@@ -11,16 +9,15 @@ from .data.functions import (
 )
 from .models import DBNetPlus
 from .postprocessor import DBnetPostProcessor
-from .utils.misc import load_config
 from .utils.visualizer import det_visualizer
 
 
 class TextDetector(BaseModule):
     def __init__(self, path_cfg=None, device="cpu", visualize=False):
         super().__init__()
-        self.cfg = self.set_config(path_cfg)
+        self.set_config(path_cfg)
         self.model = DBNetPlus.from_pretrained(
-            self.cfg.hf_hub_repo, cfg=self.cfg
+            self._cfg.hf_hub_repo, cfg=self._cfg
         )
 
         self._device = device
@@ -29,20 +26,13 @@ class TextDetector(BaseModule):
         self.model.eval()
         self.model.to(self._device)
 
-        self.post_processor = DBnetPostProcessor(**self.cfg.post_process)
-
-    def set_config(self, path_cfg):
-        cfg = OmegaConf.structured(TextDetectorConfig)
-        if path_cfg is not None:
-            yaml_config = load_config(path_cfg)
-            cfg = OmegaConf.merge(cfg, yaml_config)
-        return cfg
+        self.post_processor = DBnetPostProcessor(**self._cfg.post_process)
 
     def preprocess(self, img):
         img = img.copy()
         img = img[:, :, ::-1].astype(np.float32)
         resized = resize_shortest_edge(
-            img, self.cfg.data.shortest_size, self.cfg.data.limit_size
+            img, self._cfg.data.shortest_size, self._cfg.data.limit_size
         )
         normalized = normalize_image(resized)
         tensor = array_to_tensor(normalized)
@@ -78,8 +68,8 @@ class TextDetector(BaseModule):
                 preds,
                 img,
                 quads,
-                vis_heatmap=self.cfg.visualize.heatmap,
-                line_color=tuple(self.cfg.visualize.color[::-1]),
+                vis_heatmap=self._cfg.visualize.heatmap,
+                line_color=tuple(self._cfg.visualize.color[::-1]),
             )
 
         return outputs, vis

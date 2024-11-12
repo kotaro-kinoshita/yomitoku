@@ -1,6 +1,6 @@
 from yomitoku.base import BaseModule
-from yomitoku.text_detection import TextDetector
-from yomitoku.text_recognition import TextRecognizer
+from yomitoku.text_detector import TextDetector
+from yomitoku.text_recognitizer import TextRecognizer
 
 
 class OCR(BaseModule):
