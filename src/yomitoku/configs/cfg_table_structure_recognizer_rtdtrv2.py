@@ -61,7 +61,7 @@ class Decoder:
 
 
 @dataclass
-class TableStructureRecognizerConfig:
+class TableStructureRecognizerRTDETRv2Config:
     hf_hub_repo: str = (
         "KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta"
     )

@@ -6,13 +6,7 @@ from .layers.rtdetr_hybrid_encoder import HybridEncoder
 from .layers.rtdetrv2_decoder import RTDETRTransformerv2
 
 
-class RTDETR(nn.Module, PyTorchModelHubMixin):
-    __inject__ = [
-        "backbone",
-        "encoder",
-        "decoder",
-    ]
-
+class RTDETRv2(nn.Module, PyTorchModelHubMixin):
     def __init__(self, cfg):
         super().__init__()
         self.cfg = cfg

@@ -42,7 +42,7 @@ class Visualize:
 
 
 @dataclass
-class TextDetectorConfig:
+class TextDetectorDBNetConfig:
     hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-detector-dbnet-open-beta"
     backbone: BackBone = BackBone()
     decoder: Decoder = Decoder()

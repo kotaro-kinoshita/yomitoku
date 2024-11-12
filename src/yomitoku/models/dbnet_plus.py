@@ -256,7 +256,7 @@ class DBNetDecoder(nn.Module):
         return result
 
 
-class DBNetPlus(nn.Module, PyTorchModelHubMixin):
+class DBNet(nn.Module, PyTorchModelHubMixin):
     def __init__(
         self,
         cfg,

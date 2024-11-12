@@ -1,6 +1,7 @@
 import torch
 
-from .base import BaseModule
+from .base import BaseModelCatalog, BaseModule
+from .configs import TextRecognizerPARSeqConfig
 from .data.dataset import ParseqDataset
 from .models import PARSeq
 from .postprocessor import ParseqTokenizer as Tokenizer
@@ -8,17 +9,26 @@ from .utils.misc import load_charset
 from .utils.visualizer import rec_visualizer
 
 
-class TextRecognizer(BaseModule):
-    def __init__(self, path_cfg=None, device="cuda", visualize=False):
+class TextRecognizerModelCatalog(BaseModelCatalog):
+    def __init__(self):
         super().__init__()
-        self.set_config(path_cfg)
+        self.register("parseq", TextRecognizerPARSeqConfig, PARSeq)
+
+
+class TextRecognizer(BaseModule):
+    model_catalog = TextRecognizerModelCatalog()
+
+    def __init__(
+        self,
+        model_name="parseq",
+        path_cfg=None,
+        device="cuda",
+        visualize=False,
+    ):
+        super().__init__()
+        self.load_model(model_name, path_cfg)
         self.charset = load_charset(self._cfg.charset)
         self.tokenizer = Tokenizer(self.charset)
-
-        self.model = PARSeq.from_pretrained(
-            self._cfg.hf_hub_repo,
-            cfg=self._cfg,
-        )
 
         self.device = device
 

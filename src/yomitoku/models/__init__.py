@@ -1,9 +1,9 @@
-from .dbnet_plus import DBNetPlus
+from .dbnet_plus import DBNet
 from .parseq import PARSeq
-from .rtdetr import RTDETR
+from .rtdetr import RTDETRv2
 
 __all__ = [
-    "DBNetPlus",
+    "DBNet",
     "PARSeq",
-    "RTDETR",
+    "RTDETRv2",
 ]

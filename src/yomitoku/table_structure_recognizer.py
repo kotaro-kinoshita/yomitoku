@@ -3,20 +3,34 @@ import torch
 import torchvision.transforms as T
 from PIL import Image
 
-from .base import BaseModule
+from .base import BaseModelCatalog, BaseModule
+from .configs import TableStructureRecognizerRTDETRv2Config
 from .data.functions import load_image
-from .models import RTDETR
+from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.visualizer import layout_visualizer
 
 
-class TableStructureRecognizer(BaseModule):
-    def __init__(self, path_cfg=None, device="cuda", visualize=False):
+class TableStructureRecognizerModelCatalog(BaseModelCatalog):
+    def __init__(self):
         super().__init__()
-        self.set_config(path_cfg)
-        self.model = RTDETR.from_pretrained(
-            self._cfg.hf_hub_repo, cfg=self._cfg
+        self.register(
+            "rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2
         )
+
+
+class TableStructureRecognizer(BaseModule):
+    model_catalog = TableStructureRecognizerModelCatalog()
+
+    def __init__(
+        self,
+        model_name="rtdetrv2",
+        path_cfg=None,
+        device="cuda",
+        visualize=False,
+    ):
+        super().__init__()
+        self.load_model(model_name, path_cfg)
         self.device = device
         self.visualize = visualize
 

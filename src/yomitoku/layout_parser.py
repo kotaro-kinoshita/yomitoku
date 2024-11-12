@@ -3,20 +3,32 @@ import torch
 import torchvision.transforms as T
 from PIL import Image
 
-from .base import BaseModule
+from .base import BaseModelCatalog, BaseModule
+from .configs import LayoutParserRTDETRv2Config
 from .data.functions import load_image
-from .models import RTDETR
+from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.visualizer import layout_visualizer
 
 
-class LayoutParser(BaseModule):
-    def __init__(self, path_cfg=None, device="cuda", visualize=False):
+class LayoutParserModelCatalog(BaseModelCatalog):
+    def __init__(self):
         super().__init__()
-        self.set_config(path_cfg)
-        self.model = RTDETR.from_pretrained(
-            self._cfg.hf_hub_repo, cfg=self._cfg
-        )
+        self.register("rtdetrv2", LayoutParserRTDETRv2Config, RTDETRv2)
+
+
+class LayoutParser(BaseModule):
+    model_catalog = LayoutParserModelCatalog()
+
+    def __init__(
+        self,
+        model_name="rtdetrv2",
+        path_cfg=None,
+        device="cuda",
+        visualize=False,
+    ):
+        super().__init__()
+        self.load_model(model_name, path_cfg)
         self.device = device
         self.visualize = visualize
 
@@ -78,11 +90,16 @@ class LayoutParser(BaseModule):
         return outputs, vis
 
 
+LayoutParser.catalog()
+
 cfg = "configs/layout_parse.yaml"
 layout_parser = LayoutParser(path_cfg=None, visualize=True)
 img = "dataset/test_20241013/00001256_4521283_7.jpg"
 img = load_image(img)
 # img = Image.open(img)
+
+layout_parser.log_config()
+layout_parser.save_config("test.yaml")
 
 outputs, vis = layout_parser(img)
 cv2.imwrite("test.jpg", vis)
