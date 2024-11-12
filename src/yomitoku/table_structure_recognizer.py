@@ -1,23 +1,22 @@
 import cv2
 import torch
 import torchvision.transforms as T
-from omegaconf import OmegaConf
 from PIL import Image
 
 from .base import BaseModule
-from .configs import TableStructureRecognizerConfig
 from .data.functions import load_image
 from .models import RTDETR
 from .postprocessor import RTDETRPostProcessor
-from .utils.misc import load_config
 from .utils.visualizer import layout_visualizer
 
 
 class TableStructureRecognizer(BaseModule):
     def __init__(self, path_cfg=None, device="cpu", visualize=False):
         super().__init__()
-        self.cfg = self.set_config(path_cfg)
-        self.model = RTDETR.from_pretrained(self.cfg.hf_hub_repo, cfg=self.cfg)
+        self.set_config(path_cfg)
+        self.model = RTDETR.from_pretrained(
+            self._cfg.hf_hub_repo, cfg=self._cfg
+        )
         self._device = device
         self.visualize = visualize
 
@@ -25,25 +24,18 @@ class TableStructureRecognizer(BaseModule):
         self.model.to(self._device)
 
         self.postprocessor = RTDETRPostProcessor(
-            num_classes=self.cfg.RTDETRTransformerv2.num_classes,
-            num_top_queries=self.cfg.RTDETRTransformerv2.num_queries,
+            num_classes=self._cfg.RTDETRTransformerv2.num_classes,
+            num_top_queries=self._cfg.RTDETRTransformerv2.num_queries,
         )
 
         self.transforms = T.Compose(
             [
-                T.Resize(self.cfg.data.img_size),
+                T.Resize(self._cfg.data.img_size),
                 T.ToTensor(),
             ]
         )
 
-        self.thresh_score = self.cfg.thresh_score
-
-    def set_config(self, path_cfg):
-        cfg = OmegaConf.structured(TableStructureRecognizerConfig)
-        if path_cfg is not None:
-            yaml_config = load_config(path_cfg)
-            cfg = OmegaConf.merge(cfg, yaml_config)
-        return cfg
+        self.thresh_score = self._cfg.thresh_score
 
     def preprocess(self, img):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
