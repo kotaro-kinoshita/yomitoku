@@ -11,17 +11,17 @@ from .utils.visualizer import layout_visualizer
 
 
 class TableStructureRecognizer(BaseModule):
-    def __init__(self, path_cfg=None, device="cpu", visualize=False):
+    def __init__(self, path_cfg=None, device="cuda", visualize=False):
         super().__init__()
         self.set_config(path_cfg)
         self.model = RTDETR.from_pretrained(
             self._cfg.hf_hub_repo, cfg=self._cfg
         )
-        self._device = device
+        self.device = device
         self.visualize = visualize
 
         self.model.eval()
-        self.model.to(self._device)
+        self.model.to(self.device)
 
         self.postprocessor = RTDETRPostProcessor(
             num_classes=self._cfg.RTDETRTransformerv2.num_classes,
@@ -40,12 +40,12 @@ class TableStructureRecognizer(BaseModule):
     def preprocess(self, img):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cv_img)
-        img_tensor = self.transforms(img)[None].to(self._device)
+        img_tensor = self.transforms(img)[None].to(self.device)
         return img_tensor
 
     def postprocess(self, preds, image_size):
         h, w = image_size
-        orig_size = torch.tensor([w, h])[None].to(self._device)
+        orig_size = torch.tensor([w, h])[None].to(self.device)
         outputs = self.postprocessor(preds, orig_size)
 
         preds = outputs[0]

@@ -9,7 +9,7 @@ from .utils.visualizer import rec_visualizer
 
 
 class TextRecognizer(BaseModule):
-    def __init__(self, path_cfg=None, device="cpu", visualize=False):
+    def __init__(self, path_cfg=None, device="cuda", visualize=False):
         super().__init__()
         self.set_config(path_cfg)
         self.charset = load_charset(self._cfg.charset)
@@ -22,10 +22,10 @@ class TextRecognizer(BaseModule):
             **self._cfg.parseq,
         )
 
-        self._device = device
+        self.device = device
 
         self.model.eval()
-        self.model.to(self._device)
+        self.model.to(self.device)
 
         self.visualize = visualize
 
@@ -62,7 +62,7 @@ class TextRecognizer(BaseModule):
         preds = []
         scores = []
         for data in dataloader:
-            data = data.to(self._device)
+            data = data.to(self.device)
             with torch.inference_mode():
                 p = self.model(self.tokenizer, data).softmax(-1)
                 pred, score = self.postprocess(p)

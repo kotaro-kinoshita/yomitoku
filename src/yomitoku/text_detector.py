@@ -13,18 +13,18 @@ from .utils.visualizer import det_visualizer
 
 
 class TextDetector(BaseModule):
-    def __init__(self, path_cfg=None, device="cpu", visualize=False):
+    def __init__(self, path_cfg=None, device="cuda", visualize=False):
         super().__init__()
         self.set_config(path_cfg)
         self.model = DBNetPlus.from_pretrained(
             self._cfg.hf_hub_repo, cfg=self._cfg
         )
 
-        self._device = device
+        self.device = device
         self.visualize = visualize
 
         self.model.eval()
-        self.model.to(self._device)
+        self.model.to(self.device)
 
         self.post_processor = DBnetPostProcessor(**self._cfg.post_process)
 
@@ -55,7 +55,7 @@ class TextDetector(BaseModule):
 
         ori_h, ori_w = img.shape[:2]
         tensor = self.preprocess(img)
-        tensor = tensor.to(self._device)
+        tensor = tensor.to(self.device)
         with torch.inference_mode():
             preds = self.model(tensor)
 
