@@ -32,7 +32,7 @@ class PostProcess:
     thresh: float = 0.3
     box_thresh: float = 0.5
     max_candidates: int = 1500
-    unclip_ratio: float = 1.8
+    unclip_ratio: float = 2.0
 
 
 @dataclass
