@@ -28,6 +28,11 @@ def main(args):
         out_vis = os.path.join(args.outdir, f"{name}_visualize.jpg")
         cv2.imwrite(out_vis, vis)
 
+    ocr.detector.save_config(os.path.join(args.outdir, "text_detector.yaml"))
+    ocr.recognizer.save_config(
+        os.path.join(args.outdir, "text_recognizer.yaml")
+    )
+
     with open(os.path.join(args.outdir, f"{name}_result.json"), "w") as f:
         json.dump(
             preds,

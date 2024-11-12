@@ -17,9 +17,7 @@ class TextRecognizer(BaseModule):
 
         self.model = PARSeq.from_pretrained(
             self._cfg.hf_hub_repo,
-            num_tokens=len(self.tokenizer),
-            img_size=self._cfg.data.img_size,
-            **self._cfg.parseq,
+            cfg=self._cfg,
         )
 
         self.device = device

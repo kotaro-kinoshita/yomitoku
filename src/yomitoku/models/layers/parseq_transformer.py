@@ -17,42 +17,44 @@ import math
 from typing import Optional
 
 import torch
-from torch import Tensor, nn as nn
+from timm.models.vision_transformer import PatchEmbed, VisionTransformer
+from torch import Tensor
+from torch import nn as nn
 from torch.nn import functional as F
 from torch.nn.modules import transformer
-
-from timm.models.vision_transformer import PatchEmbed, VisionTransformer
 
 
 class DecoderLayer(nn.Module):
     """A Transformer decoder layer supporting two-stream attention (XLNet)
-    This implements a pre-LN decoder, as opposed to the post-LN default in PyTorch."""
+    This implements a pre-LN decoder, as opposed to the post-LN default in PyTorch.
+    """
 
     def __init__(
         self,
-        d_model,
-        nhead,
-        dim_feedforward=2048,
+        embed_dim,
+        num_heads,
+        mlp_ratio=2048,
         dropout=0.1,
         activation="gelu",
         layer_norm_eps=1e-5,
     ):
         super().__init__()
+        dim_feedforward = embed_dim * mlp_ratio
         self.self_attn = nn.MultiheadAttention(
-            d_model, nhead, dropout=dropout, batch_first=True
+            embed_dim, num_heads, dropout=dropout, batch_first=True
         )
         self.cross_attn = nn.MultiheadAttention(
-            d_model, nhead, dropout=dropout, batch_first=True
+            embed_dim, num_heads, dropout=dropout, batch_first=True
         )
         # Implementation of Feedforward model
-        self.linear1 = nn.Linear(d_model, dim_feedforward)
+        self.linear1 = nn.Linear(embed_dim, dim_feedforward)
         self.dropout = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(dim_feedforward, d_model)
+        self.linear2 = nn.Linear(dim_feedforward, embed_dim)
 
-        self.norm1 = nn.LayerNorm(d_model, eps=layer_norm_eps)
-        self.norm2 = nn.LayerNorm(d_model, eps=layer_norm_eps)
-        self.norm_q = nn.LayerNorm(d_model, eps=layer_norm_eps)
-        self.norm_c = nn.LayerNorm(d_model, eps=layer_norm_eps)
+        self.norm1 = nn.LayerNorm(embed_dim, eps=layer_norm_eps)
+        self.norm2 = nn.LayerNorm(embed_dim, eps=layer_norm_eps)
+        self.norm_q = nn.LayerNorm(embed_dim, eps=layer_norm_eps)
+        self.norm_c = nn.LayerNorm(embed_dim, eps=layer_norm_eps)
         self.dropout1 = nn.Dropout(dropout)
         self.dropout2 = nn.Dropout(dropout)
         self.dropout3 = nn.Dropout(dropout)
@@ -131,10 +133,16 @@ class DecoderLayer(nn.Module):
 class Decoder(nn.Module):
     __constants__ = ["norm"]
 
-    def __init__(self, decoder_layer, num_layers, norm):
+    def __init__(self, norm, cfg):
         super().__init__()
-        self.layers = transformer._get_clones(decoder_layer, num_layers)
-        self.num_layers = num_layers
+        decoder_layer = DecoderLayer(
+            embed_dim=cfg.embed_dim,
+            num_heads=cfg.num_heads,
+            mlp_ratio=cfg.mlp_ratio,
+        )
+
+        self.layers = transformer._get_clones(decoder_layer, cfg.depth)
+        self.num_layers = cfg.depth
         self.norm = norm
 
     def forward(

@@ -10,19 +10,20 @@ class Data:
 
 
 @dataclass
-class Parseq:
-    max_label_length: int = 100
+class Encoder:
     patch_size: List[int] = field(default_factory=lambda: [8, 8])
+    num_heads: int = 8
     embed_dim: int = 512
-    enc_num_heads: int = 8
-    enc_mlp_ratio: int = 4
-    enc_depth: int = 12
-    dec_num_heads: int = 8
-    dec_mlp_ratio: int = 4
-    dec_depth: int = 1
-    decode_ar: bool = True
-    refine_iters: int = 1
-    dropout: float = 0.1
+    mlp_ratio: int = 4
+    depth: int = 12
+
+
+@dataclass
+class Decoder:
+    embed_dim: int = 512
+    num_heads: int = 8
+    mlp_ratio: int = 4
+    depth: int = 1
 
 
 @dataclass
@@ -38,6 +39,13 @@ class TextRecognizerConfig:
         "KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta"
     )
     charset: str = "resource/charset.txt"
+    num_tokens: int = 7312
+    max_label_length: int = 100
+    decode_ar: int = 1
+    refine_iters: int = 1
+
     data: Data = Data()
-    parseq: Parseq = Parseq()
+    encoder: Encoder = Encoder()
+    decoder: Decoder = Decoder()
+
     visualize: Visualize = Visualize()
