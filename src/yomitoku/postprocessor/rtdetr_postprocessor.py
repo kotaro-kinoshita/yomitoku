@@ -96,6 +96,9 @@ class RTDETRPostProcessor(nn.Module):
 
         results = []
         for lab, box, sco in zip(labels, boxes, scores):
+            lab = lab.cpu().numpy()
+            box = box.cpu().numpy()
+            sco = sco.cpu().numpy()
             result = dict(labels=lab, boxes=box, scores=sco)
             results.append(result)
 

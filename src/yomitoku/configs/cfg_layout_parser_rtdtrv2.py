@@ -65,8 +65,16 @@ class LayoutParserRTDETRv2Config:
     hf_hub_repo: str = (
         "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
     )
-    thresh_score: float = 0.6
+    thresh_score: float = 0.4
     data: Data = Data()
     PResNet: BackBone = BackBone()
     HybridEncoder: Encoder = Encoder()
     RTDETRTransformerv2: Decoder = Decoder()
+
+    category: List[str] = field(
+        default_factory=lambda: [
+            "table",
+            "figure",
+            "paragraph",
+        ]
+    )
