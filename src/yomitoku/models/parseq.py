@@ -23,12 +23,7 @@ from timm.models.helpers import named_apply
 from torch import Tensor
 
 from ..postprocessor import ParseqTokenizer as Tokenizer
-from .layers.parseq_transformer import (
-    Decoder,
-    DecoderLayer,
-    Encoder,
-    TokenEmbedding,
-)
+from .layers.parseq_transformer import Decoder, Encoder, TokenEmbedding
 
 
 def init_weights(
@@ -59,51 +54,34 @@ def init_weights(
 class PARSeq(nn.Module, PyTorchModelHubMixin):
     def __init__(
         self,
-        num_tokens: int,
-        max_label_length: int,
-        img_size: Sequence[int],
-        patch_size: Sequence[int],
-        embed_dim: int,
-        enc_num_heads: int,
-        enc_mlp_ratio: int,
-        enc_depth: int,
-        dec_num_heads: int,
-        dec_mlp_ratio: int,
-        dec_depth: int,
-        decode_ar: bool,
-        refine_iters: int,
-        dropout: float,
+        cfg,
     ) -> None:
         super().__init__()
-
-        self.max_label_length = max_label_length
-        self.decode_ar = decode_ar
-        self.refine_iters = refine_iters
+        self.cfg = cfg
+        self.max_label_length = self.cfg.max_label_length
+        self.decode_ar = self.cfg.decode_ar
+        self.refine_iters = self.cfg.refine_iters
+        embed_dim = self.cfg.decoder.embed_dim
 
         self.encoder = Encoder(
-            img_size,
-            patch_size,
-            embed_dim=embed_dim,
-            depth=enc_depth,
-            num_heads=enc_num_heads,
-            mlp_ratio=enc_mlp_ratio,
+            self.cfg.data.img_size,
+            **self.cfg.encoder,
         )
-        decoder_layer = DecoderLayer(
-            embed_dim, dec_num_heads, embed_dim * dec_mlp_ratio, dropout
-        )
+
         self.decoder = Decoder(
-            decoder_layer, num_layers=dec_depth, norm=nn.LayerNorm(embed_dim)
+            norm=nn.LayerNorm(self.cfg.decoder.embed_dim),
+            cfg=self.cfg.decoder,
         )
 
         # We don't predict <bos> nor <pad>
-        self.head = nn.Linear(embed_dim, num_tokens - 2)
-        self.text_embed = TokenEmbedding(num_tokens, embed_dim)
+        self.head = nn.Linear(embed_dim, self.cfg.num_tokens - 2)
+        self.text_embed = TokenEmbedding(self.cfg.num_tokens, embed_dim)
 
         # +1 for <eos>
         self.pos_queries = nn.Parameter(
-            torch.Tensor(1, max_label_length + 1, embed_dim)
+            torch.Tensor(1, self.max_label_length + 1, embed_dim)
         )
-        self.dropout = nn.Dropout(p=dropout)
+        self.dropout = nn.Dropout()
         # Encoder has its own init.
         named_apply(partial(init_weights, exclude=["encoder"]), self)
         nn.init.trunc_normal_(self.pos_queries, std=0.02)
