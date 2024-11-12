@@ -23,12 +23,7 @@ from timm.models.helpers import named_apply
 from torch import Tensor
 
 from ..postprocessor import ParseqTokenizer as Tokenizer
-from .layers.parseq_transformer import (
-    Decoder,
-    DecoderLayer,
-    Encoder,
-    TokenEmbedding,
-)
+from .layers.parseq_transformer import Decoder, Encoder, TokenEmbedding
 
 
 def init_weights(
