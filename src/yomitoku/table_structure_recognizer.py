@@ -166,6 +166,8 @@ class TableStructureRecognizer(BaseModule):
             row_span = max([box["row"] for box in sub_box]) - row + 1
             col_span = max([box["col"] for box in sub_box]) - col + 1
 
+            span_box = list(map(int, span_box))
+
             cells.append(
                 {
                     "col": col,
@@ -175,6 +177,8 @@ class TableStructureRecognizer(BaseModule):
                     "box": span_box,
                 }
             )
+
+            cells = sorted(cells, key=lambda x: (x["row"], x["col"]))
 
         return cells, len(row_boxes), len(col_boxes)
 

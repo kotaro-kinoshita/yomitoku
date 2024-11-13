@@ -140,12 +140,14 @@ class LayoutParser(BaseModule):
                 if is_contained(table_box, paragraph_box):
                     check_list[j] = False
 
-        category_elements["paragraph"]["boxes"] = np.array(paragraph_boxes)[
-            check_list
-        ]
-        category_elements["paragraph"]["scores"] = np.array(
-            category_elements["paragraph"]["scores"]
-        )[check_list]
+        category_elements["paragraph"]["boxes"] = paragraph_boxes[check_list]
+        category_elements["paragraph"]["scores"] = category_elements[
+            "paragraph"
+        ]["scores"][check_list]
+
+        for category, elements in category_elements.items():
+            category_elements[category]["boxes"] = elements["boxes"].tolist()
+            category_elements[category]["scores"] = elements["scores"].tolist()
 
         return category_elements
 

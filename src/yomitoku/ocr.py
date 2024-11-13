@@ -1,14 +1,20 @@
 from yomitoku.text_detector import TextDetector
-from yomitoku.text_recognitizer import TextRecognizer
+from yomitoku.text_recognizer import TextRecognizer
 
 
 class OCR:
-    def __init__(self, det_cfg, rec_cfg, device, visualize=True):
+    def __init__(self, configs=None, device="cpu", visualize=True):
+        if configs is None:
+            configs = {
+                "text_detector": {"path_cfg": None, "model_name": "dbnet"},
+                "text_recognizer": {"path_cfg": None, "model_name": "parseq"},
+            }
+
         self.detector = TextDetector(
-            path_cfg=det_cfg, visualize=visualize, device=device
+            **configs["text_detector"], visualize=visualize, device=device
         )
         self.recognizer = TextRecognizer(
-            path_cfg=rec_cfg, visualize=visualize, device=device
+            **configs["text_recognizer"], visualize=visualize, device=device
         )
 
     def format(self, det_outputs, rec_outputs):

@@ -55,14 +55,12 @@ def layout_visualizer(preds, img):
 
         for box in boxes:
             color = PALETTE[id % len(PALETTE)]
-            box = box.astype(np.int32)
-            out = cv2.rectangle(
-                out, (box[0], box[1]), (box[2], box[3]), color, 2
-            )
+            x1, y1, x2, y2 = tuple(map(int, box))
+            out = cv2.rectangle(out, (x1, y1), (x2, y2), color, 2)
             out = cv2.putText(
                 out,
                 category,
-                (box[0], box[1]),
+                (x1, y1),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.5,
                 color,
