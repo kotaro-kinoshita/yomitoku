@@ -4,16 +4,20 @@ import os
 
 import cv2
 
-from yomitoku import LayoutParser
+from yomitoku import LayoutParser, TableStructureRecognizer
 from yomitoku.data.functions import load_image
 
 
 def main(args):
     layout_parser = LayoutParser(visualize=args.vis, device=args.device)
+    table_recognizer = TableStructureRecognizer(
+        visualize=args.vis, device=args.device
+    )
 
     for image in glob.glob(os.path.join(args.image, "*.jpg")):
         img = load_image(image)
         preds, vis = layout_parser(img)
+        _, vis = table_recognizer(img, preds["table"]["boxes"], vis=vis)
 
         os.makedirs(args.outdir, exist_ok=True)
 
@@ -30,7 +34,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--layout_config", type=str, default=None)
-    parser.add_argument("--image", type=str, default="dataset/test_20241013")
+    parser.add_argument("--image", type=str, default="dataset/test")
     parser.add_argument("--vis", action="store_true")
     parser.add_argument("--outdir", type=str, default="results")
     parser.add_argument("--device", type=str, default="cpu")

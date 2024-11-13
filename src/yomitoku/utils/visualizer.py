@@ -59,6 +59,47 @@ def layout_visualizer(preds, img):
             out = cv2.rectangle(
                 out, (box[0], box[1]), (box[2], box[3]), color, 2
             )
+            out = cv2.putText(
+                out,
+                category,
+                (box[0], box[1]),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                color,
+                2,
+            )
+
+    return out
+
+
+def table_visualizer(img, table):
+    out = img.copy()
+    cells = table["cells"]
+    for cell in cells:
+        box = cell["box"]
+        row = cell["row"]
+        col = cell["col"]
+        row_span = 1
+        col_span = 1
+
+        if "row_span" in cell:
+            row_span = cell["row_span"]
+        if "col_span" in cell:
+            col_span = cell["col_span"]
+
+        text = f"({row}, {col}) {row_span}x{col_span}"
+
+        x1, y1, x2, y2 = map(int, box)
+        out = cv2.rectangle(out, (x1, y1), (x2, y2), (255, 0, 255), 2)
+        out = cv2.putText(
+            out,
+            text,
+            (x1, y1),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 0, 0),
+            2,
+        )
 
     return out
 
