@@ -5,44 +5,40 @@ def export_html(outputs):
     html = ""
 
     elements = []
-    for table in outputs["table"]:
+    for table in outputs.tables:
         table_html = (
             """<table border='1' style='border-collapse: collapse'><tr>"""
         )
 
         pre_row = 1
-        for cell in table["cells"]:
-            row = cell["row"]
-            row_span = cell["row_span"]
-            col_span = cell["col_span"]
-
-            if "contents" in cell:
-                content = cell["contents"]
-            else:
-                content = ""
+        for cell in table.cells:
+            row = cell.row
+            row_span = cell.row_span
+            col_span = cell.col_span
+            contents = cell.contents
+            if contents is None:
+                contents = ""
 
             if row != pre_row:
                 table_html += "</tr><tr>"
                 pre_row = row
 
-            table_html += (
-                f'<td rowspan="{row_span}" colspan="{col_span}">{content}</td>'
-            )
+            table_html += f'<td rowspan="{row_span}" colspan="{col_span}">{contents}</td>'
         else:
             table_html += "</tr></table>"
 
         elements.append(
             {
-                "box": table["box"],
+                "box": table.box,
                 "html": table_html,
             }
         )
 
-    for paraghraph in outputs["paragraphs"]:
-        p = f"<p>{paraghraph['contents']}</p>"
+    for paraghraph in outputs.paragraphs:
+        p = f"<p>{paraghraph.contents}</p>"
         elements.append(
             {
-                "box": paraghraph["box"],
+                "box": paraghraph.box,
                 "html": p,
             }
         )

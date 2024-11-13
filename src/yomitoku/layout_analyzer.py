@@ -1,5 +1,18 @@
-from .layout_parser import LayoutParser
-from .table_structure_recognizer import TableStructureRecognizer
+from typing import List
+
+from pydantic import BaseModel
+
+from .layout_parser import Element, LayoutParser
+from .table_structure_recognizer import (
+    TableStructureRecognizer,
+    TableStructureRecognizerSchema,
+)
+
+
+class LayoutAnalyzerSchema(BaseModel):
+    paragraphs: List[Element]
+    tables: List[TableStructureRecognizerSchema]
+    figures: List[Element]
 
 
 class LayoutAnalyzer:
@@ -28,11 +41,16 @@ class LayoutAnalyzer:
         )
 
     def __call__(self, img):
-        layout_preds, vis = self.layout_parser(img)
-        table_boxes = layout_preds["table"]["boxes"]
-        table_preds, vis = self.table_structure_recognizer(
+        layout_results, vis = self.layout_parser(img)
+        table_boxes = [table.box for table in layout_results.tables]
+        table_results, vis = self.table_structure_recognizer(
             img, table_boxes, vis=vis
         )
 
-        layout_preds["table"] = table_preds
-        return layout_preds, vis
+        results = LayoutAnalyzerSchema(
+            paragraphs=layout_results.paragraphs,
+            tables=table_results,
+            figures=layout_results.figures,
+        )
+
+        return results, vis

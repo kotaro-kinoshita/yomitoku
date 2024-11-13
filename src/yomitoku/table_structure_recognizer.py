@@ -1,7 +1,10 @@
+from typing import List, Union
+
 import cv2
 import torch
 import torchvision.transforms as T
 from PIL import Image
+from pydantic import BaseModel, conlist
 
 from .base import BaseModelCatalog, BaseModule
 from .configs import TableStructureRecognizerRTDETRv2Config
@@ -17,6 +20,22 @@ class TableStructureRecognizerModelCatalog(BaseModelCatalog):
         self.register(
             "rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2
         )
+
+
+class TableCellSchema(BaseModel):
+    col: int
+    row: int
+    col_span: int
+    row_span: int
+    box: conlist(int, min_length=4, max_length=4)
+    contents: Union[str, None]
+
+
+class TableStructureRecognizerSchema(BaseModel):
+    box: conlist(int, min_length=4, max_length=4)
+    n_row: int
+    n_col: int
+    cells: List[TableCellSchema]
 
 
 class TableStructureRecognizer(BaseModule):
@@ -108,14 +127,18 @@ class TableStructureRecognizer(BaseModule):
         table_x2 = table_x + data["size"][1]
         table_y2 = table_y + data["size"][0]
 
+        table_box = list(map(int, [table_x, table_y, table_x2, table_y2]))
+
         table = {
-            "box": [table_x, table_y, table_x2, table_y2],
+            "box": table_box,
             "n_row": n_row,
             "n_col": n_col,
             "cells": cells,
         }
 
-        return table
+        table_results = TableStructureRecognizerSchema(**table)
+
+        return table_results
 
     def calculate_cell(self, elements):
         row_boxes = elements["row"]["boxes"]
@@ -139,6 +162,7 @@ class TableStructureRecognizer(BaseModule):
                         "col_span": 1,
                         "row_span": 1,
                         "box": intersection,
+                        "contents": None,
                     }
                 )
 
@@ -175,6 +199,7 @@ class TableStructureRecognizer(BaseModule):
                     "col_span": col_span,
                     "row_span": row_span,
                     "box": span_box,
+                    "contents": None,
                 }
             )
 

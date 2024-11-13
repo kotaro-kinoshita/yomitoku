@@ -1,6 +1,6 @@
 from importlib.metadata import version
 
-from .layout_alalyzer import LayoutAnalyzer
+from .layout_analyzer import LayoutAnalyzer
 from .layout_parser import LayoutParser
 from .ocr import OCR
 from .table_structure_recognizer import TableStructureRecognizer

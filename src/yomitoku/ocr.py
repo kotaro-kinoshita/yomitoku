@@ -1,5 +1,24 @@
+from typing import List
+
+from pydantic import BaseModel, conlist
+
 from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognizer import TextRecognizer
+
+
+class WordPrediction(BaseModel):
+    points: conlist(
+        conlist(int, min_length=2, max_length=2),
+        min_length=4,
+        max_length=4,
+    )
+    content: str
+    det_score: float
+    rec_score: float
+
+
+class OCRSchema(BaseModel):
+    words: List[WordPrediction]
 
 
 class OCR:
@@ -19,15 +38,15 @@ class OCR:
 
     def format(self, det_outputs, rec_outputs):
         words = []
-        for quad, det_score, pred, rec_score in zip(
-            det_outputs["quads"],
-            det_outputs["scores"],
-            rec_outputs["contents"],
-            rec_outputs["scores"],
+        for points, det_score, pred, rec_score in zip(
+            det_outputs.points,
+            det_outputs.scores,
+            rec_outputs.contents,
+            rec_outputs.scores,
         ):
             words.append(
                 {
-                    "points": quad,
+                    "points": points,
                     "content": pred,
                     "det_score": det_score,
                     "rec_score": rec_score,
@@ -42,11 +61,9 @@ class OCR:
             img (np.ndarray): cv2 image(BGR)
         """
 
-        h, w = img.shape[:2]
         det_outputs, vis = self.detector(img)
-        rec_outputs, vis = self.recognizer(img, det_outputs["quads"], vis=vis)
+        rec_outputs, vis = self.recognizer(img, det_outputs.points, vis=vis)
 
-        results = {}
-        results.update(image_size=(w, h))
-        results.update(words=self.format(det_outputs, rec_outputs))
+        outputs = {"words": self.format(det_outputs, rec_outputs)}
+        results = OCRSchema(**outputs)
         return results, vis

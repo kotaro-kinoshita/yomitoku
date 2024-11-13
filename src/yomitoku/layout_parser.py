@@ -1,8 +1,11 @@
+from typing import List
+
 import cv2
 import numpy as np
 import torch
 import torchvision.transforms as T
 from PIL import Image
+from pydantic import BaseModel, conlist
 
 from .base import BaseModelCatalog, BaseModule
 from .configs import LayoutParserRTDETRv2Config
@@ -10,6 +13,17 @@ from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import is_contained
 from .utils.visualizer import layout_visualizer
+
+
+class Element(BaseModel):
+    box: conlist(int, min_length=4, max_length=4)
+    score: float
+
+
+class LayoutParserSchema(BaseModel):
+    paragraphs: List[Element]
+    tables: List[Element]
+    figures: List[Element]
 
 
 class LayoutParserModelCatalog(BaseModelCatalog):
@@ -131,8 +145,8 @@ class LayoutParser(BaseModule):
             ]
 
         # 3. テーブルの内側に存在する、テキスト矩形を除外
-        paragraph_boxes = category_elements["paragraph"]["boxes"]
-        table_boxes = category_elements["table"]["boxes"]
+        paragraph_boxes = category_elements["paragraphs"]["boxes"]
+        table_boxes = category_elements["tables"]["boxes"]
 
         check_list = [True] * len(paragraph_boxes)
         for i, table_box in enumerate(table_boxes):
@@ -140,16 +154,23 @@ class LayoutParser(BaseModule):
                 if is_contained(table_box, paragraph_box):
                     check_list[j] = False
 
-        category_elements["paragraph"]["boxes"] = paragraph_boxes[check_list]
-        category_elements["paragraph"]["scores"] = category_elements[
-            "paragraph"
+        category_elements["paragraphs"]["boxes"] = paragraph_boxes[check_list]
+        category_elements["paragraphs"]["scores"] = category_elements[
+            "paragraphs"
         ]["scores"][check_list]
 
-        for category, elements in category_elements.items():
-            category_elements[category]["boxes"] = elements["boxes"].tolist()
-            category_elements[category]["scores"] = elements["scores"].tolist()
+        outputs = {category: [] for category in self._cfg.category}
 
-        return category_elements
+        for category, elements in category_elements.items():
+            outputs[category] = [
+                {
+                    "box": box.astype(int).tolist(),
+                    "score": float(score),
+                }
+                for box, score in zip(elements["boxes"], elements["scores"])
+            ]
+
+        return outputs
 
     def __call__(self, img):
         ori_h, ori_w = img.shape[:2]
@@ -158,12 +179,13 @@ class LayoutParser(BaseModule):
         with torch.inference_mode():
             preds = self.model(img_tensor)
         outputs = self.postprocess(preds, (ori_h, ori_w))
+        results = LayoutParserSchema(**outputs)
 
         vis = None
         if self.visualize:
             vis = layout_visualizer(
-                outputs,
+                results,
                 img,
             )
 
-        return outputs, vis
+        return results, vis

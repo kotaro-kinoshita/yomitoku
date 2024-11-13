@@ -38,8 +38,8 @@ def is_contained(rect_a, rect_b, threshold=0.8):
 
 
 def calc_intersection(rect_a, rect_b):
-    ax1, ay1, ax2, ay2 = map(float, rect_a)
-    bx1, by1, bx2, by2 = map(float, rect_b)
+    ax1, ay1, ax2, ay2 = map(int, rect_a)
+    bx1, by1, bx2, by2 = map(int, rect_b)
 
     # 交差領域の左上と右下の座標
     ix1 = max(ax1, bx1)
@@ -54,3 +54,12 @@ def calc_intersection(rect_a, rect_b):
         return None
 
     return [ix1, iy1, ix2, iy2]
+
+
+def quad_to_xyxy(quad):
+    x1 = min([x for x, _ in quad])
+    y1 = min([y for _, y in quad])
+    x2 = max([x for x, _ in quad])
+    y2 = max([y for _, y in quad])
+
+    return x1, y1, x2, y2

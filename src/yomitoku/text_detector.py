@@ -1,5 +1,8 @@
+from typing import List
+
 import numpy as np
 import torch
+from pydantic import BaseModel, conlist
 
 from .base import BaseModelCatalog, BaseModule
 from .configs import TextDetectorDBNetConfig
@@ -17,6 +20,17 @@ class TextDetectorModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("dbnet", TextDetectorDBNetConfig, DBNet)
+
+
+class TextDetectorSchema(BaseModel):
+    points: List[
+        conlist(
+            conlist(int, min_length=2, max_length=2),
+            min_length=4,
+            max_length=4,
+        )
+    ]
+    scores: List[float]
 
 
 class TextDetector(BaseModule):
@@ -68,7 +82,9 @@ class TextDetector(BaseModule):
             preds = self.model(tensor)
 
         quads, scores = self.postprocess(preds, (ori_h, ori_w))
-        outputs = {"quads": quads, "scores": scores}
+        outputs = {"points": quads, "scores": scores}
+
+        results = TextDetectorSchema(**outputs)
 
         vis = None
         if self.visualize:
@@ -80,4 +96,4 @@ class TextDetector(BaseModule):
                 line_color=tuple(self._cfg.visualize.color[::-1]),
             )
 
-        return outputs, vis
+        return results, vis

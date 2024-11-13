@@ -48,12 +48,12 @@ def det_visualizer(
     return out
 
 
-def layout_visualizer(preds, img):
+def layout_visualizer(results, img):
     out = img.copy()
-    for id, (category, pred) in enumerate(preds.items()):
-        boxes = pred["boxes"]
-
-        for box in boxes:
+    results_dict = results.dict()
+    for id, (category, preds) in enumerate(results_dict.items()):
+        for element in preds:
+            box = element["box"]
             color = PALETTE[id % len(PALETTE)]
             x1, y1, x2, y2 = tuple(map(int, box))
             out = cv2.rectangle(out, (x1, y1), (x2, y2), color, 2)
@@ -72,18 +72,13 @@ def layout_visualizer(preds, img):
 
 def table_visualizer(img, table):
     out = img.copy()
-    cells = table["cells"]
+    cells = table.cells
     for cell in cells:
-        box = cell["box"]
-        row = cell["row"]
-        col = cell["col"]
-        row_span = 1
-        col_span = 1
-
-        if "row_span" in cell:
-            row_span = cell["row_span"]
-        if "col_span" in cell:
-            col_span = cell["col_span"]
+        box = cell.box
+        row = cell.row
+        col = cell.col
+        row_span = cell.row_span
+        col_span = cell.col_span
 
         text = f"({row}, {col}) {row_span}x{col_span}"
 
@@ -113,7 +108,7 @@ def rec_visualizer(
     pillow_img = Image.fromarray(out)
     draw = ImageDraw.Draw(pillow_img)
 
-    for pred, quad in zip(outputs["contents"], outputs["quads"]):
+    for pred, quad in zip(outputs.contents, outputs.points):
         quad = np.array(quad).astype(np.int32)
         word_width = np.linalg.norm(quad[0] - quad[1])
         word_height = np.linalg.norm(quad[1] - quad[2])
