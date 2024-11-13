@@ -8,6 +8,7 @@ from .base import BaseModelCatalog, BaseModule
 from .configs import LayoutParserRTDETRv2Config
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
+from .utils.misc import is_contained
 from .utils.visualizer import layout_visualizer
 
 
@@ -15,44 +16,6 @@ class LayoutParserModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("rtdetrv2", LayoutParserRTDETRv2Config, RTDETRv2)
-
-
-def is_contained(rect_a, rect_b, threshold=0.75):
-    """二つの矩形A, Bが与えられたとき、矩形Bが矩形Aに含まれるかどうかを判定する。
-    ずれを許容するため、重複率求め、thresholdを超える場合にTrueを返す。
-
-
-    Args:
-        rect_a (np.array): x1, y1, x2, y2
-        rect_b (np.array): x1, y1, x2, y2
-        threshold (float, optional): 判定の閾値. Defaults to 0.9.
-
-    Returns:
-        bool: 矩形Bが矩形Aに含まれる場合True
-    """
-
-    ax1, ay1, ax2, ay2 = rect_a
-    bx1, by1, bx2, by2 = rect_b
-
-    # 交差領域の左上と右下の座標
-    ix1 = max(ax1, bx1)
-    iy1 = max(ay1, by1)
-    ix2 = min(ax2, bx2)
-    iy2 = min(ay2, by2)
-
-    # 矩形が交差しているかを確認
-    if ix1 < ix2 and iy1 < iy2:
-        # 交差領域の幅と高さ
-        intersection_width = ix2 - ix1
-        intersection_height = iy2 - iy1
-        intersection_area = intersection_width * intersection_height
-
-        b_area = (bx2 - bx1) * (by2 - by1)
-
-        if intersection_area / b_area > threshold:
-            return True
-
-    return ax1 <= bx1 and ay1 <= by1 and ax2 >= bx2 and ay2 >= by2
 
 
 class LayoutParser(BaseModule):
@@ -93,7 +56,14 @@ class LayoutParser(BaseModule):
         img_tensor = self.transforms(img)[None].to(self.device)
         return img_tensor
 
-    def filter(self, preds):
+    def postprocess(self, preds, image_size):
+        h, w = image_size
+        orig_size = torch.tensor([w, h])[None].to(self.device)
+        outputs = self.postprocessor(preds, orig_size)
+        elements = self.filtering_elements(outputs[0])
+        return elements
+
+    def filtering_elements(self, preds):
         """以下の条件で予測結果のフィルタリングを行う。
         1. 信頼度が閾値以上のものを抽出
         2. 同じクラスに属する矩形のうち、他の矩形の内側に含まれるものを除外
@@ -178,14 +148,6 @@ class LayoutParser(BaseModule):
         )[check_list]
 
         return category_elements
-
-    def postprocess(self, preds, image_size):
-        h, w = image_size
-        orig_size = torch.tensor([w, h])[None].to(self.device)
-        outputs = self.postprocessor(preds, orig_size)
-        elements = self.filter(outputs[0])
-
-        return elements
 
     def __call__(self, img):
         ori_h, ori_w = img.shape[:2]

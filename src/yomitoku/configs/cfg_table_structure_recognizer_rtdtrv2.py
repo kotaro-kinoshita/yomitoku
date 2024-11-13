@@ -70,3 +70,11 @@ class TableStructureRecognizerRTDETRv2Config:
     PResNet: BackBone = BackBone()
     HybridEncoder: Encoder = Encoder()
     RTDETRTransformerv2: Decoder = Decoder()
+
+    category: List[str] = field(
+        default_factory=lambda: [
+            "row",
+            "col",
+            "span",
+        ]
+    )
