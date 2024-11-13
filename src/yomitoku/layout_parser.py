@@ -1,8 +1,11 @@
+from typing import List, Union
+
 import cv2
 import numpy as np
 import torch
 import torchvision.transforms as T
 from PIL import Image
+from pydantic import BaseModel, conlist
 
 from .base import BaseModelCatalog, BaseModule
 from .configs import LayoutParserRTDETRv2Config
@@ -10,6 +13,22 @@ from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import is_contained
 from .utils.visualizer import layout_visualizer
+
+
+class Element(BaseModel):
+    box: conlist(int, min_length=4, max_length=4)
+    score: float
+
+
+class ParagraphSchema(Element):
+    contents: Union[str, None]
+    direction: Union[str, None]
+
+
+class LayoutParserSchema(BaseModel):
+    paragraph: List[Element]
+    table: List[Element]
+    figure: List[Element]
 
 
 class LayoutParserModelCatalog(BaseModelCatalog):
@@ -145,11 +164,18 @@ class LayoutParser(BaseModule):
             "paragraph"
         ]["scores"][check_list]
 
-        for category, elements in category_elements.items():
-            category_elements[category]["boxes"] = elements["boxes"].tolist()
-            category_elements[category]["scores"] = elements["scores"].tolist()
+        outputs = {category: [] for category in self._cfg.category}
 
-        return category_elements
+        for category, elements in category_elements.items():
+            outputs[category] = [
+                {
+                    "box": box.astype(int).tolist(),
+                    "score": float(score),
+                }
+                for box, score in zip(elements["boxes"], elements["scores"])
+            ]
+
+        return outputs
 
     def __call__(self, img):
         ori_h, ori_w = img.shape[:2]
@@ -158,12 +184,13 @@ class LayoutParser(BaseModule):
         with torch.inference_mode():
             preds = self.model(img_tensor)
         outputs = self.postprocess(preds, (ori_h, ori_w))
+        results = LayoutParserSchema(**outputs)
 
         vis = None
         if self.visualize:
             vis = layout_visualizer(
-                outputs,
+                results,
                 img,
             )
 
-        return outputs, vis
+        return results, vis

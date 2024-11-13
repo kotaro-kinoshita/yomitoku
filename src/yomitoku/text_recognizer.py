@@ -1,4 +1,7 @@
+from typing import List
+
 import torch
+from pydantic import BaseModel, conlist
 
 from .base import BaseModelCatalog, BaseModule
 from .configs import TextRecognizerPARSeqConfig
@@ -13,6 +16,18 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("parseq", TextRecognizerPARSeqConfig, PARSeq)
+
+
+class TextRecognizerSchema(BaseModel):
+    contents: List[str]
+    scores: List[float]
+    points: List[
+        conlist(
+            conlist(int, min_length=2, max_length=2),
+            min_length=4,
+            max_length=4,
+        )
+    ]
 
 
 class TextRecognizer(BaseModule):
@@ -77,17 +92,18 @@ class TextRecognizer(BaseModule):
                 preds.extend(pred)
                 scores.extend(score)
 
-        outputs = {"contents": preds, "scores": scores, "quads": quads}
+        outputs = {"contents": preds, "scores": scores, "points": quads}
+        results = TextRecognizerSchema(**outputs)
 
         if self.visualize:
             if vis is None:
                 vis = img.copy()
             vis = rec_visualizer(
                 vis,
-                outputs,
+                results,
                 font_size=self._cfg.visualize.font_size,
                 font_color=tuple(self._cfg.visualize.color[::-1]),
                 font_path=self._cfg.visualize.font,
             )
 
-        return outputs, vis
+        return results, vis
