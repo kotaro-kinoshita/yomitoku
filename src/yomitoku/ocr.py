@@ -23,20 +23,24 @@ class OCRSchema(BaseModel):
 
 class OCR:
     def __init__(self, configs=None, device="cpu", visualize=True):
-        if configs is None:
-            configs = {
-                "text_detector": {"path_cfg": None, "model_name": "dbnet"},
-                "text_recognizer": {"path_cfg": None, "model_name": "parseq"},
-            }
+        text_detector_kwargs = {
+            "device": device,
+            "visualize": visualize,
+        }
+        text_recognizer_kwargs = {
+            "device": device,
+            "visualize": visualize,
+        }
 
-        self.detector = TextDetector(
-            **configs["text_detector"], visualize=visualize, device=device
-        )
-        self.recognizer = TextRecognizer(
-            **configs["text_recognizer"], visualize=visualize, device=device
-        )
+        if "text_detector" in configs:
+            text_detector_kwargs.update(configs["text_detector"])
+        if "text_recognizer" in configs:
+            text_recognizer_kwargs.update(configs["text_recognizer"])
 
-    def format(self, det_outputs, rec_outputs):
+        self.detector = TextDetector(**text_detector_kwargs)
+        self.recognizer = TextRecognizer(**text_recognizer_kwargs)
+
+    def aggregate(self, det_outputs, rec_outputs):
         words = []
         for points, det_score, pred, rec_score in zip(
             det_outputs.points,
@@ -64,6 +68,6 @@ class OCR:
         det_outputs, vis = self.detector(img)
         rec_outputs, vis = self.recognizer(img, det_outputs.points, vis=vis)
 
-        outputs = {"words": self.format(det_outputs, rec_outputs)}
+        outputs = {"words": self.aggregate(det_outputs, rec_outputs)}
         results = OCRSchema(**outputs)
         return results, vis

@@ -28,36 +28,34 @@ class DocumentAnalyzerSchema(BaseModel):
 
 class DocumentAnalyzer:
     def __init__(self, configs=None, device="cpu", visualize=True):
+        default_configs = {
+            "ocr": {
+                "text_detector": {
+                    "device": device,
+                    "visualize": visualize,
+                },
+                "text_recognizer": {
+                    "device": device,
+                    "visualize": visualize,
+                },
+            },
+            "layout_analyzer": {
+                "layout_parser": {
+                    "device": device,
+                    "visualize": visualize,
+                },
+                "table_structure_recognizer": {
+                    "device": device,
+                    "visualize": visualize,
+                },
+            },
+        }
+
         if configs is None:
-            configs = {
-                "ocr": {
-                    "text_detector": {"path_cfg": None, "model_name": "dbnet"},
-                    "text_recognizer": {
-                        "path_cfg": None,
-                        "model_name": "parseq",
-                    },
-                },
-                "layout_alalyzer": {
-                    "layout_parser": {
-                        "model_name": "rtdetrv2",
-                        "path_cfg": None,
-                    },
-                    "table_structure_recognizer": {
-                        "model_name": "rtdetrv2",
-                        "path_cfg": None,
-                    },
-                },
-            }
+            configs = default_configs
 
-        self.ocr = OCR(
-            configs=configs["ocr"],
-            visualize=visualize,
-        )
-
-        self.layout = LayoutAnalyzer(
-            configs=configs["layout_alalyzer"],
-            visualize=visualize,
-        )
+        self.ocr = OCR(configs=configs["ocr"])
+        self.layout = LayoutAnalyzer(configs=configs["layout_analyzer"])
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
