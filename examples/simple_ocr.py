@@ -10,14 +10,12 @@ from yomitoku.data.functions import load_image
 
 
 def main(args):
-    for image in glob.glob(os.path.join(args.image, "*.jpg")):
-        ocr = OCR(
-            args.det_config,
-            args.rec_config,
-            visualize=args.vis,
-            device=args.device,
-        )
+    ocr = OCR(
+        visualize=args.vis,
+        device=args.device,
+    )
 
+    for image in glob.glob(os.path.join(args.image, "*.jpg")):
         img = load_image(image)
         preds, vis = ocr(img)
 
