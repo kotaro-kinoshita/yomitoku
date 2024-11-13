@@ -73,8 +73,8 @@ class LayoutParserRTDETRv2Config:
 
     category: List[str] = field(
         default_factory=lambda: [
-            "table",
-            "figure",
-            "paragraph",
+            "tables",
+            "figures",
+            "paragraphs",
         ]
     )

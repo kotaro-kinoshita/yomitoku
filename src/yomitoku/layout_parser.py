@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import cv2
 import numpy as np
@@ -20,15 +20,10 @@ class Element(BaseModel):
     score: float
 
 
-class ParagraphSchema(Element):
-    contents: Union[str, None]
-    direction: Union[str, None]
-
-
 class LayoutParserSchema(BaseModel):
-    paragraph: List[Element]
-    table: List[Element]
-    figure: List[Element]
+    paragraphs: List[Element]
+    tables: List[Element]
+    figures: List[Element]
 
 
 class LayoutParserModelCatalog(BaseModelCatalog):
@@ -150,8 +145,8 @@ class LayoutParser(BaseModule):
             ]
 
         # 3. テーブルの内側に存在する、テキスト矩形を除外
-        paragraph_boxes = category_elements["paragraph"]["boxes"]
-        table_boxes = category_elements["table"]["boxes"]
+        paragraph_boxes = category_elements["paragraphs"]["boxes"]
+        table_boxes = category_elements["tables"]["boxes"]
 
         check_list = [True] * len(paragraph_boxes)
         for i, table_box in enumerate(table_boxes):
@@ -159,9 +154,9 @@ class LayoutParser(BaseModule):
                 if is_contained(table_box, paragraph_box):
                     check_list[j] = False
 
-        category_elements["paragraph"]["boxes"] = paragraph_boxes[check_list]
-        category_elements["paragraph"]["scores"] = category_elements[
-            "paragraph"
+        category_elements["paragraphs"]["boxes"] = paragraph_boxes[check_list]
+        category_elements["paragraphs"]["scores"] = category_elements[
+            "paragraphs"
         ]["scores"][check_list]
 
         outputs = {category: [] for category in self._cfg.category}

@@ -1,6 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel, conlist
+from pydantic import BaseModel
 
 from .layout_parser import Element, LayoutParser
 from .table_structure_recognizer import (
@@ -10,9 +10,9 @@ from .table_structure_recognizer import (
 
 
 class LayoutAnalyzerSchema(BaseModel):
-    paragraph: List[Element]
-    table: List[TableStructureRecognizerSchema]
-    figure: List[Element]
+    paragraphs: List[Element]
+    tables: List[TableStructureRecognizerSchema]
+    figures: List[Element]
 
 
 class LayoutAnalyzer:
@@ -42,15 +42,15 @@ class LayoutAnalyzer:
 
     def __call__(self, img):
         layout_results, vis = self.layout_parser(img)
-        table_boxes = [table.box for table in layout_results.table]
+        table_boxes = [table.box for table in layout_results.tables]
         table_results, vis = self.table_structure_recognizer(
             img, table_boxes, vis=vis
         )
 
         results = LayoutAnalyzerSchema(
-            paragraph=layout_results.paragraph,
-            table=table_results,
-            figure=layout_results.figure,
+            paragraphs=layout_results.paragraphs,
+            tables=table_results,
+            figures=layout_results.figures,
         )
 
         return results, vis

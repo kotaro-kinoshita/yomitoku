@@ -6,6 +6,7 @@ from pydantic import BaseModel, conlist
 
 from .data.functions import load_image
 from .layout_analyzer import LayoutAnalyzer
+from .layout_parser import Element
 from .ocr import OCR, WordPrediction
 from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.export import export_html
@@ -22,6 +23,7 @@ class DocumentAnalyzerSchema(BaseModel):
     paragraphs: List[ParagraphSchema]
     tables: List[TableStructureRecognizerSchema]
     words: List[WordPrediction]
+    figures: List[Element]
 
 
 class DocumentAnalyzer:
@@ -60,7 +62,7 @@ class DocumentAnalyzer:
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
         check_list = [False] * len(ocr_res.words)
-        for table in layout_res.table:
+        for table in layout_res.tables:
             for cell in table.cells:
                 words = []
 
@@ -105,7 +107,9 @@ class DocumentAnalyzer:
                 words = "\n".join([content.content for content in words])
                 cell.contents = words
 
-        paragraph_boxes = [paragraph.box for paragraph in layout_res.paragraph]
+        paragraph_boxes = [
+            paragraph.box for paragraph in layout_res.paragraphs
+        ]
         for paragraph_box in paragraph_boxes:
             words = []
 
@@ -177,7 +181,8 @@ class DocumentAnalyzer:
 
         outputs = {
             "paragraphs": paragraphs,
-            "tables": layout_res.table,
+            "tables": layout_res.tables,
+            "figures": layout_res.figures,
             "words": ocr_res.words,
         }
 
