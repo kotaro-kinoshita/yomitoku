@@ -1,6 +1,3 @@
-from xml.dom.minidom import parseString
-
-
 def export_html(outputs, out_path):
     html = ""
 
