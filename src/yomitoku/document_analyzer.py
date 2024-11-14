@@ -1,18 +1,18 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from typing import List, Union
-import cv2
 import glob
 import os
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Union
 
+import cv2
 from pydantic import BaseModel, conlist
 
 from .data.functions import load_image
+from .export import export_csv, export_html, export_markdown
 from .layout_analyzer import LayoutAnalyzer
 from .layout_parser import Element
 from .ocr import OCR, WordPrediction
 from .table_structure_recognizer import TableStructureRecognizerSchema
-from .utils.export import export_html
 from .utils.misc import is_contained, quad_to_xyxy
 
 
@@ -56,7 +56,9 @@ def extract_words_within_element(pred_words, element):
     cnt_horizontal = word_direction.count("horizontal")
     cnt_vertical = word_direction.count("vertical")
 
-    element_direction = "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
+    element_direction = (
+        "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
+    )
     if element_direction == "horizontal":
         contained_words = sorted(
             contained_words,
@@ -75,7 +77,9 @@ def extract_words_within_element(pred_words, element):
             reverse=True,
         )
 
-    contained_words = "\n".join([content.content for content in contained_words])
+    contained_words = "\n".join(
+        [content.content for content in contained_words]
+    )
     return (contained_words, element_direction, check_list)
 
 
@@ -183,7 +187,7 @@ class DocumentAnalyzer:
 
 if __name__ == "__main__":
     analyzer = DocumentAnalyzer()
-    dir = "dataset/test_20241014_good/0000"
+    dir = "dataset/test"
     # dir = "dataset/test"
     outdir = "results"
 
@@ -194,10 +198,25 @@ if __name__ == "__main__":
         results, ocr, layout = asyncio.run(analyzer(img))
         basename = os.path.basename(path_img)
         cv2.imwrite(
-            os.path.join(outdir, f"{os.path.splitext(basename)[0]}_ocr.jpg"), ocr
+            os.path.join(outdir, f"{os.path.splitext(basename)[0]}_ocr.jpg"),
+            ocr,
         )
         cv2.imwrite(
-            os.path.join(outdir, f"{os.path.splitext(basename)[0]}_layout.jpg"), layout
+            os.path.join(
+                outdir, f"{os.path.splitext(basename)[0]}_layout.jpg"
+            ),
+            layout,
         )
-        html_path = os.path.join(outdir, f"{os.path.splitext(basename)[0]}.html")
+        html_path = os.path.join(
+            outdir, f"{os.path.splitext(basename)[0]}.html"
+        )
         export_html(results, html_path)
+
+        markdown_path = os.path.join(
+            outdir, f"{os.path.splitext(basename)[0]}.md"
+        )
+        export_markdown(results, markdown_path)
+
+        csv_path = os.path.join(outdir, f"{os.path.splitext(basename)[0]}.csv")
+
+        export_csv(results, csv_path)
