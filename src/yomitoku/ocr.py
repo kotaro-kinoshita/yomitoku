@@ -13,6 +13,7 @@ class WordPrediction(BaseModel):
         max_length=4,
     )
     content: str
+    direction: str
     det_score: float
     rec_score: float
 
@@ -42,16 +43,18 @@ class OCR:
 
     def aggregate(self, det_outputs, rec_outputs):
         words = []
-        for points, det_score, pred, rec_score in zip(
+        for points, det_score, pred, rec_score, direction in zip(
             det_outputs.points,
             det_outputs.scores,
             rec_outputs.contents,
             rec_outputs.scores,
+            rec_outputs.directions,
         ):
             words.append(
                 {
                     "points": points,
                     "content": pred,
+                    "direction": direction,
                     "det_score": det_score,
                     "rec_score": rec_score,
                 }

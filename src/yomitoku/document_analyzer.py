@@ -1,6 +1,9 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Union
+import cv2
+import glob
+import os
 
 from pydantic import BaseModel, conlist
 
@@ -26,8 +29,58 @@ class DocumentAnalyzerSchema(BaseModel):
     figures: List[Element]
 
 
+def combine_flags(flag1, flag2):
+    return [f1 or f2 for f1, f2 in zip(flag1, flag2)]
+
+
+def extract_words_within_element(pred_words, element):
+    contained_words = []
+    word_sum_width = 0
+    word_sum_height = 0
+    check_list = [False] * len(pred_words)
+    for i, word in enumerate(pred_words):
+        word_box = quad_to_xyxy(word.points)
+        if is_contained(element.box, word_box, threshold=0.6):
+            contained_words.append(word)
+            word_sum_width += word_box[2] - word_box[0]
+            word_sum_height += word_box[3] - word_box[1]
+            check_list[i] = True
+
+    if len(contained_words) == 0:
+        return None, None, check_list
+
+    mean_width = word_sum_width / len(contained_words)
+    mean_height = word_sum_height / len(contained_words)
+
+    word_direction = [word.direction for word in contained_words]
+    cnt_horizontal = word_direction.count("horizontal")
+    cnt_vertical = word_direction.count("vertical")
+
+    element_direction = "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
+    if element_direction == "horizontal":
+        contained_words = sorted(
+            contained_words,
+            key=lambda x: (
+                x.points[0][1] // int(mean_height),
+                x.points[0][0],
+            ),
+        )
+    else:
+        contained_words = sorted(
+            contained_words,
+            key=lambda x: (
+                x.points[1][0] // int(mean_width),
+                x.points[1][1],
+            ),
+            reverse=True,
+        )
+
+    contained_words = "\n".join([content.content for content in contained_words])
+    return (contained_words, element_direction, check_list)
+
+
 class DocumentAnalyzer:
-    def __init__(self, configs=None, device="cpu", visualize=True):
+    def __init__(self, configs=None, device="cuda", visualize=True):
         default_configs = {
             "ocr": {
                 "text_detector": {
@@ -62,111 +115,35 @@ class DocumentAnalyzer:
         check_list = [False] * len(ocr_res.words)
         for table in layout_res.tables:
             for cell in table.cells:
-                words = []
+                words, direction, flags = extract_words_within_element(
+                    ocr_res.words, cell
+                )
 
-                word_sum_width = 0
-                word_sum_height = 0
-                for i, word in enumerate(ocr_res.words):
-                    word_box = quad_to_xyxy(word.points)
-                    if is_contained(cell.box, word_box, threshold=0.6):
-                        words.append(word)
-                        word_sum_width += word_box[2] - word_box[0]
-                        word_sum_height += word_box[3] - word_box[1]
-                        check_list[i] = True
+                if words is None:
+                    words = ""
 
-                if len(words) == 0:
-                    continue
-
-                mean_width = word_sum_width / len(words)
-                mean_height = word_sum_height / len(words)
-
-                direction = "horizontal"
-                if mean_height > mean_width:
-                    direction = "vertical"
-
-                if direction == "horizontal":
-                    words = sorted(
-                        words,
-                        key=lambda x: (
-                            x.points[0][1] // int(mean_height),
-                            x.points[0][0],
-                        ),
-                    )
-                else:
-                    words = sorted(
-                        words,
-                        key=lambda x: (
-                            x.points[1][0] // int(mean_width),
-                            x.points[1][1],
-                        ),
-                        reverse=True,
-                    )
-
-                words = "\n".join([content.content for content in words])
                 cell.contents = words
+                check_list = combine_flags(check_list, flags)
 
-        paragraph_boxes = [
-            paragraph.box for paragraph in layout_res.paragraphs
-        ]
-        for paragraph_box in paragraph_boxes:
-            words = []
+        for paragraph in layout_res.paragraphs:
+            words, direction, flags = extract_words_within_element(
+                ocr_res.words, paragraph
+            )
 
-            word_sum_width = 0
-            word_sum_height = 0
-            for i, word in enumerate(ocr_res.words):
-                word_box = quad_to_xyxy(word.points)
-                if is_contained(paragraph_box, word_box):
-                    words.append(word)
-                    word_sum_width += word_box[2] - word_box[0]
-                    word_sum_height += word_box[3] - word_box[1]
-                    check_list[i] = True
-
-            if len(words) == 0:
+            if words is None:
                 continue
 
-            mean_width = word_sum_width / len(words)
-            mean_height = word_sum_height / len(words)
-
-            direction = "horizontal"
-            if mean_height > mean_width:
-                direction = "vertical"
-
-            if mean_width > mean_height:
-                words = sorted(
-                    words,
-                    key=lambda x: (
-                        x.points[0][1] // int(mean_height),
-                        x.points[0][0],
-                    ),
-                )
-            else:
-                words = sorted(
-                    words,
-                    key=lambda x: (
-                        x.points[1][0] // int(mean_width),
-                        x.points[1][1],
-                    ),
-                    reverse=True,
-                )
-
-            words = "\n".join([content.content for content in words])
             paragraph = {
                 "contents": words,
-                "box": paragraph_box,
+                "box": paragraph.box,
                 "direction": direction,
             }
-
+            check_list = combine_flags(check_list, flags)
             paragraph = ParagraphSchema(**paragraph)
             paragraphs.append(paragraph)
 
         for i, word in enumerate(ocr_res.words):
-            direction = "horizontal"
-            height = word.points[1][1] - word.points[0][1]
-            width = word.points[1][0] - word.points[0][0]
-
-            if 3 * height > width:
-                direction = "vertical"
-
+            direction = word.direction
             if not check_list[i]:
                 paragraph = {
                     "contents": word.content,
@@ -196,17 +173,31 @@ class DocumentAnalyzer:
 
             results = await asyncio.gather(*tasks)
 
-            results_ocr, _ = results[0]
-            results_layout, _ = results[1]
+            results_ocr, ocr = results[0]
+            results_layout, layout = results[1]
 
         outputs = self.aggregate(results_ocr, results_layout)
         results = DocumentAnalyzerSchema(**outputs)
-        return results
+        return results, ocr, layout
 
 
 if __name__ == "__main__":
     analyzer = DocumentAnalyzer()
-    img = "dataset/test/00001890_4013504_24.jpg"
-    img = load_image(img)
-    results = asyncio.run(analyzer(img))
-    export_html(results)
+    dir = "dataset/test_20241014_good/0000"
+    # dir = "dataset/test"
+    outdir = "results"
+
+    os.makedirs(outdir, exist_ok=True)
+
+    for path_img in glob.glob(os.path.join(dir, "*.jpg")):
+        img = load_image(path_img)
+        results, ocr, layout = asyncio.run(analyzer(img))
+        basename = os.path.basename(path_img)
+        cv2.imwrite(
+            os.path.join(outdir, f"{os.path.splitext(basename)[0]}_ocr.jpg"), ocr
+        )
+        cv2.imwrite(
+            os.path.join(outdir, f"{os.path.splitext(basename)[0]}_layout.jpg"), layout
+        )
+        html_path = os.path.join(outdir, f"{os.path.splitext(basename)[0]}.html")
+        export_html(results, html_path)

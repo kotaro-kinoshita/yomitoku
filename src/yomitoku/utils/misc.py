@@ -4,6 +4,11 @@ def load_charset(charset_path):
     return charset
 
 
+def filter_by_flag(elements, flags):
+    assert len(elements) == len(flags)
+    return [element for element, flag in zip(elements, flags) if flag]
+
+
 def is_contained(rect_a, rect_b, threshold=0.8):
     """二つの矩形A, Bが与えられたとき、矩形Bが矩形Aに含まれるかどうかを判定する。
     ずれを許容するため、重複率求め、thresholdを超える場合にTrueを返す。

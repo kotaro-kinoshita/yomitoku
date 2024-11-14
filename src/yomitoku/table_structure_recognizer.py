@@ -10,16 +10,15 @@ from .base import BaseModelCatalog, BaseModule
 from .configs import TableStructureRecognizerRTDETRv2Config
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
-from .utils.misc import calc_intersection, is_contained
+from .utils.misc import calc_intersection, is_contained, filter_by_flag
 from .utils.visualizer import table_visualizer
+from .layout_parser import filter_contained_rectangles_within_category
 
 
 class TableStructureRecognizerModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
-        self.register(
-            "rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2
-        )
+        self.register("rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2)
 
 
 class TableCellSchema(BaseModel):
@@ -36,6 +35,67 @@ class TableStructureRecognizerSchema(BaseModel):
     n_row: int
     n_col: int
     cells: List[TableCellSchema]
+
+
+def extract_cells(row_boxes, col_boxes):
+    cells = []
+    for i, row_box in enumerate(row_boxes):
+        for j, col_box in enumerate(col_boxes):
+            intersection = calc_intersection(row_box, col_box)
+            if intersection is None:
+                continue
+
+            cells.append(
+                {
+                    "col": j + 1,
+                    "row": i + 1,
+                    "col_span": 1,
+                    "row_span": 1,
+                    "box": intersection,
+                    "contents": None,
+                }
+            )
+
+    return cells
+
+
+def filter_contained_cells_within_spancell(cells, span_boxes):
+    check_list = [True] * len(cells)
+    child_boxes = [[] for _ in range(len(span_boxes))]
+    for i, span_box in enumerate(span_boxes):
+        for j, sub_cell in enumerate(cells):
+            if is_contained(span_box, sub_cell["box"]):
+                check_list[j] = False
+                child_boxes[i].append(sub_cell)
+
+    cells = filter_by_flag(cells, check_list)
+
+    for i, span_box in enumerate(span_boxes):
+        child_box = child_boxes[i]
+
+        if len(child_box) == 0:
+            continue
+
+        row = min([box["row"] for box in child_box])
+        col = min([box["col"] for box in child_box])
+        row_span = max([box["row"] for box in child_box]) - row + 1
+        col_span = max([box["col"] for box in child_box]) - col + 1
+
+        span_box = list(map(int, span_box))
+
+        cells.append(
+            {
+                "col": col,
+                "row": row,
+                "col_span": col_span,
+                "row_span": row_span,
+                "box": span_box,
+                "contents": None,
+            }
+        )
+
+    cells = sorted(cells, key=lambda x: (x["row"], x["col"]))
+    return cells
 
 
 class TableStructureRecognizer(BaseModule):
@@ -70,6 +130,10 @@ class TableStructureRecognizer(BaseModule):
 
         self.thresh_score = self._cfg.thresh_score
 
+        self.label_mapper = {
+            id: category for id, category in enumerate(self._cfg.category)
+        }
+
     def preprocess(self, img, boxes):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -92,42 +156,40 @@ class TableStructureRecognizer(BaseModule):
     def postprocess(self, preds, data):
         h, w = data["size"]
         orig_size = torch.tensor([w, h])[None].to(self.device)
-        outputs = self.postprocessor(preds, orig_size)
+        outputs = self.postprocessor(preds, orig_size, self.thresh_score)
 
-        # 1. 信頼度が閾値以上のものを抽出
         preds = outputs[0]
         scores = preds["scores"]
-        boxes = preds["boxes"][scores > self.thresh_score]
-        labels = preds["labels"][scores > self.thresh_score]
-        scores = scores[scores > self.thresh_score]
+        boxes = preds["boxes"]
+        labels = preds["labels"]
 
-        mapper = {
-            id: category for id, category in enumerate(self._cfg.category)
-        }
-        category_elements = {
-            category: {
-                "boxes": [],
-                "scores": [],
-            }
-            for category in self._cfg.category
-        }
-
+        category_elements = {category: [] for category in self.label_mapper.values()}
         for box, score, label in zip(boxes, scores, labels):
+            category = self.label_mapper[label.item()]
+            box = box.astype(int).tolist()
+
             box[0] += data["offset"][0]
             box[1] += data["offset"][1]
             box[2] += data["offset"][0]
             box[3] += data["offset"][1]
 
-            category_elements[mapper[label.item()]]["boxes"].append(box)
-            category_elements[mapper[label.item()]]["scores"].append(score)
+            category_elements[category].append(
+                {
+                    "box": box,
+                    "score": float(score),
+                }
+            )
 
-        cells, n_row, n_col = self.calculate_cell(category_elements)
+        category_elements = filter_contained_rectangles_within_category(
+            category_elements
+        )
+
+        cells, n_row, n_col = self.extract_cell_elements(category_elements)
 
         table_x, table_y = data["offset"]
         table_x2 = table_x + data["size"][1]
         table_y2 = table_y + data["size"][0]
-
-        table_box = list(map(int, [table_x, table_y, table_x2, table_y2]))
+        table_box = [table_x, table_y, table_x2, table_y2]
 
         table = {
             "box": table_box,
@@ -136,91 +198,33 @@ class TableStructureRecognizer(BaseModule):
             "cells": cells,
         }
 
-        table_results = TableStructureRecognizerSchema(**table)
+        results = TableStructureRecognizerSchema(**table)
 
-        return table_results
+        return results
 
-    def calculate_cell(self, elements):
-        row_boxes = elements["row"]["boxes"]
-        col_boxes = elements["col"]["boxes"]
-        span_boxes = elements["span"]["boxes"]
+    def extract_cell_elements(self, elements):
+        row_boxes = [element["box"] for element in elements["row"]]
+        col_boxes = [element["box"] for element in elements["col"]]
+        span_boxes = [element["box"] for element in elements["span"]]
 
         row_boxes = sorted(row_boxes, key=lambda x: x[1])
         col_boxes = sorted(col_boxes, key=lambda x: x[0])
 
-        sub_cells = []
-        for i, row_box in enumerate(row_boxes):
-            for j, col_box in enumerate(col_boxes):
-                intersection = calc_intersection(row_box, col_box)
-                if intersection is None:
-                    continue
-
-                sub_cells.append(
-                    {
-                        "col": j + 1,
-                        "row": i + 1,
-                        "col_span": 1,
-                        "row_span": 1,
-                        "box": intersection,
-                        "contents": None,
-                    }
-                )
-
-        check_list = [True] * len(sub_cells)
-        sub_boxes = [[] for _ in range(len(span_boxes))]
-        for i, span_box in enumerate(span_boxes):
-            for j, sub_cell in enumerate(sub_cells):
-                if is_contained(span_box, sub_cell["box"]):
-                    check_list[j] = False
-                    sub_boxes[i].append(sub_cell)
-
-        cells = []
-        for i, sub_cell in enumerate(sub_cells):
-            if check_list[i]:
-                cells.append(sub_cell)
-
-        for i, span_box in enumerate(span_boxes):
-            sub_box = sub_boxes[i]
-
-            if len(sub_box) == 0:
-                continue
-
-            row = min([box["row"] for box in sub_box])
-            col = min([box["col"] for box in sub_box])
-            row_span = max([box["row"] for box in sub_box]) - row + 1
-            col_span = max([box["col"] for box in sub_box]) - col + 1
-
-            span_box = list(map(int, span_box))
-
-            cells.append(
-                {
-                    "col": col,
-                    "row": row,
-                    "col_span": col_span,
-                    "row_span": row_span,
-                    "box": span_box,
-                    "contents": None,
-                }
-            )
-
-            cells = sorted(cells, key=lambda x: (x["row"], x["col"]))
+        cells = extract_cells(row_boxes, col_boxes)
+        cells = filter_contained_cells_within_spancell(cells, span_boxes)
 
         return cells, len(row_boxes), len(col_boxes)
 
     def __call__(self, img, table_boxes, vis=None):
         img_tensors = self.preprocess(img, table_boxes)
         outputs = []
-        with torch.inference_mode():
-            for data in img_tensors:
+        for data in img_tensors:
+            with torch.inference_mode():
                 pred = self.model(data["tensor"])
-                table = self.postprocess(
-                    pred,
-                    data,
-                )
+            table = self.postprocess(pred, data)
+            outputs.append(table)
 
-                outputs.append(table)
-
-        if vis is None:
+        if vis is None and self.visualize:
             vis = img.copy()
 
         if self.visualize:

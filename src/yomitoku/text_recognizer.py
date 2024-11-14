@@ -1,6 +1,7 @@
 from typing import List
 
 import torch
+import numpy as np
 from pydantic import BaseModel, conlist
 
 from .base import BaseModelCatalog, BaseModule
@@ -20,6 +21,7 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
 
 class TextRecognizerSchema(BaseModel):
     contents: List[str]
+    directions: List[str]
     scores: List[float]
     points: List[
         conlist(
@@ -63,8 +65,18 @@ class TextRecognizer(BaseModule):
 
         return dataloader
 
-    def postprocess(self, p):
-        return self.tokenizer.decode(p)
+    def postprocess(self, p, points):
+        pred, score = self.tokenizer.decode(p)
+        directions = []
+        for point in points:
+            point = np.array(point)
+            w = np.linalg.norm(point[0] - point[1])
+            h = np.linalg.norm(point[1] - point[2])
+
+            direction = "vertical" if h > w * 3 else "horizontal"
+            directions.append(direction)
+
+        return pred, score, directions
 
     def __call__(self, img, points, vis=None):
         """
@@ -79,15 +91,22 @@ class TextRecognizer(BaseModule):
         dataloader = self.preprocess(img, points)
         preds = []
         scores = []
+        directions = []
         for data in dataloader:
             data = data.to(self.device)
             with torch.inference_mode():
                 p = self.model(self.tokenizer, data).softmax(-1)
-                pred, score = self.postprocess(p)
+                pred, score, direction = self.postprocess(p, points)
                 preds.extend(pred)
                 scores.extend(score)
+                directions.extend(direction)
 
-        outputs = {"contents": preds, "scores": scores, "points": points}
+        outputs = {
+            "contents": preds,
+            "scores": scores,
+            "points": points,
+            "directions": directions,
+        }
         results = TextRecognizerSchema(**outputs)
 
         if self.visualize:

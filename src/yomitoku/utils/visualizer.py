@@ -28,9 +28,7 @@ PALETTE = [
 ]
 
 
-def det_visualizer(
-    preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)
-):
+def det_visualizer(preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)):
     preds = preds["binary"][0]
     binary = preds.detach().cpu().numpy()
     out = img.copy()
@@ -108,16 +106,11 @@ def rec_visualizer(
     pillow_img = Image.fromarray(out)
     draw = ImageDraw.Draw(pillow_img)
 
-    for pred, quad in zip(outputs.contents, outputs.points):
+    for pred, quad, direction in zip(
+        outputs.contents, outputs.points, outputs.directions
+    ):
         quad = np.array(quad).astype(np.int32)
-        word_width = np.linalg.norm(quad[0] - quad[1])
-        word_height = np.linalg.norm(quad[1] - quad[2])
         font = ImageFont.truetype(font_path, font_size)
-
-        direction = "horizontal"
-        if word_width * 2 < word_height:
-            direction = "vertical"
-
         if direction == "horizontal":
             x_offset = 0
             y_offset = -font_size
