@@ -1,5 +1,6 @@
 import asyncio
 import glob
+import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Union
@@ -27,6 +28,26 @@ class DocumentAnalyzerSchema(BaseModel):
     tables: List[TableStructureRecognizerSchema]
     words: List[WordPrediction]
     figures: List[Element]
+
+    def to_html(self, out_path: str):
+        export_html(self, out_path)
+
+    def to_markdown(self, out_path: str):
+        export_markdown(self, out_path)
+
+    def to_csv(self, out_path: str):
+        export_csv(self, out_path)
+
+    def to_json(self, out_path: str):
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(
+                self.dict(),
+                f,
+                ensure_ascii=False,
+                indent=4,
+                sort_keys=True,
+                separators=(",", ": "),
+            )
 
 
 def combine_flags(flag1, flag2):
@@ -210,13 +231,18 @@ if __name__ == "__main__":
         html_path = os.path.join(
             outdir, f"{os.path.splitext(basename)[0]}.html"
         )
-        export_html(results, html_path)
+        results.to_html(html_path)
 
         markdown_path = os.path.join(
             outdir, f"{os.path.splitext(basename)[0]}.md"
         )
-        export_markdown(results, markdown_path)
+        results.to_markdown(markdown_path)
 
         csv_path = os.path.join(outdir, f"{os.path.splitext(basename)[0]}.csv")
 
-        export_csv(results, csv_path)
+        results.to_csv(csv_path)
+
+        json_path = os.path.join(
+            outdir, f"{os.path.splitext(basename)[0]}_result.json"
+        )
+        results.to_json(json_path)
