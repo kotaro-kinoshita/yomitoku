@@ -1,14 +1,9 @@
-from xml.dom.minidom import parseString
-
-
-def export_html(outputs):
+def export_html(outputs, out_path):
     html = ""
 
     elements = []
     for table in outputs.tables:
-        table_html = (
-            """<table border='1' style='border-collapse: collapse'><tr>"""
-        )
+        table_html = """<table border='1' style='border-collapse: collapse'><tr>"""
 
         pre_row = 1
         for cell in table.cells:
@@ -23,7 +18,9 @@ def export_html(outputs):
                 table_html += "</tr><tr>"
                 pre_row = row
 
-            table_html += f'<td rowspan="{row_span}" colspan="{col_span}">{contents}</td>'
+            table_html += (
+                f'<td rowspan="{row_span}" colspan="{col_span}">{contents}</td>'
+            )
         else:
             table_html += "</tr></table>"
 
@@ -46,12 +43,11 @@ def export_html(outputs):
     elements = sorted(elements, key=lambda x: x["box"][1])
     html = "".join([element["html"] for element in elements])
     html = add_html_tag(html)
-    html = parseString(html).toprettyxml(indent="  ")
+    print(html)
+    # html = parseString(html).toprettyxml(indent="  ")
 
-    with open("output.html", "w") as f:
+    with open(out_path, "w") as f:
         f.write(html)
-
-    return html
 
 
 def add_html_tag(text):

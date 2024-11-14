@@ -68,11 +68,6 @@ class TextDetector(BaseModule):
 
         Args:
             img (np.ndarray): target image(BGR)
-
-        Returns:
-            list: list of quadrilaterals. Each quadrilateral is represented as a list of 4 points sorted clockwise.
-            list: list of confidence scores
-            np.ndarray: rendering image
         """
 
         ori_h, ori_w = img.shape[:2]
