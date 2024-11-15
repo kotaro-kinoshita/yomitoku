@@ -4,28 +4,34 @@ ENV TZ=Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get install -y curl wget unzip vim
+RUN apt -y update && apt -y upgrade
 
-RUN apt-get -y install libopencv-dev build-essential clang poppler-utils 
+ARG PYTHON_VERSION=3.9
+ENV DEBIAN_FRONTEND=noninteractive
 
-ENV UV_INDEX_STRATEGY="unsafe-best-match"
+RUN apt install -y --no-install-recommends \
+    software-properties-common \
+    build-essential \
+    curl \
+    wget \
+    git \
+    ca-certificates \
+    poppler-utils \
+    libopencv-dev \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt update \
+    && apt install -y --no-install-recommends \
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN python${PYTHON_VERSION} --version
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1
 
-COPY pyproject.toml .
+RUN python -m pip install --upgrade pip
 
-ENV UV_SYSTEM_PYTHON=true \
-    UV_COMPILE_BYTECODE=1 \
-    UV_CACHE_DIR=/root/.cache/uv \
-    UV_LINK_MODE=copy
-
-ENV PATH="/root/.cargo/bin/:$PATH"
-
-RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=.python-version,target=.python-version \
-    --mount=type=bind,source=README.md,target=README.md \
-    uv sync
-RUN . .venv/bin/activate
+RUN pip install git+https://github.com/kotaro-kinoshita/yomitoku-dev.git@main
 
 WORKDIR /workspace
