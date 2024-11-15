@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import List
 
+from ..constants import ROOT_DIR
+
 
 @dataclass
 class Data:
@@ -28,7 +30,7 @@ class Decoder:
 
 @dataclass
 class Visualize:
-    font: str = "resource/MPLUS1p-Medium.ttf"
+    font: str = str(ROOT_DIR + "/resource/MPLUS1p-Medium.ttf")
     color: List[int] = field(default_factory=lambda: [0, 0, 255])  # RGB
     font_size: int = 18
 
@@ -38,7 +40,7 @@ class TextRecognizerPARSeqConfig:
     hf_hub_repo: str = (
         "KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta"
     )
-    charset: str = "resource/charset.txt"
+    charset: str = str(ROOT_DIR + "/resource/charset.txt")
     num_tokens: int = 7312
     max_label_length: int = 100
     decode_ar: int = 1

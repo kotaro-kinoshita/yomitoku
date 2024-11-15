@@ -1,10 +1,7 @@
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 
-from yomitoku.data.functions import (
-    extract_roi_with_perspective,
-    resize_with_padding,
-)
+from .functions import extract_roi_with_perspective, resize_with_padding
 
 
 class ParseqDataset(Dataset):
