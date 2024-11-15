@@ -2,33 +2,12 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-PALETTE = [
-    [255, 0, 0],
-    [0, 255, 0],
-    [0, 0, 255],
-    [255, 255, 0],
-    [0, 255, 255],
-    [255, 0, 255],
-    [128, 0, 0],
-    [0, 128, 0],
-    [0, 0, 128],
-    [255, 128, 0],
-    [0, 255, 128],
-    [128, 0, 255],
-    [128, 255, 0],
-    [0, 128, 255],
-    [255, 0, 128],
-    [255, 128, 128],
-    [128, 255, 128],
-    [128, 128, 255],
-    [255, 255, 128],
-    [255, 128, 255],
-    [128, 255, 255],
-    [128, 128, 128],
-]
+from ..constants import PALETTE
 
 
-def det_visualizer(preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)):
+def det_visualizer(
+    preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)
+):
     preds = preds["binary"][0]
     binary = preds.detach().cpu().numpy()
     out = img.copy()
@@ -98,9 +77,9 @@ def table_visualizer(img, table):
 def rec_visualizer(
     img,
     outputs,
+    font_path,
     font_size=12,
     font_color=(255, 0, 0),
-    font_path="resource/MPLUS1p-Medium.ttf",
 ):
     out = img.copy()
     pillow_img = Image.fromarray(out)

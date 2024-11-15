@@ -4,6 +4,7 @@ from pathlib import Path
 
 import cv2
 
+from ..constants import SUPPORT_OUTPUT_FORMAT
 from ..data.functions import load_image
 from ..document_analyzer import DocumentAnalyzer
 
@@ -35,7 +36,7 @@ def process_single_file(args, analyzer, path, format):
         results.to_csv(out_path)
     elif args.format == "html":
         results.to_html(out_path)
-    elif args.format == "md":
+    elif args.format in ["md", "markdown"]:
         results.to_markdown(out_path)
 
 
@@ -94,9 +95,10 @@ def main():
     if not path.exists():
         raise FileNotFoundError(f"File not found: {args.arg1}")
 
-    suport_formats = ["json", "csv", "html", "md"]
-    if args.format not in suport_formats:
-        raise ValueError(f"Invalid output format: {args.format}")
+    if args.format.lower() not in SUPPORT_OUTPUT_FORMAT:
+        raise ValueError(
+            f"Invalid output format: {args.format}. Supported formats are {SUPPORT_OUTPUT_FORMAT}"
+        )
 
     configs = {
         "ocr": {

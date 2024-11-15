@@ -1,6 +1,10 @@
+from pathlib import Path
+
 import cv2
 import numpy as np
 import torch
+
+from ..constants import SUPPORT_INPUT_FORMAT
 
 
 def load_image(image_path: str) -> np.ndarray:
@@ -13,6 +17,14 @@ def load_image(image_path: str) -> np.ndarray:
     Returns:
         np.ndarray: image data(BGR)
     """
+    image_path = Path(image_path)
+    if not image_path.exists():
+        raise FileNotFoundError(f"File not found: {image_path}")
+
+    if image_path.suffix[1:].lower() not in SUPPORT_INPUT_FORMAT:
+        raise ValueError(
+            f"Unsupported image format. Supported formats are {SUPPORT_INPUT_FORMAT}"
+        )
 
     img = cv2.imread(image_path)
     validate_image(img)
@@ -28,7 +40,7 @@ def validate_image(img: np.ndarray, minimum_thresh=32) -> None:
         img (np.ndarray): image data
     """
     if img is None:
-        raise ValueError("Image is not found.")
+        raise ValueError("Invalid image data.")
 
     h, w = img.shape[:2]
     if h < minimum_thresh or w < minimum_thresh:

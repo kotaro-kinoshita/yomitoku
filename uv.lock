@@ -1672,7 +1672,7 @@ wheels = [
 
 [[package]]
 name = "yomitoku"
-version = "0.1.0.post1.dev55"
+version = "0.1.0.post1.dev57"
 source = { editable = "." }
 dependencies = [
     { name = "huggingface-hub" },

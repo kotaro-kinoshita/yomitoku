@@ -1,3 +1,4 @@
+import os
 import time
 
 import torch
@@ -8,6 +9,10 @@ from .export import export_json
 from .utils.logger import set_logger
 
 logger = set_logger(__name__, "INFO")
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+SUPPORT_OUTPUT_FORMAT = ["json", "csv", "html", "markdown", "md"]
+SUPPORT_INPUT_FORMAT = ["jpg", "jpeg", "png", "bmp", "tiff", "tif"]
 
 
 def load_yaml_config(path_config):

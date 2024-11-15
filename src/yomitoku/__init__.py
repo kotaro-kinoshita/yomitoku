@@ -1,3 +1,4 @@
+import os
 from importlib.metadata import version
 
 from .layout_analyzer import LayoutAnalyzer
