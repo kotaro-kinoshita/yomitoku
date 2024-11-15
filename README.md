@@ -15,6 +15,22 @@ YomiToku は日本語の文書画像解析に特化した AI ベースの文章�
 pip install --index-url https://test.pypi.org/simple/ yomitoku
 ```
 
+### 依存ライブラリ
+
+pdf ファイルの解析を行うためには、別途、[poppler](https://poppler.freedesktop.org/)のインストールが必要です。
+
+**Mac**
+
+```
+brew install poppler
+```
+
+**Linux**
+
+```
+apt install poppler-utils -y
+```
+
 ## 実行方法
 
 ```
@@ -27,9 +43,9 @@ yomitoku ${path_data} -f md -o results -v
 - `-v` を指定すると解析結果を可視化した画像を出力します。
 - `-d` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
 
-## ドキュメント
+## パッケージの詳細
 
-パッケージの詳細はドキュメント(https://kotaro-kinoshita.github.io/yomitoku-dev/)を確認してください。
+パッケージの詳細は[ドキュメント](https://kotaro-kinoshita.github.io/yomitoku-dev/)を確認してください。
 
 ## LICENSE
 

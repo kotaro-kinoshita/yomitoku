@@ -46,6 +46,8 @@ def export_html(inputs, out_path: str):
 
             row.append(add_td_tag(contents, row_span, col_span))
             pre_row = cell.row
+        else:
+            rows.append(add_tr_tag("".join(row)))
 
         table_html = add_table_tag("".join(rows))
         elements.append(

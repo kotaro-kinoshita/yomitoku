@@ -3,6 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+from pdf2image import convert_from_path
 
 from ..constants import SUPPORT_INPUT_FORMAT
 
@@ -30,6 +31,24 @@ def load_image(image_path: str) -> np.ndarray:
     validate_image(img)
     img = convert_3ch(img)
     return img
+
+
+def load_pdf(pdf_path: str, dpi=200) -> list[np.ndarray]:
+    """
+    Open a PDF file.
+
+    Args:
+        pdf_path (str): path to the PDF file
+
+    Returns:
+        list[np.ndarray]: list of image data(BGR)
+    """
+    pdf_path = Path(pdf_path)
+    if not pdf_path.exists():
+        raise FileNotFoundError(f"File not found: {pdf_path}")
+
+    images = convert_from_path(pdf_path, dpi=dpi)
+    return [np.array(img)[:, :, ::-1] for img in images]
 
 
 def validate_image(img: np.ndarray, minimum_thresh=32) -> None:

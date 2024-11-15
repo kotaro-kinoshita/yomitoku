@@ -5,39 +5,50 @@ from pathlib import Path
 import cv2
 
 from ..constants import SUPPORT_OUTPUT_FORMAT
-from ..data.functions import load_image
+from ..data.functions import load_image, load_pdf
 from ..document_analyzer import DocumentAnalyzer
 
 
 def process_single_file(args, analyzer, path, format):
-    img = load_image(path)
-    results, ocr, layout = analyzer(img)
+    if path.suffix[1:].lower() in ["pdf"]:
+        imgs = load_pdf(path)
+    else:
+        imgs = [load_image(path)]
 
-    dirname = path.parent.name
-    filename = path.stem
+    for page, img in enumerate(imgs):
+        results, ocr, layout = analyzer(img)
 
-    if ocr is not None:
-        cv2.imwrite(
-            os.path.join(args.outdir, f"{dirname}_{filename}_ocr.jpg"),
-            ocr,
+        dirname = path.parent.name
+        filename = path.stem
+
+        if ocr is not None:
+            cv2.imwrite(
+                os.path.join(
+                    args.outdir, f"{dirname}_{filename}_p{page+1}_ocr_.jpg"
+                ),
+                ocr,
+            )
+
+        if layout is not None:
+            cv2.imwrite(
+                os.path.join(
+                    args.outdir, f"{dirname}_{filename}_p{page+1}_layout.jpg"
+                ),
+                layout,
+            )
+
+        out_path = os.path.join(
+            args.outdir, f"{dirname}_{filename}_p{page+1}.{format}"
         )
 
-    if layout is not None:
-        cv2.imwrite(
-            os.path.join(args.outdir, f"{dirname}_{filename}_layout.jpg"),
-            layout,
-        )
-
-    out_path = os.path.join(args.outdir, f"{dirname}_{filename}.{format}")
-
-    if args.format == "json":
-        results.to_json(out_path)
-    elif args.format == "csv":
-        results.to_csv(out_path)
-    elif args.format == "html":
-        results.to_html(out_path)
-    elif args.format in ["md", "markdown"]:
-        results.to_markdown(out_path)
+        if format == "json":
+            results.to_json(out_path)
+        elif format == "csv":
+            results.to_csv(out_path)
+        elif format == "html":
+            results.to_html(out_path)
+        elif format == "md":
+            results.to_markdown(out_path)
 
 
 def main():
@@ -95,10 +106,14 @@ def main():
     if not path.exists():
         raise FileNotFoundError(f"File not found: {args.arg1}")
 
-    if args.format.lower() not in SUPPORT_OUTPUT_FORMAT:
+    format = args.format.lower()
+    if format not in SUPPORT_OUTPUT_FORMAT:
         raise ValueError(
             f"Invalid output format: {args.format}. Supported formats are {SUPPORT_OUTPUT_FORMAT}"
         )
+
+    if format == "markdown":
+        format = "md"
 
     configs = {
         "ocr": {
@@ -131,11 +146,11 @@ def main():
         for f in all_files:
             try:
                 file_path = Path(f)
-                process_single_file(args, analyzer, file_path, args.format)
+                process_single_file(args, analyzer, file_path, format)
             except Exception:
                 continue
     else:
-        process_single_file(args, analyzer, path, args.format)
+        process_single_file(args, analyzer, path, format)
 
 
 if __name__ == "__main__":

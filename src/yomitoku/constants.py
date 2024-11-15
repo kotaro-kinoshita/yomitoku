@@ -2,7 +2,7 @@ import os
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 SUPPORT_OUTPUT_FORMAT = ["json", "csv", "html", "markdown", "md"]
-SUPPORT_INPUT_FORMAT = ["jpg", "jpeg", "png", "bmp", "tiff", "tif"]
+SUPPORT_INPUT_FORMAT = ["jpg", "jpeg", "png", "bmp", "tiff", "tif", "pdf"]
 
 PALETTE = [
     [255, 0, 0],

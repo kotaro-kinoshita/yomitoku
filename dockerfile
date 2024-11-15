@@ -7,12 +7,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get -y update && apt-get -y upgrade
 RUN apt-get install -y curl wget unzip vim
 
-RUN apt-get -y install libopencv-dev build-essential clang
+RUN apt-get -y install libopencv-dev build-essential clang poppler-utils 
 
 ENV UV_INDEX_STRATEGY="unsafe-best-match"
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-
 
 COPY pyproject.toml .
 
