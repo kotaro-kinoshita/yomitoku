@@ -8,7 +8,6 @@ from pydantic import conlist
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import LayoutParserRTDETRv2Config
-from .export import export_json
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import filter_by_flag, is_contained
@@ -24,9 +23,6 @@ class LayoutParserSchema(BaseSchema):
     paragraphs: List[Element]
     tables: List[Element]
     figures: List[Element]
-
-    def to_json(self, out_path: str):
-        export_json(self, out_path)
 
 
 class LayoutParserModelCatalog(BaseModelCatalog):
