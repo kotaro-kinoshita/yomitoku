@@ -1,7 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel
-
+from .base import BaseSchema
 from .layout_parser import Element, LayoutParser
 from .table_structure_recognizer import (
     TableStructureRecognizer,
@@ -9,7 +8,7 @@ from .table_structure_recognizer import (
 )
 
 
-class LayoutAnalyzerSchema(BaseModel):
+class LayoutAnalyzerSchema(BaseSchema):
     paragraphs: List[Element]
     tables: List[TableStructureRecognizerSchema]
     figures: List[Element]

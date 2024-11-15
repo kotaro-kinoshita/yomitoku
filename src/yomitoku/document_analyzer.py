@@ -1,13 +1,13 @@
 import asyncio
 import glob
-import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Union
 
 import cv2
-from pydantic import BaseModel, conlist
+from pydantic import conlist
 
+from .base import BaseSchema
 from .data.functions import load_image
 from .export import export_csv, export_html, export_markdown
 from .layout_analyzer import LayoutAnalyzer
@@ -17,13 +17,13 @@ from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.misc import is_contained, quad_to_xyxy
 
 
-class ParagraphSchema(BaseModel):
+class ParagraphSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     contents: Union[str, None]
     direction: Union[str, None]
 
 
-class DocumentAnalyzerSchema(BaseModel):
+class DocumentAnalyzerSchema(BaseSchema):
     paragraphs: List[ParagraphSchema]
     tables: List[TableStructureRecognizerSchema]
     words: List[WordPrediction]
@@ -37,17 +37,6 @@ class DocumentAnalyzerSchema(BaseModel):
 
     def to_csv(self, out_path: str):
         export_csv(self, out_path)
-
-    def to_json(self, out_path: str):
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(
-                self.dict(),
-                f,
-                ensure_ascii=False,
-                indent=4,
-                sort_keys=True,
-                separators=(",", ": "),
-            )
 
 
 def combine_flags(flag1, flag2):

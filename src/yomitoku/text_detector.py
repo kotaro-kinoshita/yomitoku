@@ -2,15 +2,11 @@ from typing import List
 
 import numpy as np
 import torch
-from pydantic import BaseModel, conlist
+from pydantic import conlist
 
-from .base import BaseModelCatalog, BaseModule
+from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import TextDetectorDBNetConfig
-from .data.functions import (
-    array_to_tensor,
-    normalize_image,
-    resize_shortest_edge,
-)
+from .data.functions import array_to_tensor, normalize_image, resize_shortest_edge
 from .models import DBNet
 from .postprocessor import DBnetPostProcessor
 from .utils.visualizer import det_visualizer
@@ -22,7 +18,7 @@ class TextDetectorModelCatalog(BaseModelCatalog):
         self.register("dbnet", TextDetectorDBNetConfig, DBNet)
 
 
-class TextDetectorSchema(BaseModel):
+class TextDetectorSchema(BaseSchema):
     points: List[
         conlist(
             conlist(int, min_length=2, max_length=2),

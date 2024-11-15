@@ -1,12 +1,14 @@
 from typing import List
 
-from pydantic import BaseModel, conlist
+from pydantic import conlist
 
 from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognizer import TextRecognizer
 
+from .base import BaseSchema
 
-class WordPrediction(BaseModel):
+
+class WordPrediction(BaseSchema):
     points: conlist(
         conlist(int, min_length=2, max_length=2),
         min_length=4,
@@ -18,7 +20,7 @@ class WordPrediction(BaseModel):
     rec_score: float
 
 
-class OCRSchema(BaseModel):
+class OCRSchema(BaseSchema):
     words: List[WordPrediction]
 
 
