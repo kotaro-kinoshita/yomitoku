@@ -1,5 +1,10 @@
 # YomiToku
 
+![Python](https://img.shields.io/badge/Python-3.9+-F9DC3E.svg?logo=python&logoColor=&style=flat)
+![Pytorch](https://img.shields.io/badge/Pytorch-2.5-EE4C2C.svg?logo=Pytorch&style=fla)
+![OS](https://img.shields.io/badge/OS-Linux|MacOS-1793D1.svg?&style=fla)
+[![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku-dev/)
+
 ## 🌟 概要
 
 YomiToku は日本語の文書画像解析に特化した AI ベースの文章画像解析エンジンです。画像内の文字の全文 OCR およびレイアウト解析機能を有しており、画像内の文字情報や図表を抽出、認識します。
@@ -8,6 +13,18 @@ YomiToku は日本語の文書画像解析に特化した AI ベースの文章�
 - 🇯🇵 各モデルは日本語の文書画像に特化して学習されており、7000 文字を超える日本語文字の認識をサーポート、縦書きなど日本語特有のレイアウト構造の文書画像の解析も可能です
 - 📈 レイアウト解析、表の構造解析機能により、文書画像のレイアウト構造を可能な限り維持した状態で、情報を抽出することが可能です。
 - 📄 多様な出力形式をサポートし、html やマークダウン、json、csv のいずれかのフォーマットに変換し、出力可能です。
+
+## 🖼️ Demo
+
+|                     入力画像                     |                      OCR                       |
+| :----------------------------------------------: | :--------------------------------------------: |
+|    <img src="static/demo.jpg" width="600px">     | <img src="static/demo_ocr.jpg" width="600px">  |
+|                  レイアウト解析                  |                  エクスポート                  |
+| <img src="static/demo_layout.jpg" width="600px"> | <img src="static/demo_html.png" width="600px"> |
+
+Markdown でエクスポートした結果は関してはリポジトリ内の`demo.md`を参照
+
+画像の出典:[「令和 6 年版情報通信白書 3 章 2 節 AI の進化に伴い発展するテクノロジー」](https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf)：（総務省） を加工して作成
 
 ## 💡 インストールの方法
 
@@ -43,7 +60,7 @@ yomitoku ${path_data} -f md -o results -v
 - `-v` を指定すると解析結果を可視化した画像を出力します。
 - `-d` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
 
-##　 📝 ドキュメント
+## 📝 ドキュメント
 
 パッケージの詳細は[ドキュメント](https://kotaro-kinoshita.github.io/yomitoku-dev/)を確認してください。
 

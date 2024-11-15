@@ -35,10 +35,11 @@ class OCR:
             "visualize": visualize,
         }
 
-        if "text_detector" in configs:
-            text_detector_kwargs.update(configs["text_detector"])
-        if "text_recognizer" in configs:
-            text_recognizer_kwargs.update(configs["text_recognizer"])
+        if isinstance(configs, dict):
+            if "text_detector" in configs:
+                text_detector_kwargs.update(configs["text_detector"])
+            if "text_recognizer" in configs:
+                text_recognizer_kwargs.update(configs["text_recognizer"])
 
         self.detector = TextDetector(**text_detector_kwargs)
         self.recognizer = TextRecognizer(**text_recognizer_kwargs)

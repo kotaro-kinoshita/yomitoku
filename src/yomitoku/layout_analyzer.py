@@ -25,13 +25,14 @@ class LayoutAnalyzer:
             "visualize": visualize,
         }
 
-        if "layout_parser" in configs:
-            layout_parser_kwargs.update(configs["layout_parser"])
+        if isinstance(configs, dict):
+            if "layout_parser" in configs:
+                layout_parser_kwargs.update(configs["layout_parser"])
 
-        if "table_structure_recognizer" in configs:
-            table_structure_recognizer_kwargs.update(
-                configs["table_structure_recognizer"]
-            )
+            if "table_structure_recognizer" in configs:
+                table_structure_recognizer_kwargs.update(
+                    configs["table_structure_recognizer"]
+                )
 
         self.layout_parser = LayoutParser(
             **layout_parser_kwargs,

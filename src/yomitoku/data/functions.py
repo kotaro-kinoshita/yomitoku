@@ -195,7 +195,7 @@ def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
     """
     h, w = img.shape[:2]
 
-    if h > 3 * w:
+    if h > 2 * w:
         img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
         h, w = img.shape[:2]
 

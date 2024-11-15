@@ -73,7 +73,7 @@ class TextRecognizer(BaseModule):
             w = np.linalg.norm(point[0] - point[1])
             h = np.linalg.norm(point[1] - point[2])
 
-            direction = "vertical" if h > w * 3 else "horizontal"
+            direction = "vertical" if h > w * 2 else "horizontal"
             directions.append(direction)
 
         return pred, score, directions
