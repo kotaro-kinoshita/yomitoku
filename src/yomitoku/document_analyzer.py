@@ -1,14 +1,10 @@
 import asyncio
-import glob
-import os
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Union
 
-import cv2
 from pydantic import conlist
 
 from .base import BaseSchema
-from .data.functions import load_image
 from .export import export_csv, export_html, export_markdown
 from .layout_analyzer import LayoutAnalyzer
 from .layout_parser import Element
@@ -93,8 +89,23 @@ def extract_words_within_element(pred_words, element):
     return (contained_words, element_direction, check_list)
 
 
+def recursive_update(original, new_data):
+    for key, value in new_data.items():
+        # `value`が辞書の場合、再帰的に更新
+        if (
+            isinstance(value, dict)
+            and key in original
+            and isinstance(original[key], dict)
+        ):
+            recursive_update(original[key], value)
+        # `value`が辞書でない場合、またはキーが存在しない場合に上書き
+        else:
+            original[key] = value
+    return original
+
+
 class DocumentAnalyzer:
-    def __init__(self, configs=None, device="cuda", visualize=True):
+    def __init__(self, configs=None, device="cuda", visualize=False):
         default_configs = {
             "ocr": {
                 "text_detector": {
@@ -118,11 +129,13 @@ class DocumentAnalyzer:
             },
         }
 
-        if configs is None:
-            configs = default_configs
+        if configs is not None:
+            recursive_update(default_configs, configs)
 
-        self.ocr = OCR(configs=configs["ocr"])
-        self.layout = LayoutAnalyzer(configs=configs["layout_analyzer"])
+        self.ocr = OCR(configs=default_configs["ocr"])
+        self.layout = LayoutAnalyzer(
+            configs=default_configs["layout_analyzer"]
+        )
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
@@ -177,7 +190,7 @@ class DocumentAnalyzer:
 
         return outputs
 
-    async def __call__(self, img):
+    async def run(self, img):
         with ThreadPoolExecutor(max_workers=2) as executor:
             loop = asyncio.get_running_loop()
             tasks = [
@@ -194,44 +207,5 @@ class DocumentAnalyzer:
         results = DocumentAnalyzerSchema(**outputs)
         return results, ocr, layout
 
-
-if __name__ == "__main__":
-    analyzer = DocumentAnalyzer()
-    dir = "dataset/test"
-    # dir = "dataset/test"
-    outdir = "results"
-
-    os.makedirs(outdir, exist_ok=True)
-
-    for path_img in glob.glob(os.path.join(dir, "*.jpg")):
-        img = load_image(path_img)
-        results, ocr, layout = asyncio.run(analyzer(img))
-        basename = os.path.basename(path_img)
-        cv2.imwrite(
-            os.path.join(outdir, f"{os.path.splitext(basename)[0]}_ocr.jpg"),
-            ocr,
-        )
-        cv2.imwrite(
-            os.path.join(
-                outdir, f"{os.path.splitext(basename)[0]}_layout.jpg"
-            ),
-            layout,
-        )
-        html_path = os.path.join(
-            outdir, f"{os.path.splitext(basename)[0]}.html"
-        )
-        results.to_html(html_path)
-
-        markdown_path = os.path.join(
-            outdir, f"{os.path.splitext(basename)[0]}.md"
-        )
-        results.to_markdown(markdown_path)
-
-        csv_path = os.path.join(outdir, f"{os.path.splitext(basename)[0]}.csv")
-
-        results.to_csv(csv_path)
-
-        json_path = os.path.join(
-            outdir, f"{os.path.splitext(basename)[0]}_result.json"
-        )
-        results.to_json(json_path)
+    def __call__(self, img):
+        return asyncio.run(self.run(img))

@@ -15,7 +15,7 @@ class LayoutAnalyzerSchema(BaseSchema):
 
 
 class LayoutAnalyzer:
-    def __init__(self, configs=None, device="cpu", visualize=True):
+    def __init__(self, configs=None, device="cuda", visualize=False):
         layout_parser_kwargs = {
             "device": device,
             "visualize": visualize,

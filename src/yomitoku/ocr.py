@@ -25,7 +25,7 @@ class OCRSchema(BaseSchema):
 
 
 class OCR:
-    def __init__(self, configs=None, device="cpu", visualize=True):
+    def __init__(self, configs=None, device="cuda", visualize=False):
         text_detector_kwargs = {
             "device": device,
             "visualize": visualize,
