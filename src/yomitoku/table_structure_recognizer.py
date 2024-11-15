@@ -4,24 +4,26 @@ import cv2
 import torch
 import torchvision.transforms as T
 from PIL import Image
-from pydantic import BaseModel, conlist
+from pydantic import conlist
 
-from .base import BaseModelCatalog, BaseModule
+from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import TableStructureRecognizerRTDETRv2Config
+from .layout_parser import filter_contained_rectangles_within_category
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
-from .utils.misc import calc_intersection, is_contained, filter_by_flag
+from .utils.misc import calc_intersection, filter_by_flag, is_contained
 from .utils.visualizer import table_visualizer
-from .layout_parser import filter_contained_rectangles_within_category
 
 
 class TableStructureRecognizerModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
-        self.register("rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2)
+        self.register(
+            "rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2
+        )
 
 
-class TableCellSchema(BaseModel):
+class TableCellSchema(BaseSchema):
     col: int
     row: int
     col_span: int
@@ -30,7 +32,7 @@ class TableCellSchema(BaseModel):
     contents: Union[str, None]
 
 
-class TableStructureRecognizerSchema(BaseModel):
+class TableStructureRecognizerSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     n_row: int
     n_col: int
@@ -163,7 +165,9 @@ class TableStructureRecognizer(BaseModule):
         boxes = preds["boxes"]
         labels = preds["labels"]
 
-        category_elements = {category: [] for category in self.label_mapper.values()}
+        category_elements = {
+            category: [] for category in self.label_mapper.values()
+        }
         for box, score, label in zip(boxes, scores, labels):
             category = self.label_mapper[label.item()]
             box = box.astype(int).tolist()

@@ -2,8 +2,10 @@ import time
 
 import torch
 from omegaconf import OmegaConf
+from pydantic import BaseModel, Extra
 
-from yomitoku.utils.logger import set_logger
+from .export import export_json
+from .utils.logger import set_logger
 
 logger = set_logger(__name__, "INFO")
 
@@ -45,6 +47,15 @@ def observer(cls, func):
         return result
 
     return wrapper
+
+
+class BaseSchema(BaseModel):
+    class Config:
+        extra = Extra.forbid
+        validate_assignment = True
+
+    def to_json(self, out_path: str):
+        export_json(self, out_path)
 
 
 class BaseModule:

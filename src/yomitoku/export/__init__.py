@@ -1,5 +1,6 @@
 from .export_csv import export_csv
 from .export_html import export_html
+from .export_json import export_json
 from .export_markdown import export_markdown
 
-__all__ = ["export_html", "export_markdown", "export_csv"]
+__all__ = ["export_html", "export_markdown", "export_csv", "export_json"]

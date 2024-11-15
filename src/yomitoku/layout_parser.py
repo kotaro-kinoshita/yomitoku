@@ -4,22 +4,22 @@ import cv2
 import torch
 import torchvision.transforms as T
 from PIL import Image
-from pydantic import BaseModel, conlist
+from pydantic import conlist
 
-from .base import BaseModelCatalog, BaseModule
+from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import LayoutParserRTDETRv2Config
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
-from .utils.misc import is_contained, filter_by_flag
+from .utils.misc import filter_by_flag, is_contained
 from .utils.visualizer import layout_visualizer
 
 
-class Element(BaseModel):
+class Element(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     score: float
 
 
-class LayoutParserSchema(BaseModel):
+class LayoutParserSchema(BaseSchema):
     paragraphs: List[Element]
     tables: List[Element]
     figures: List[Element]
@@ -64,7 +64,9 @@ def filter_contained_rectangles_within_category(category_elements):
     return category_elements
 
 
-def filter_contained_rectangles_across_categories(category_elements, source, target):
+def filter_contained_rectangles_across_categories(
+    category_elements, source, target
+):
     """sourceカテゴリの矩形がtargetカテゴリの矩形に内包される場合、sourceカテゴリの矩形を除外"""
 
     src_boxes = [element["box"] for element in category_elements[source]]
@@ -76,7 +78,9 @@ def filter_contained_rectangles_across_categories(category_elements, source, tar
             if is_contained(src_box, tgt_box):
                 check_list[j] = False
 
-    category_elements[target] = filter_by_flag(category_elements[target], check_list)
+    category_elements[target] = filter_by_flag(
+        category_elements[target], check_list
+    )
     return category_elements
 
 
@@ -135,7 +139,9 @@ class LayoutParser(BaseModule):
         boxes = preds["boxes"]
         labels = preds["labels"]
 
-        category_elements = {category: [] for category in self.label_mapper.values()}
+        category_elements = {
+            category: [] for category in self.label_mapper.values()
+        }
         for box, score, label in zip(boxes, scores, labels):
             category = self.label_mapper[label.item()]
             category_elements[category].append(

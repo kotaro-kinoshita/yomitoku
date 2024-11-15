@@ -1,10 +1,10 @@
 from typing import List
 
-import torch
 import numpy as np
-from pydantic import BaseModel, conlist
+import torch
+from pydantic import conlist
 
-from .base import BaseModelCatalog, BaseModule
+from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import TextRecognizerPARSeqConfig
 from .data.dataset import ParseqDataset
 from .models import PARSeq
@@ -19,7 +19,7 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
         self.register("parseq", TextRecognizerPARSeqConfig, PARSeq)
 
 
-class TextRecognizerSchema(BaseModel):
+class TextRecognizerSchema(BaseSchema):
     contents: List[str]
     directions: List[str]
     scores: List[float]

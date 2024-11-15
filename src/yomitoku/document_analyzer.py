@@ -5,8 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List, Union
 
 import cv2
-from pydantic import BaseModel, conlist
+from pydantic import conlist
 
+from .base import BaseSchema
 from .data.functions import load_image
 from .export import export_csv, export_html, export_markdown
 from .layout_analyzer import LayoutAnalyzer
@@ -16,17 +17,26 @@ from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.misc import is_contained, quad_to_xyxy
 
 
-class ParagraphSchema(BaseModel):
+class ParagraphSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     contents: Union[str, None]
     direction: Union[str, None]
 
 
-class DocumentAnalyzerSchema(BaseModel):
+class DocumentAnalyzerSchema(BaseSchema):
     paragraphs: List[ParagraphSchema]
     tables: List[TableStructureRecognizerSchema]
     words: List[WordPrediction]
     figures: List[Element]
+
+    def to_html(self, out_path: str):
+        export_html(self, out_path)
+
+    def to_markdown(self, out_path: str):
+        export_markdown(self, out_path)
+
+    def to_csv(self, out_path: str):
+        export_csv(self, out_path)
 
 
 def combine_flags(flag1, flag2):
@@ -210,13 +220,18 @@ if __name__ == "__main__":
         html_path = os.path.join(
             outdir, f"{os.path.splitext(basename)[0]}.html"
         )
-        export_html(results, html_path)
+        results.to_html(html_path)
 
         markdown_path = os.path.join(
             outdir, f"{os.path.splitext(basename)[0]}.md"
         )
-        export_markdown(results, markdown_path)
+        results.to_markdown(markdown_path)
 
         csv_path = os.path.join(outdir, f"{os.path.splitext(basename)[0]}.csv")
 
-        export_csv(results, csv_path)
+        results.to_csv(csv_path)
+
+        json_path = os.path.join(
+            outdir, f"{os.path.splitext(basename)[0]}_result.json"
+        )
+        results.to_json(json_path)
