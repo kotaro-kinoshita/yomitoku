@@ -57,7 +57,7 @@ def table_visualizer(img, table):
         row_span = cell.row_span
         col_span = cell.col_span
 
-        text = f"({row}, {col}) {row_span}x{col_span}"
+        text = f"[{row}, {col}] ({row_span}x{col_span})"
 
         x1, y1, x2, y2 = map(int, box)
         out = cv2.rectangle(out, (x1, y1), (x2, y2), (255, 0, 255), 2)

@@ -4,21 +4,21 @@
 
 Linux および Mac OS で動作します。Windows 向けは動作確認未実施ですので、リポジトリの Dockerfile の利用を推奨します。
 
-## 依存パッケージ
+## 依存パッケージのインストール
 
 pdf ファイルの解析を行うためには、別途、[poppler](https://poppler.freedesktop.org/)のインストールが必要です。
 
 === "Mac"
 
-```
-brew install poppler
-```
+    ```
+    brew install poppler
+    ```
 
 === "Linux"
 
-```
-apt install poppler-utils -y
-```
+    ```
+    apt install poppler-utils -y
+    ```
 
 ## TestPYPI からインストール
 
@@ -42,14 +42,14 @@ uv sync
 docker build -t yomitoku .
 ```
 
-=== "Use GPU"
+=== "GPU"
 
-```bash
-docker run -it --gpus all -v $(pwd):/workspace --name yomitoku yomitoku /bin/bas
-```
+    ```bash
+    docker run -it --gpus all -v $(pwd):/workspace --name yomitoku yomitoku /bin/bas
+    ```
 
-=== "Not Use GPU"
+=== "CPU"
 
-```bash
-docker run -it -v $(pwd):/workspace --name yomitoku yomitoku /bin/bas
-```
+    ```bash
+    docker run -it -v $(pwd):/workspace --name yomitoku yomitoku /bin/bas
+    ```

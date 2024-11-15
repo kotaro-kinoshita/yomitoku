@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 import torch
 from omegaconf import OmegaConf
@@ -9,10 +10,6 @@ from .export import export_json
 from .utils.logger import set_logger
 
 logger = set_logger(__name__, "INFO")
-
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-SUPPORT_OUTPUT_FORMAT = ["json", "csv", "html", "markdown", "md"]
-SUPPORT_INPUT_FORMAT = ["jpg", "jpeg", "png", "bmp", "tiff", "tif"]
 
 
 def load_yaml_config(path_config):
@@ -30,6 +27,7 @@ def load_config(
 ):
     cfg = OmegaConf.structured(default_config)
     if path_config is not None:
+        path_config = Path(path_config)
         yaml_config = load_yaml_config(path_config)
         cfg = OmegaConf.merge(cfg, yaml_config)
     return cfg

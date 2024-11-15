@@ -1,0 +1,4 @@
+#hf_hub_repo: yomitoku-text-detector-dbnet-open-beta
+post_process:
+  thresh: 0.1
+  unclip_ratio: 2.5

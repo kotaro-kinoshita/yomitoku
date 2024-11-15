@@ -1,5 +1,6 @@
 from importlib.metadata import version
 
+from .document_analyzer import DocumentAnalyzer
 from .layout_analyzer import LayoutAnalyzer
 from .layout_parser import LayoutParser
 from .ocr import OCR
@@ -14,5 +15,6 @@ __all__ = [
     "TextDetector",
     "TextRecognizer",
     "LayoutAnalyzer",
+    "DocumentAnalyzer",
 ]
 __version__ = version(__package__)
