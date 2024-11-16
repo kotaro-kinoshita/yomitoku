@@ -20,9 +20,9 @@ YomiToku は日本語の文書画像解析に特化した AI ベースの文章�
 
 |                     入力画像                     |                      OCR                       |
 | :----------------------------------------------: | :--------------------------------------------: |
-|    <img src="static/demo.jpg" width="600px">     | <img src="static/demo_ocr.jpg" width="600px">  |
+|    <img src="static/demo.jpg" width="400px">     | <img src="static/demo_ocr.jpg" width="400px">  |
 |                  レイアウト解析                  |                  エクスポート                  |
-| <img src="static/demo_layout.jpg" width="600px"> | <img src="static/demo_html.png" width="600px"> |
+| <img src="static/demo_layout.jpg" width="400px"> | <img src="static/demo_html.png" width="400px"> |
 
 Markdown でエクスポートした結果は関してはリポジトリ内の[demo.md](demo.md)を参照
 
