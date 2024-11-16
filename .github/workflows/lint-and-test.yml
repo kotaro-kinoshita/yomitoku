@@ -22,7 +22,7 @@ jobs:
         with:
           enable-cache: true
       - name: Install dependencies
-        run: apt install -y libopencv-dev poppler-utils
+        run: sudo apt install -y libopencv-dev poppler-utils
       - name: Install python dependencies
         run: uv sync --dev
       - name: Run linter
