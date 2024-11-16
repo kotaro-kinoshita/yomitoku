@@ -25,6 +25,7 @@ jobs:
         enable-cache: true
     - name: Install dependencies
       run: uv sync --dev
+      run: apt install -y poppler-utils libopencv-dev
     - name: Run linter
       run: uv run ruff check
     - name: Run tests
