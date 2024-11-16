@@ -1,9 +1,7 @@
-from typing import Any
 from unittest.mock import patch
 
 import pytest
 
-import yomitoku
 from yomitoku.base import (
     BaseModelCatalog,
     BaseModule,
