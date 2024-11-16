@@ -77,7 +77,7 @@ yomitoku ${path_data} -f md -o results -v
 
 パッケージの詳細は[ドキュメント](https://kotaro-kinoshita.github.io/yomitoku-dev/)を確認してください。
 
-# 🔥 開発予定
+## 🔥 開発予定
 
 YomiToku は現在も開発中であり、今後以下のような機能の拡張を目指しています。
 
@@ -89,7 +89,7 @@ YomiToku は現在も開発中であり、今後以下のような機能の拡�
 
 YomiToku © 2024 by MLism inc. is licensed under CC BY-NC 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc/4.0/
 
-# 🙏 謝辞
+## 🙏 謝辞
 
 YomiToku 内に搭載されているモデルは以下のオープンソース AI を参考し、開発しています。開発者の皆様に感謝申し上げます
 
