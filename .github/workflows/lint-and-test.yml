@@ -1,11 +1,8 @@
 ---
 name: Python Lint
 
-on:
-  pull_request:
-    branches: [ "main" ]
-  pull_request_target: 
-    types: [opened, reopened, synchronize]
+on: [push, pull_request]
+  
 
 permissions:
   contents: read
