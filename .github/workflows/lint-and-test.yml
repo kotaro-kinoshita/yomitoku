@@ -1,8 +1,9 @@
----
 name: Python Lint
 
-on: [push, pull_request]
-  
+on:
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -11,19 +12,20 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.9"
-    - name: Install uv
-      uses: astral-sh/setup-uv@v3
-      with:
-        enable-cache: true
-    - name: Install dependencies
-      run: uv sync --dev
-      run: apt install -y libopencv-dev poppler-utils
-    - name: Run linter
-      run: uv run ruff check
-    - name: Run tests
-      run: uv run pytest
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: apt install -y libopencv-dev poppler-utils
+      - name: Install python dependencies
+        run: uv sync --dev
+      - name: Run linter
+        run: uv run ruff check
+      - name: Run tests
+        run: uv run pytest
