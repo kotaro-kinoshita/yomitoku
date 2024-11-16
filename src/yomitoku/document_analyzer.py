@@ -129,8 +129,12 @@ class DocumentAnalyzer:
             },
         }
 
-        if configs is not None:
+        if isinstance(configs, dict):
             recursive_update(default_configs, configs)
+        else:
+            raise ValueError(
+                "configs must be a dict. See the https://kotaro-kinoshita.github.io/yomitoku-dev/usage/"
+            )
 
         self.ocr = OCR(configs=default_configs["ocr"])
         self.layout = LayoutAnalyzer(
