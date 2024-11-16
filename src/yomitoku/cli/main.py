@@ -37,6 +37,11 @@ def process_single_file(args, analyzer, path, format):
                 layout,
             )
 
+        cv2.imwrite(
+            os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"),
+            img,
+        )
+
         out_path = os.path.join(
             args.outdir, f"{dirname}_{filename}_p{page+1}.{format}"
         )
