@@ -6,7 +6,11 @@ from pydantic import conlist
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import TextDetectorDBNetConfig
-from .data.functions import array_to_tensor, normalize_image, resize_shortest_edge
+from .data.functions import (
+    array_to_tensor,
+    resize_shortest_edge,
+    standardization_image,
+)
 from .models import DBNet
 from .postprocessor import DBnetPostProcessor
 from .utils.visualizer import det_visualizer
@@ -52,7 +56,7 @@ class TextDetector(BaseModule):
         resized = resize_shortest_edge(
             img, self._cfg.data.shortest_size, self._cfg.data.limit_size
         )
-        normalized = normalize_image(resized)
+        normalized = standardization_image(resized)
         tensor = array_to_tensor(normalized)
         return tensor
 

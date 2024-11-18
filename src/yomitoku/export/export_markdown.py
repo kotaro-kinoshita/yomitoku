@@ -1,28 +1,28 @@
-def escape_markdown_text(text):
-    specific_chars = [
-        "_",
-        "*",
-        "[",
-        "]",
-        "(",
-        ")",
-        "`",
-        "#",
-        "+",
-        "-",
-        "|",
-        "{",
-        "}",
-        ".",
-        "!",
-    ]
-    for char in specific_chars:
-        text = text.replace(char, "\\" + char)
+import re
 
-    return text
+from .utils import sort_elements
 
 
-def table_to_md(table):
+def escape_markdown_special_chars(text):
+    special_chars = r"([`*_{}[\]()#+.!|-])"
+    return re.sub(special_chars, r"\\\1", text)
+
+
+def paragraph_to_md(paragraph, ignore_line_break):
+    contents = escape_markdown_special_chars(paragraph.contents)
+
+    if ignore_line_break:
+        contents = contents.replace("\n", "")
+    else:
+        contents = contents.replace("\n", "<br>")
+
+    return {
+        "box": paragraph.box,
+        "md": contents + "\n",
+    }
+
+
+def table_to_md(table, ignore_line_break):
     num_rows = table.n_row
     num_cols = table.n_col
 
@@ -37,8 +37,11 @@ def table_to_md(table):
 
         for i in range(row, row + row_span):
             for j in range(col, col + col_span):
-                contents = contents.replace("\n", "<br>")
-                contents = escape_markdown_text(contents)
+                contents = escape_markdown_special_chars(contents)
+                if ignore_line_break:
+                    contents = contents.replace("\n", "")
+                else:
+                    contents = contents.replace("\n", "<br>")
 
                 if i == row and j == col:
                     table_array[i][j] = contents
@@ -52,32 +55,24 @@ def table_to_md(table):
             header = "|".join(["-" for _ in range(num_cols)])
             table_md += f"|{header}|\n"
 
-    return table_md
+    return {
+        "box": table.box,
+        "md": table_md,
+    }
 
 
-def export_markdown(inputs, out_path: str):
+def export_markdown(inputs, out_path: str, ignore_line_break: bool = False):
     elements = []
     for table in inputs.tables:
-        table_md = table_to_md(table)
-        elements.append(
-            {
-                "box": table.box,
-                "md": table_md,
-            }
-        )
+        elements.append(table_to_md(table, ignore_line_break))
 
     for paraghraph in inputs.paragraphs:
-        contents = escape_markdown_text(paraghraph.contents)
+        elements.append(paragraph_to_md(paraghraph, ignore_line_break))
 
-        elements.append(
-            {
-                "box": paraghraph.box,
-                "md": contents + "\n",
-            }
-        )
+    directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
+    sort_elements(elements, directions)
 
-    elements = sorted(elements, key=lambda x: x["box"][1])
     markdonw = "\n".join([element["md"] for element in elements])
 
-    with open(out_path, "w") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         f.write(markdonw)

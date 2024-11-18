@@ -5,7 +5,14 @@ import numpy as np
 import torch
 from pdf2image import convert_from_path
 
-from ..constants import SUPPORT_INPUT_FORMAT
+from ..constants import (
+    MIN_IMAGE_SIZE,
+    SUPPORT_INPUT_FORMAT,
+    WARNING_IMAGE_SIZE,
+)
+from ..utils.logger import set_logger
+
+logger = set_logger(__name__)
 
 
 def load_image(image_path: str) -> np.ndarray:
@@ -22,14 +29,34 @@ def load_image(image_path: str) -> np.ndarray:
     if not image_path.exists():
         raise FileNotFoundError(f"File not found: {image_path}")
 
-    if image_path.suffix[1:].lower() not in SUPPORT_INPUT_FORMAT:
+    ext = image_path.suffix[1:].lower()
+    if ext not in SUPPORT_INPUT_FORMAT:
         raise ValueError(
             f"Unsupported image format. Supported formats are {SUPPORT_INPUT_FORMAT}"
         )
 
-    img = cv2.imread(image_path)
-    validate_image(img)
-    img = convert_3ch(img)
+    if ext == "pdf":
+        raise ValueError(
+            "PDF file is not supported by load_image(). Use load_pdf() instead."
+        )
+
+    img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+
+    if img is None:
+        raise ValueError("Invalid image data.")
+
+    h, w = img.shape[:2]
+    if h < MIN_IMAGE_SIZE or w < MIN_IMAGE_SIZE:
+        raise ValueError("Image size is too small.")
+
+    if min(h, w) < WARNING_IMAGE_SIZE:
+        logger.warning(
+            """
+            The image size is small, which may result in reduced OCR accuracy. 
+            The process will continue, but it is recommended to input images with a minimum size of 720 pixels on the shorter side.
+            """
+        )
+
     return img
 
 
@@ -47,40 +74,23 @@ def load_pdf(pdf_path: str, dpi=200) -> list[np.ndarray]:
     if not pdf_path.exists():
         raise FileNotFoundError(f"File not found: {pdf_path}")
 
-    images = convert_from_path(pdf_path, dpi=dpi)
+    ext = pdf_path.suffix[1:].lower()
+    if ext not in SUPPORT_INPUT_FORMAT:
+        raise ValueError(
+            f"Unsupported image format. Supported formats are {SUPPORT_INPUT_FORMAT}"
+        )
+
+    if ext != "pdf":
+        raise ValueError(
+            "image file is not supported by load_pdf(). Use load_image() instead."
+        )
+
+    try:
+        images = convert_from_path(pdf_path, dpi=dpi)
+    except Exception as e:
+        raise ValueError(f"Failed to open the PDF file: {pdf_path}") from e
+
     return [np.array(img)[:, :, ::-1] for img in images]
-
-
-def validate_image(img: np.ndarray, minimum_thresh=32) -> None:
-    """
-    Validate the image data.
-
-    Args:
-        img (np.ndarray): image data
-    """
-    if img is None:
-        raise ValueError("Invalid image data.")
-
-    h, w = img.shape[:2]
-    if h < minimum_thresh or w < minimum_thresh:
-        raise ValueError("Image size is too small.")
-
-
-def convert_3ch(img: np.ndarray) -> np.ndarray:
-    """
-    Convert the image to RGB format
-    Args:
-        img (np.ndarray): target image
-
-    Returns:
-        np.ndarray: converted image
-    """
-    if len(img.shape) == 2:
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    elif img.shape[2] == 4:
-        img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-
-    return img
 
 
 def resize_shortest_edge(
@@ -117,7 +127,7 @@ def resize_shortest_edge(
     return img
 
 
-def normalize_image(
+def standardization_image(
     img: np.ndarray, rgb=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
 ) -> np.ndarray:
     """
@@ -129,9 +139,10 @@ def normalize_image(
     Returns:
         np.ndarray: normalized image
     """
-    img = img[:, :, ::-1].astype(np.float32)
+    img = img[:, :, ::-1]
     img = img / 255.0
     img = (img - np.array(rgb)) / np.array(std)
+    img = img.astype(np.float32)
 
     return img
 
@@ -151,6 +162,42 @@ def array_to_tensor(img: np.ndarray) -> torch.Tensor:
     tensor = torch.as_tensor(img, dtype=torch.float)
     tensor = tensor[None, :, :, :]
     return tensor
+
+
+def validate_quads(img: np.ndarray, quads: list[list[list[int]]]):
+    """
+    Validate the vertices of the quadrilateral.
+
+    Args:
+        img (np.ndarray): target image
+        quads (list[list[list[int]]]): list of quadrilateral
+
+    Raises:
+        ValueError: if the vertices are invalid
+    """
+
+    h, w = img.shape[:2]
+    for quad in quads:
+        if len(quad) != 4:
+            raise ValueError("The number of vertices must be 4.")
+
+        for point in quad:
+            if len(point) != 2:
+                raise ValueError("The number of coordinates must be 2.")
+
+        quad = np.array(quad, dtype=int)
+        x1 = np.min(quad[:, 0])
+        x2 = np.max(quad[:, 0])
+        y1 = np.min(quad[:, 1])
+        y2 = np.max(quad[:, 1])
+        h, w = img.shape[:2]
+
+        if x1 < 0 or x2 > w or y1 < 0 or y2 > h:
+            raise ValueError(
+                f"The vertices are out of the image. {quad.tolist()}"
+            )
+
+    return True
 
 
 def extract_roi_with_perspective(img, quad):
@@ -181,6 +228,23 @@ def extract_roi_with_perspective(img, quad):
     return dst
 
 
+def rotate_text_image(img, thresh_aspect=2):
+    """
+    Rotate the image if the aspect ratio is too high.
+
+    Args:
+        img (np.ndarray): target image
+        thresh_aspect (int): threshold of aspect ratio
+
+    Returns:
+        np.ndarray: rotated image
+    """
+    h, w = img.shape[:2]
+    if h > thresh_aspect * w:
+        img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    return img
+
+
 def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
     """
     Resize the image with padding.
@@ -194,11 +258,6 @@ def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
         np.ndarray: resized image
     """
     h, w = img.shape[:2]
-
-    if h > 2 * w:
-        img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        h, w = img.shape[:2]
-
     scale_w = 1.0
     scale_h = 1.0
     if w > target_size[1]:

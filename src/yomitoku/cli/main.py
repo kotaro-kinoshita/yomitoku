@@ -37,7 +37,7 @@ def process_single_file(args, analyzer, path, format):
                 args.outdir, f"{dirname}_{filename}_p{page+1}_layout.jpg"
             )
 
-            cv2.imwrite(out_path, ocr)
+            cv2.imwrite(out_path, layout)
             logger.info(f"Output file: {out_path}")
 
         # cv2.imwrite(
@@ -50,13 +50,25 @@ def process_single_file(args, analyzer, path, format):
         )
 
         if format == "json":
-            results.to_json(out_path)
+            results.to_json(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
         elif format == "csv":
-            results.to_csv(out_path)
+            results.to_csv(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
         elif format == "html":
-            results.to_html(out_path)
+            results.to_html(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
         elif format == "md":
-            results.to_markdown(out_path)
+            results.to_markdown(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
 
         logger.info(f"Output file: {out_path}")
 
@@ -106,6 +118,12 @@ def main():
         default=None,
         help="path of table structure recognizer config file",
     )
+    parser.add_argument(
+        "--ignore_line_break",
+        action="store_true",
+        help="if set, ignore line break in the output",
+    )
+
     args = parser.parse_args()
 
     path = Path(args.arg1)

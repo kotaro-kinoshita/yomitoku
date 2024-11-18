@@ -1,6 +1,23 @@
+import re
 from html import escape
 
 from lxml import etree, html
+
+from .utils import sort_elements
+
+
+def convert_text_to_html(text):
+    """
+    入力されたテキストをHTMLに変換する関数。
+    URLを検出してリンク化せずそのまま表示し、それ以外はHTMLエスケープする。
+    """
+    url_regex = re.compile(r"https?://[^\s<>]")
+
+    def replace_url(match):
+        url = match.group(0)
+        return escape(url)
+
+    return url_regex.sub(replace_url, escape(text))
 
 
 def add_td_tag(contents, row_span, col_span):
@@ -8,7 +25,7 @@ def add_td_tag(contents, row_span, col_span):
 
 
 def add_table_tag(contents):
-    return f"<table border='1' style='border-collapse: collapse'>{contents}</table>"
+    return f'<table border="1" style="border-collapse: collapse">{contents}</table>'
 
 
 def add_tr_tag(contents):
@@ -23,51 +40,73 @@ def add_html_tag(text):
     return f"<html><body>{text}</body></html>"
 
 
-def export_html(inputs, out_path: str):
+def table_to_html(table, ignore_line_break):
+    pre_row = 1
+    rows = []
+    row = []
+    for cell in table.cells:
+        if cell.row != pre_row:
+            rows.append(add_tr_tag("".join(row)))
+            row = []
+
+        row_span = cell.row_span
+        col_span = cell.col_span
+        contents = cell.contents
+
+        if contents is None:
+            contents = ""
+
+        contents = convert_text_to_html(contents)
+
+        if ignore_line_break:
+            contents = contents.replace("\n", "")
+        else:
+            contents = contents.replace("\n", "<br>")
+
+        row.append(add_td_tag(contents, row_span, col_span))
+        pre_row = cell.row
+    else:
+        rows.append(add_tr_tag("".join(row)))
+
+    table_html = add_table_tag("".join(rows))
+
+    return {
+        "box": table.box,
+        "html": table_html,
+    }
+
+
+def paragraph_to_html(paragraph, ignore_line_break):
+    contents = paragraph.contents
+    contents = convert_text_to_html(contents)
+
+    if ignore_line_break:
+        contents = contents.replace("\n", "")
+    else:
+        contents = contents.replace("\n", "<br>")
+
+    return {
+        "box": paragraph.box,
+        "html": add_p_tag(contents),
+    }
+
+
+def export_html(
+    inputs,
+    out_path: str,
+    ignore_line_break: bool = False,
+):
     html_string = ""
     elements = []
     for table in inputs.tables:
-        pre_row = 1
-        rows = []
-        row = []
-        for cell in table.cells:
-            if cell.row != pre_row:
-                rows.append(add_tr_tag("".join(row)))
-                row = []
-
-            row_span = cell.row_span
-            col_span = cell.col_span
-            contents = cell.contents
-
-            if contents is None:
-                contents = ""
-
-            contents = escape(contents)
-
-            row.append(add_td_tag(contents, row_span, col_span))
-            pre_row = cell.row
-        else:
-            rows.append(add_tr_tag("".join(row)))
-
-        table_html = add_table_tag("".join(rows))
-        elements.append(
-            {
-                "box": table.box,
-                "html": table_html,
-            }
-        )
+        elements.append(table_to_html(table, ignore_line_break))
 
     for paraghraph in inputs.paragraphs:
-        contents = escape(paraghraph.contents)
+        elements.append(paragraph_to_html(paraghraph, ignore_line_break))
 
-        elements.append(
-            {
-                "box": paraghraph.box,
-                "html": add_p_tag(paraghraph.contents),
-            }
-        )
+    directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
+    elements = sort_elements(elements, directions)
 
-    elements = sorted(elements, key=lambda x: x["box"][1])
     html_string = "".join([element["html"] for element in elements])
     html_string = add_html_tag(html_string)
 

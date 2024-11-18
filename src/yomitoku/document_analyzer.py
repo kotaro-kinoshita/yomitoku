@@ -25,14 +25,14 @@ class DocumentAnalyzerSchema(BaseSchema):
     words: List[WordPrediction]
     figures: List[Element]
 
-    def to_html(self, out_path: str):
-        export_html(self, out_path)
+    def to_html(self, out_path: str, **kwargs):
+        export_html(self, out_path, **kwargs)
 
-    def to_markdown(self, out_path: str):
-        export_markdown(self, out_path)
+    def to_markdown(self, out_path: str, **kwargs):
+        export_markdown(self, out_path, **kwargs)
 
-    def to_csv(self, out_path: str):
-        export_csv(self, out_path)
+    def to_csv(self, out_path: str, **kwargs):
+        export_csv(self, out_path, **kwargs)
 
 
 def combine_flags(flag1, flag2):

@@ -2,7 +2,7 @@ import pytest
 import torch
 from omegaconf import OmegaConf
 
-from yomitoku import LayoutAnalyzer
+from yomitoku.layout_analyzer import LayoutAnalyzer
 
 
 def test_layout():
