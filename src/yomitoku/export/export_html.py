@@ -3,6 +3,7 @@ from html import escape
 
 from lxml import etree, html
 
+from ..utils.reading_order import reading_order
 from .utils import sort_elements
 
 
@@ -104,8 +105,11 @@ def export_html(
     for paraghraph in inputs.paragraphs:
         elements.append(paragraph_to_html(paraghraph, ignore_line_break))
 
-    directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
-    elements = sort_elements(elements, directions)
+    # directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
+    # elements = sort_elements(elements, directions)
+
+    order = reading_order(elements)
+    elements = [elements[i] for i in order]
 
     html_string = "".join([element["html"] for element in elements])
     html_string = add_html_tag(html_string)
