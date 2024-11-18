@@ -25,14 +25,14 @@ class DocumentAnalyzerSchema(BaseSchema):
     words: List[WordPrediction]
     figures: List[Element]
 
-    def to_html(self, out_path: str):
-        export_html(self, out_path)
+    def to_html(self, out_path: str, **kwargs):
+        export_html(self, out_path, **kwargs)
 
-    def to_markdown(self, out_path: str):
-        export_markdown(self, out_path)
+    def to_markdown(self, out_path: str, **kwargs):
+        export_markdown(self, out_path, **kwargs)
 
-    def to_csv(self, out_path: str):
-        export_csv(self, out_path)
+    def to_csv(self, out_path: str, **kwargs):
+        export_csv(self, out_path, **kwargs)
 
 
 def combine_flags(flag1, flag2):
@@ -129,8 +129,12 @@ class DocumentAnalyzer:
             },
         }
 
-        if configs is not None:
+        if isinstance(configs, dict):
             recursive_update(default_configs, configs)
+        else:
+            raise ValueError(
+                "configs must be a dict. See the https://kotaro-kinoshita.github.io/yomitoku-dev/usage/"
+            )
 
         self.ocr = OCR(configs=default_configs["ocr"])
         self.layout = LayoutAnalyzer(

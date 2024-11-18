@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from typing import Union
 
 import torch
 from omegaconf import OmegaConf
@@ -11,7 +12,8 @@ from .utils.logger import set_logger
 logger = set_logger(__name__, "INFO")
 
 
-def load_yaml_config(path_config):
+def load_yaml_config(path_config: str):
+    path_config = Path(path_config)
     if not path_config.exists():
         raise FileNotFoundError(f"Config file not found: {path_config}")
 
@@ -22,11 +24,10 @@ def load_yaml_config(path_config):
 
 def load_config(
     default_config,
-    path_config=None,
+    path_config: Union[str, None] = None,
 ):
     cfg = OmegaConf.structured(default_config)
     if path_config is not None:
-        path_config = Path(path_config)
         yaml_config = load_yaml_config(path_config)
         cfg = OmegaConf.merge(cfg, yaml_config)
     return cfg
@@ -56,8 +57,8 @@ class BaseSchema(BaseModel):
         extra = Extra.forbid
         validate_assignment = True
 
-    def to_json(self, out_path: str):
-        export_json(self, out_path)
+    def to_json(self, out_path: str, **kwargs):
+        export_json(self, out_path, **kwargs)
 
 
 class BaseModule:

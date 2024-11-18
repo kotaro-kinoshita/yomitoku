@@ -26,6 +26,11 @@ class LayoutAnalyzer:
         }
 
         if isinstance(configs, dict):
+            assert (
+                "layout_parser" in configs
+                or "table_structure_recognizer" in configs
+            ), "Invalid config key. Please check the config keys."
+
             if "layout_parser" in configs:
                 layout_parser_kwargs.update(configs["layout_parser"])
 
@@ -33,6 +38,10 @@ class LayoutAnalyzer:
                 table_structure_recognizer_kwargs.update(
                     configs["table_structure_recognizer"]
                 )
+        else:
+            raise ValueError(
+                "configs must be a dict. See the https://kotaro-kinoshita.github.io/yomitoku-dev/usage/"
+            )
 
         self.layout_parser = LayoutParser(
             **layout_parser_kwargs,

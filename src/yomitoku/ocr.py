@@ -36,10 +36,18 @@ class OCR:
         }
 
         if isinstance(configs, dict):
+            assert (
+                "text_detector" in configs or "text_recognizer" in configs
+            ), "Invalid config key. Please check the config keys."
+
             if "text_detector" in configs:
                 text_detector_kwargs.update(configs["text_detector"])
             if "text_recognizer" in configs:
                 text_recognizer_kwargs.update(configs["text_recognizer"])
+        else:
+            raise ValueError(
+                "configs must be a dict. See the https://kotaro-kinoshita.github.io/yomitoku-dev/usage/"
+            )
 
         self.detector = TextDetector(**text_detector_kwargs)
         self.recognizer = TextRecognizer(**text_recognizer_kwargs)

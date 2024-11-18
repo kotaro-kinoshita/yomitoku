@@ -18,11 +18,11 @@ YomiToku は日本語の文書画像解析に特化した AI ベースの文章�
 
 [gallery.md](gallery.md)にも複数種類の画像の検証結果を掲載しています。
 
-|                     入力画像                     |                      OCR                       |
-| :----------------------------------------------: | :--------------------------------------------: |
-|    <img src="static/demo.jpg" width="400px">     | <img src="static/demo_ocr.jpg" width="400px">  |
-|                  レイアウト解析                  |                  エクスポート                  |
-| <img src="static/demo_layout.jpg" width="400px"> | <img src="static/demo_html.png" width="400px"> |
+|                       入力画像                       |                        OCR                         |
+| :--------------------------------------------------: | :------------------------------------------------: |
+|     <img src="static/in/demo.jpg" width="400px">     | <img src="static/out/demo_ocr.jpg" width="400px">  |
+|                    レイアウト解析                    |                    エクスポート                    |
+| <img src="static/out/demo_layout.jpg" width="400px"> | <img src="static/out/demo_html.png" width="400px"> |
 
 Markdown でエクスポートした結果は関してはリポジトリ内の[demo.md](demo.md)を参照
 
@@ -57,7 +57,7 @@ apt install poppler-utils -y
 ## 🚀 実行方法
 
 ```
-yomitoku ${path_data} -f md -o results -v
+yomitoku ${path_data} -f md -o results -v -d cpu
 ```
 
 - `${path_data}` 解析対象の画像が含まれたディレクトリか画像ファイルのパスを直接して指定してください。ディレクトリを対象とした場合はディレクトリのサブディレクトリ内の画像も含めて処理を実行します。
@@ -65,6 +65,7 @@ yomitoku ${path_data} -f md -o results -v
 - `-o` 出力先のディレクトリ名を指定します。存在しない場合は新規で作成されます。
 - `-v` を指定すると解析結果を可視化した画像を出力します。
 - `-d` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
+- `--ignore_line_break` 画像の改行位置を無視して、段落内の文章を連結して返します。（デフォルト：画像通りの改行位置位置で改行します。）
 
 ### Note
 

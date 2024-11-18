@@ -1,7 +1,9 @@
 import csv
 
+from .utils import sort_elements
 
-def table_to_csv(table):
+
+def table_to_csv(table, ignore_line_break):
     num_rows = table.n_row
     num_cols = table.n_col
 
@@ -14,29 +16,40 @@ def table_to_csv(table):
         col_span = cell.col_span
         contents = cell.contents
 
+        if ignore_line_break:
+            contents = contents.replace("\n", "")
+
         for i in range(row, row + row_span):
             for j in range(col, col + col_span):
                 if i == row and j == col:
                     table_array[i][j] = contents
-
     return table_array
 
 
-def export_csv(inputs, out_path: str):
+def paragraph_to_csv(paragraph, ignore_line_break):
+    contents = paragraph.contents
+
+    if ignore_line_break:
+        contents = contents.replace("\n", "")
+
+    return contents
+
+
+def export_csv(inputs, out_path: str, ignore_line_break: bool = False):
     elements = []
     for table in inputs.tables:
-        table_md = table_to_csv(table)
+        table_csv = table_to_csv(table, ignore_line_break)
 
         elements.append(
             {
                 "type": "table",
                 "box": table.box,
-                "element": table_md,
+                "element": table_csv,
             }
         )
 
     for paraghraph in inputs.paragraphs:
-        contents = paraghraph.contents
+        contents = paragraph_to_csv(paraghraph, ignore_line_break)
         elements.append(
             {
                 "type": "paragraph",
@@ -45,10 +58,11 @@ def export_csv(inputs, out_path: str):
             }
         )
 
-    elements = sorted(elements, key=lambda x: x["box"][1])
+    directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
+    elements = sort_elements(elements, directions)
 
-    with open(out_path, "w") as f:
-        writer = csv.writer(f)
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         for element in elements:
             if element["type"] == "table":
                 writer.writerows(element["element"])

@@ -7,6 +7,9 @@ import cv2
 from ..constants import SUPPORT_OUTPUT_FORMAT
 from ..data.functions import load_image, load_pdf
 from ..document_analyzer import DocumentAnalyzer
+from ..utils.logger import set_logger
+
+logger = set_logger(__name__, "INFO")
 
 
 def process_single_file(args, analyzer, path, format):
@@ -22,38 +25,52 @@ def process_single_file(args, analyzer, path, format):
         filename = path.stem
 
         if ocr is not None:
-            cv2.imwrite(
-                os.path.join(
-                    args.outdir, f"{dirname}_{filename}_p{page+1}_ocr_.jpg"
-                ),
-                ocr,
+            out_path = os.path.join(
+                args.outdir, f"{dirname}_{filename}_p{page+1}_ocr.jpg"
             )
+
+            cv2.imwrite(out_path, ocr)
+            logger.info(f"Output file: {out_path}")
 
         if layout is not None:
-            cv2.imwrite(
-                os.path.join(
-                    args.outdir, f"{dirname}_{filename}_p{page+1}_layout.jpg"
-                ),
-                layout,
+            out_path = os.path.join(
+                args.outdir, f"{dirname}_{filename}_p{page+1}_layout.jpg"
             )
 
-        cv2.imwrite(
-            os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"),
-            img,
-        )
+            cv2.imwrite(out_path, layout)
+            logger.info(f"Output file: {out_path}")
+
+        # cv2.imwrite(
+        #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"),
+        #    img,
+        # )
 
         out_path = os.path.join(
             args.outdir, f"{dirname}_{filename}_p{page+1}.{format}"
         )
 
         if format == "json":
-            results.to_json(out_path)
+            results.to_json(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
         elif format == "csv":
-            results.to_csv(out_path)
+            results.to_csv(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
         elif format == "html":
-            results.to_html(out_path)
+            results.to_html(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
         elif format == "md":
-            results.to_markdown(out_path)
+            results.to_markdown(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+            )
+
+        logger.info(f"Output file: {out_path}")
 
 
 def main():
@@ -101,13 +118,15 @@ def main():
         default=None,
         help="path of table structure recognizer config file",
     )
+    parser.add_argument(
+        "--ignore_line_break",
+        action="store_true",
+        help="if set, ignore line break in the output",
+    )
+
     args = parser.parse_args()
 
-    try:
-        path = Path(args.arg1)
-    except Exception:
-        raise ValueError(f"Invalid path: {args.arg1}")
-
+    path = Path(args.arg1)
     if not path.exists():
         raise FileNotFoundError(f"File not found: {args.arg1}")
 
@@ -146,6 +165,8 @@ def main():
     )
 
     os.makedirs(args.outdir, exist_ok=True)
+    logger.info(f"Output directory: {args.outdir}")
+
     if path.is_dir():
         all_files = [f for f in path.rglob("*") if f.is_file()]
         for f in all_files:
