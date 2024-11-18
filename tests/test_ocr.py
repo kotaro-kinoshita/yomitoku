@@ -1,10 +1,8 @@
-import os
-
 import pytest
 import torch
 from omegaconf import OmegaConf
 
-from yomitoku.ocr import OCR, OCRSchema, WordPrediction
+from yomitoku.ocr import OCR
 
 
 def test_ocr():

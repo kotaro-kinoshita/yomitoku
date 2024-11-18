@@ -1,8 +1,6 @@
 import json
 import os
 
-import pytest
-
 from yomitoku.document_analyzer import DocumentAnalyzerSchema, ParagraphSchema
 from yomitoku.export.export_csv import paragraph_to_csv, table_to_csv
 from yomitoku.export.export_html import (
