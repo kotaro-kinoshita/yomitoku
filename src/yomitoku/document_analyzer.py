@@ -46,7 +46,7 @@ def extract_words_within_element(pred_words, element):
     check_list = [False] * len(pred_words)
     for i, word in enumerate(pred_words):
         word_box = quad_to_xyxy(word.points)
-        if is_contained(element.box, word_box, threshold=0.6):
+        if is_contained(element.box, word_box, threshold=0.5):
             contained_words.append(word)
             word_sum_width += word_box[2] - word_box[0]
             word_sum_height += word_box[3] - word_box[1]
@@ -62,9 +62,7 @@ def extract_words_within_element(pred_words, element):
     cnt_horizontal = word_direction.count("horizontal")
     cnt_vertical = word_direction.count("vertical")
 
-    element_direction = (
-        "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
-    )
+    element_direction = "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
     if element_direction == "horizontal":
         contained_words = sorted(
             contained_words,
@@ -83,9 +81,7 @@ def extract_words_within_element(pred_words, element):
             reverse=True,
         )
 
-    contained_words = "\n".join(
-        [content.content for content in contained_words]
-    )
+    contained_words = "\n".join([content.content for content in contained_words])
     return (contained_words, element_direction, check_list)
 
 
@@ -137,9 +133,7 @@ class DocumentAnalyzer:
             )
 
         self.ocr = OCR(configs=default_configs["ocr"])
-        self.layout = LayoutAnalyzer(
-            configs=default_configs["layout_analyzer"]
-        )
+        self.layout = LayoutAnalyzer(configs=default_configs["layout_analyzer"])
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []

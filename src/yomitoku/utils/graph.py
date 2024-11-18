@@ -19,10 +19,16 @@ class Node:
         }
 
     def add_h_link(self, name, node):
+        if node in self.links[name].h_children:
+            return
+
         self.links[name].h_children.append(node)
         node.links[name].h_parent.append(self)
 
     def add_v_link(self, name, node):
+        if node in self.links[name].v_children:
+            return
+
         self.links[name].v_children.append(node)
         node.links[name].v_parent.append(self)
 

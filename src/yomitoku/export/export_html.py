@@ -3,7 +3,8 @@ from html import escape
 
 from lxml import etree, html
 
-from ..utils.reading_order import reading_order
+from ..utils.reading_order_horizontal import reading_order_horizontal
+from ..utils.reading_order_vertical import reading_order_vertical
 from .utils import sort_elements
 
 
@@ -96,28 +97,50 @@ def export_html(
     inputs,
     out_path: str,
     ignore_line_break: bool = False,
+    img=None,
 ):
     html_string = ""
     elements = []
     for table in inputs.tables:
         elements.append(table_to_html(table, ignore_line_break))
 
-    for paraghraph in inputs.paragraphs:
-        elements.append(paragraph_to_html(paraghraph, ignore_line_break))
+    for paragraph in inputs.paragraphs:
+        elements.append(paragraph_to_html(paragraph, ignore_line_break))
 
-    # directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
-    # elements = sort_elements(elements, directions)
-
-    order = reading_order(elements)
+    # directions = [paragraph.direction for paragraph in inputs.paragraphs]
+    # print(directions, directions.count("vertical"), directions.count("horizontal"))
+    direction = judge_direction(inputs.paragraphs)
+    if direction == "vertical":
+        order = reading_order_vertical(elements)
+    else:
+        order = reading_order_horizontal(elements)
     elements = [elements[i] for i in order]
 
     html_string = "".join([element["html"] for element in elements])
     html_string = add_html_tag(html_string)
 
     parsed_html = html.fromstring(html_string)
-    formatted_html = etree.tostring(
-        parsed_html, pretty_print=True, encoding="unicode"
-    )
+    formatted_html = etree.tostring(parsed_html, pretty_print=True, encoding="unicode")
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(formatted_html)
+
+
+def judge_direction(paragraphs):
+    h_sum_area = 0
+    v_sum_area = 0
+
+    for paragraph in paragraphs:
+        x1, y1, x2, y2 = paragraph.box
+        w = x2 - x1
+        h = y2 - y1
+
+        if paragraph.direction == "horizontal":
+            h_sum_area += w * h
+        else:
+            v_sum_area += w * h
+
+    if h_sum_area > v_sum_area:
+        return "horizontal"
+
+    return "vertical"

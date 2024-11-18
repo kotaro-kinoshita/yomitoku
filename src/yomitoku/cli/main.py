@@ -40,14 +40,14 @@ def process_single_file(args, analyzer, path, format):
             cv2.imwrite(out_path, layout)
             logger.info(f"Output file: {out_path}")
 
+        print(img.shape)
+
         # cv2.imwrite(
         #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"),
         #    img,
         # )
 
-        out_path = os.path.join(
-            args.outdir, f"{dirname}_{filename}_p{page+1}.{format}"
-        )
+        out_path = os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.{format}")
 
         if format == "json":
             results.to_json(
@@ -63,6 +63,7 @@ def process_single_file(args, analyzer, path, format):
             results.to_html(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
+                img=img,
             )
         elif format == "md":
             results.to_markdown(
@@ -75,9 +76,7 @@ def process_single_file(args, analyzer, path, format):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "arg1", type=str, help="path of target image file or directory"
-    )
+    parser.add_argument("arg1", type=str, help="path of target image file or directory")
     parser.add_argument(
         "-f",
         "--format",
