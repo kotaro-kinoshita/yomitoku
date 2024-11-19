@@ -91,9 +91,7 @@ def test_run_png_markdown(monkeypatch, tmp_path):
     filename = path.stem
     out_path = os.path.join(str(tmp_path), f"{dirname}_{filename}_p1.md")
     out_ocr = os.path.join(str(tmp_path), f"{dirname}_{filename}_p1_ocr.jpg")
-    out_lay = os.path.join(
-        str(tmp_path), f"{dirname}_{filename}_p1_layout.jpg"
-    )
+    out_lay = os.path.join(str(tmp_path), f"{dirname}_{filename}_p1_layout.jpg")
     assert os.path.exists(out_path)
     assert os.path.exists(out_ocr)
     assert os.path.exists(out_lay)
@@ -112,6 +110,11 @@ def test_run_jpg_html(monkeypatch, tmp_path):
             "HTML",
             "--lp_cfg",
             "tests/yaml/layout_parser.yaml",
+            "--figure",
+            "--figure_letter",
+            "--figure_width",
+            "100",
+            "--ignore_line_break",
         ],
     )
     main.main()
@@ -158,6 +161,11 @@ def test_run_pdf_md(monkeypatch, tmp_path):
             "MD",
             "--tr_cfg",
             "tests/yaml/text_recognizer.yaml",
+            "--figure",
+            "--figure_letter",
+            "--figure_width",
+            "100",
+            "--ignore_line_break",
         ],
     )
     main.main()

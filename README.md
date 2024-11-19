@@ -18,11 +18,18 @@ YomiToku は日本語の文書画像解析に特化した AI ベースの文章�
 
 [gallery.md](gallery.md)にも複数種類の画像の検証結果を掲載しています。
 
-|                       入力画像                       |                        OCR                         |
+|                       入力画像                       |                        OCRの結果                         |
 | :--------------------------------------------------: | :------------------------------------------------: |
-|     <img src="static/in/demo.jpg" width="400px">     | <img src="static/out/demo_ocr.jpg" width="400px">  |
-|                    レイアウト解析                    |                    エクスポート                    |
-| <img src="static/out/demo_layout.jpg" width="400px"> | <img src="static/out/demo_html.png" width="400px"> |
+|     <img src="static/in/demo.jpg" width="400px">     | <img src="static/out/in_demo_p1_ocr.jpg" width="400px">  |
+|                    レイアウト解析の結果                   |                    エクスポート                    |
+| <img src="static/out/in_demo_p1_layout.jpg" width="400px"> | <img src="static/out/demo_html.png" width="400px"> |
+
+レイアウト解析の結果について
+- `赤枠`　図、画像等
+- `緑枠` 表
+- `ピンク枠` 表のセル構造
+- `青枠` 段落、テキストグループ
+- `赤矢印` 読み順推定の結果
 
 Markdown でエクスポートした結果は関してはリポジトリ内の[demo.md](demo.md)を参照
 
@@ -37,6 +44,8 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[d
 ```
 pip install --index-url https://test.pypi.org/simple/ yomitoku
 ```
+
+- pytorchがご自身のGPUの環境にあったものをインストールしてください
 
 ### 依存ライブラリ
 
@@ -66,6 +75,13 @@ yomitoku ${path_data} -f md -o results -v -d cpu
 - `-v` を指定すると解析結果を可視化した画像を出力します。
 - `-d` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
 - `--ignore_line_break` 画像の改行位置を無視して、段落内の文章を連結して返します。（デフォルト：画像通りの改行位置位置で改行します。）
+- `figure_letter` 検出した図表に含まれる文字も出力ファイルにエクスポートします。
+- `figure` 検出した図、画像を出力ファイルにエクスポートします。(htmlとmdのみ)
+
+その他のオプションに関しては、ヘルプを参照
+```
+yomitoku --help
+```
 
 ### Note
 
@@ -77,14 +93,6 @@ yomitoku ${path_data} -f md -o results -v -d cpu
 ## 📝 ドキュメント
 
 パッケージの詳細は[ドキュメント](https://kotaro-kinoshita.github.io/yomitoku-dev/)を確認してください。
-
-## 🔥 開発予定
-
-YomiToku は現在も開発中であり、今後以下のような機能の拡張を目指しています。
-
-- 文章の読み順推定機能
-
-  段組など複雑なレイアウトが与えられた場合にエクスポート時に読み取り順序が意図しない結果となる課題があります。段落ごとの読み順を推定し、文書が自然な並びで再構成できるように読み順推定モデルを構築する予定です。
 
 ## LICENSE
 

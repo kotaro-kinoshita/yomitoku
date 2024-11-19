@@ -166,7 +166,7 @@ def _create_graph_vertical(nodes):
 
 
 def prediction_reading_order(elements, direction):
-    if len(elements) == 0:
+    if len(elements) < 2:
         return elements
 
     nodes = [Node(i, element.dict()) for i, element in enumerate(elements)]
