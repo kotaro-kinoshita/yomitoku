@@ -21,7 +21,7 @@ YomiToku は日本語の文書画像解析に特化した AI ベースの文章�
 |                       入力画像                       |                        OCRの結果                         |
 | :--------------------------------------------------: | :------------------------------------------------: |
 |     <img src="static/in/demo.jpg" width="400px">     | <img src="static/out/in_demo_p1_ocr.jpg" width="400px">  |
-|                    レイアウト解析の結果                   |                    エクスポート                    |
+|                    レイアウト解析の結果                   |                    エクスポート(HTMLで出力したものをスクリーンショット)                    |
 | <img src="static/out/in_demo_p1_layout.jpg" width="400px"> | <img src="static/out/demo_html.png" width="400px"> |
 
 レイアウト解析の結果について
