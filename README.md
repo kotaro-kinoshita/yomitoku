@@ -97,7 +97,13 @@ yomitoku --help
 
 ## LICENSE
 
+本リポジトリ内に格納されているリソースのライセンスはYomiTokuはCC BY-NC 4.0に従います。
+非商用での個人利用、研究目的での利用は自由に利用できます。
+商用目的での利用に関しては、別途、商用ライセンスを提供しますので、開発者にお問い合わせください。
+
+
 YomiToku © 2024 by MLism inc. is licensed under CC BY-NC 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc/4.0/
+
 
 ## 🙏 謝辞
 
