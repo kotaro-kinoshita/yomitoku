@@ -13,6 +13,8 @@ from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.misc import is_contained, quad_to_xyxy
 from .reading_order import prediction_reading_order
 
+from .utils.visualizer import reading_order_visualizer
+
 
 class ParagraphSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
@@ -156,6 +158,7 @@ class DocumentAnalyzer:
 
         self.ocr = OCR(configs=default_configs["ocr"])
         self.layout = LayoutAnalyzer(configs=default_configs["layout_analyzer"])
+        self.visualize = visualize
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
@@ -235,4 +238,10 @@ class DocumentAnalyzer:
         return results, ocr, layout
 
     def __call__(self, img):
-        return asyncio.run(self.run(img))
+        self.img = img
+        resutls, ocr, layout = asyncio.run(self.run(img))
+
+        if self.visualize:
+            layout = reading_order_visualizer(layout, resutls)
+
+        return resutls, ocr, layout

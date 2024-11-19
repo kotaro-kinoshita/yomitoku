@@ -5,9 +5,50 @@ from PIL import Image, ImageDraw, ImageFont
 from ..constants import PALETTE
 
 
-def det_visualizer(
-    preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)
-):
+def reading_order_visualizer(img, results, line_color=(0, 0, 255), tip_size=10):
+    elements = results.paragraphs + results.tables
+    elements = sorted(elements, key=lambda x: x.order)
+
+    out = img.copy()
+
+    for i, element in enumerate(elements):
+        if i == 0:
+            continue
+
+        prev_element = elements[i - 1]
+        cur_x1, cur_y1, cur_x2, cur_y2 = element.box
+        prev_x1, prev_y1, prev_x2, prev_y2 = prev_element.box
+
+        cur_center = (
+            cur_x1 + (cur_x2 - cur_x1) / 2,
+            cur_y1 + (cur_y2 - cur_y1) / 2,
+        )
+        prev_center = (
+            prev_x1 + (prev_x2 - prev_x1) / 2,
+            prev_y1 + (prev_y2 - prev_y1) / 2,
+        )
+
+        arrow_length = np.linalg.norm(np.array(cur_center) - np.array(prev_center))
+
+        # tipLength を計算（矢印長さに対する固定サイズの割合）
+        if arrow_length > 0:
+            tip_length = tip_size / arrow_length
+        else:
+            tip_length = 0  # 長さが0なら矢じりもゼロ
+
+        cv2.arrowedLine(
+            out,
+            (int(prev_center[0]), int(prev_center[1])),
+            (int(cur_center[0]), int(cur_center[1])),
+            line_color,
+            2,
+            tipLength=tip_length,
+        )
+
+    return out
+
+
+def det_visualizer(preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)):
     preds = preds["binary"][0]
     binary = preds.detach().cpu().numpy()
     out = img.copy()

@@ -1,8 +1,14 @@
+import cv2
+
 from .utils.graph import Node
 from .utils.misc import (
     is_intersected_vertical,
     is_intersected_horizontal,
 )
+
+
+def is_locked_node(node):
+    return all([child.is_locked for child in node.children])
 
 
 def _priority_dfs(nodes):
@@ -40,11 +46,20 @@ def _priority_dfs(nodes):
                 stack.append(current)
 
             if len(current.children) == 0:
+                children = []
+                for node in stack:
+                    if current in node.parents:
+                        children.append(node)
+                        stack.remove(node)
+
+                children = sorted(
+                    children, key=lambda x: x.prop["box"][0], reverse=True
+                )
+                stack.extend(children)
                 continue
 
             child = current.children.pop(0)
-            if child not in open_list:
-                stack.append(child)
+            stack.append(child)
 
         for node in pending_nodes:
             if node in open_list:
@@ -57,6 +72,7 @@ def _priority_dfs(nodes):
                 node = open_list.pop(0)
                 visited[node.id] = True
                 order.append(node.id)
+
     return order
 
 
@@ -116,7 +132,7 @@ def _create_graph_horizontal(nodes):
                 else:
                     other_node.add_link(node)
 
-            node_distance = node.prop["box"][0] + node.prop["box"][1] * 5
+            node_distance = node.prop["box"][0] + node.prop["box"][1]
             node.prop["distance"] = node_distance
 
     for node in nodes:
@@ -143,12 +159,10 @@ def _create_graph_vertical(nodes):
                 else:
                     node.add_link(other_node)
 
-            node.prop["distance"] = (max_x - node.prop["box"][2]) * 5 + node.prop[
-                "box"
-            ][1]
+            node.prop["distance"] = (max_x - node.prop["box"][2]) + node.prop["box"][1]
 
     for node in nodes:
-        node.children = sorted(node.children, key=lambda x: x.prop["box"][3])
+        node.children = sorted(node.children, key=lambda x: x.prop["box"][1])
 
 
 def prediction_reading_order(elements, direction):
@@ -161,8 +175,32 @@ def prediction_reading_order(elements, direction):
     else:
         _create_graph_vertical(nodes)
 
+    # For debugging
+    # visualize_graph(img, nodes)
+
     order = _priority_dfs(nodes)
     for i, index in enumerate(order):
         elements[index].order = i
 
     return elements
+
+
+def visualize_graph(img, nodes):
+    out = img.copy()
+    for node in nodes:
+        for child in node.children:
+            nx1, ny1, nx2, ny2 = node.prop["box"]
+            cx1, cy1, cx2, cy2 = child.prop["box"]
+
+            node_center = nx1 + (nx2 - nx1) // 2, ny1 + (ny2 - ny1) // 2
+            child_center = cx1 + (cx2 - cx1) // 2, cy1 + (cy2 - cy1) // 2
+
+            cv2.arrowedLine(
+                out,
+                (int(node_center[0]), int(node_center[1])),
+                (int(child_center[0]), int(child_center[1])),
+                (0, 0, 255),
+                2,
+            )
+
+    cv2.imwrite("graph.jpg", out)
