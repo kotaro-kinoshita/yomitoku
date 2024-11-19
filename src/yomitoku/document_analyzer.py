@@ -11,12 +11,16 @@ from .layout_parser import Element
 from .ocr import OCR, WordPrediction
 from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.misc import is_contained, quad_to_xyxy
+from .reading_order import prediction_reading_order
+
+from .utils.visualizer import reading_order_visualizer
 
 
 class ParagraphSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     contents: Union[str, None]
     direction: Union[str, None]
+    order: Union[int, None]
 
 
 class DocumentAnalyzerSchema(BaseSchema):
@@ -39,6 +43,26 @@ def combine_flags(flag1, flag2):
     return [f1 or f2 for f1, f2 in zip(flag1, flag2)]
 
 
+def judge_page_direction(paragraphs):
+    h_sum_area = 0
+    v_sum_area = 0
+
+    for paragraph in paragraphs:
+        x1, y1, x2, y2 = paragraph.box
+        w = x2 - x1
+        h = y2 - y1
+
+        if paragraph.direction == "horizontal":
+            h_sum_area += w * h
+        else:
+            v_sum_area += w * h
+
+    if h_sum_area > v_sum_area:
+        return "horizontal"
+
+    return "vertical"
+
+
 def extract_words_within_element(pred_words, element):
     contained_words = []
     word_sum_width = 0
@@ -46,7 +70,7 @@ def extract_words_within_element(pred_words, element):
     check_list = [False] * len(pred_words)
     for i, word in enumerate(pred_words):
         word_box = quad_to_xyxy(word.points)
-        if is_contained(element.box, word_box, threshold=0.6):
+        if is_contained(element.box, word_box, threshold=0.5):
             contained_words.append(word)
             word_sum_width += word_box[2] - word_box[0]
             word_sum_height += word_box[3] - word_box[1]
@@ -62,9 +86,7 @@ def extract_words_within_element(pred_words, element):
     cnt_horizontal = word_direction.count("horizontal")
     cnt_vertical = word_direction.count("vertical")
 
-    element_direction = (
-        "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
-    )
+    element_direction = "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
     if element_direction == "horizontal":
         contained_words = sorted(
             contained_words,
@@ -83,9 +105,7 @@ def extract_words_within_element(pred_words, element):
             reverse=True,
         )
 
-    contained_words = "\n".join(
-        [content.content for content in contained_words]
-    )
+    contained_words = "\n".join([content.content for content in contained_words])
     return (contained_words, element_direction, check_list)
 
 
@@ -137,9 +157,8 @@ class DocumentAnalyzer:
             )
 
         self.ocr = OCR(configs=default_configs["ocr"])
-        self.layout = LayoutAnalyzer(
-            configs=default_configs["layout_analyzer"]
-        )
+        self.layout = LayoutAnalyzer(configs=default_configs["layout_analyzer"])
+        self.visualize = visualize
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
@@ -168,7 +187,9 @@ class DocumentAnalyzer:
                 "contents": words,
                 "box": paragraph.box,
                 "direction": direction,
+                "order": 0,
             }
+
             check_list = combine_flags(check_list, flags)
             paragraph = ParagraphSchema(**paragraph)
             paragraphs.append(paragraph)
@@ -180,10 +201,15 @@ class DocumentAnalyzer:
                     "contents": word.content,
                     "box": quad_to_xyxy(word.points),
                     "direction": direction,
+                    "order": 0,
                 }
 
                 paragraph = ParagraphSchema(**paragraph)
                 paragraphs.append(paragraph)
+
+        page_direction = judge_page_direction(paragraphs)
+        elements = paragraphs + layout_res.tables
+        prediction_reading_order(elements, page_direction)
 
         outputs = {
             "paragraphs": paragraphs,
@@ -212,4 +238,10 @@ class DocumentAnalyzer:
         return results, ocr, layout
 
     def __call__(self, img):
-        return asyncio.run(self.run(img))
+        self.img = img
+        resutls, ocr, layout = asyncio.run(self.run(img))
+
+        if self.visualize:
+            layout = reading_order_visualizer(layout, resutls)
+
+        return resutls, ocr, layout

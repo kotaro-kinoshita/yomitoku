@@ -3,8 +3,6 @@ from html import escape
 
 from lxml import etree, html
 
-from .utils import sort_elements
-
 
 def convert_text_to_html(text):
     """
@@ -72,6 +70,7 @@ def table_to_html(table, ignore_line_break):
 
     return {
         "box": table.box,
+        "order": table.order,
         "html": table_html,
     }
 
@@ -87,6 +86,7 @@ def paragraph_to_html(paragraph, ignore_line_break):
 
     return {
         "box": paragraph.box,
+        "order": paragraph.order,
         "html": add_p_tag(contents),
     }
 
@@ -95,25 +95,23 @@ def export_html(
     inputs,
     out_path: str,
     ignore_line_break: bool = False,
+    img=None,
 ):
     html_string = ""
     elements = []
     for table in inputs.tables:
         elements.append(table_to_html(table, ignore_line_break))
 
-    for paraghraph in inputs.paragraphs:
-        elements.append(paragraph_to_html(paraghraph, ignore_line_break))
+    for paragraph in inputs.paragraphs:
+        elements.append(paragraph_to_html(paragraph, ignore_line_break))
 
-    directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
-    elements = sort_elements(elements, directions)
+    elements = sorted(elements, key=lambda x: x["order"])
 
     html_string = "".join([element["html"] for element in elements])
     html_string = add_html_tag(html_string)
 
     parsed_html = html.fromstring(html_string)
-    formatted_html = etree.tostring(
-        parsed_html, pretty_print=True, encoding="unicode"
-    )
+    formatted_html = etree.tostring(parsed_html, pretty_print=True, encoding="unicode")
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(formatted_html)

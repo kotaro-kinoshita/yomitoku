@@ -14,7 +14,6 @@ from yomitoku.export.export_markdown import (
     paragraph_to_md,
     table_to_md,
 )
-from yomitoku.export.utils import sort_elements
 from yomitoku.layout_analyzer import LayoutAnalyzerSchema
 from yomitoku.layout_parser import Element, LayoutParserSchema
 from yomitoku.ocr import OCRSchema, WordPrediction
@@ -27,7 +26,6 @@ from yomitoku.text_recognizer import TextRecognizerSchema
 
 
 def test_convert_text_to_html():
-
     texts = [
         {
             "text": "これはテストです。<p>がんばりましょう。</p>",
@@ -75,7 +73,13 @@ def test_table_to_html():
         },
     ]
     cells = [TableCellSchema(**cell) for cell in cells]
-    table = {"box": [0, 0, 100, 100], "n_row": 2, "n_col": 2, "cells": cells}
+    table = {
+        "box": [0, 0, 100, 100],
+        "n_row": 2,
+        "n_col": 2,
+        "cells": cells,
+        "order": 0,
+    }
     table = TableStructureRecognizerSchema(**table)
     expected = '<table border="1" style="border-collapse: collapse"><tr><td rowspan="2" colspan="1">dummy<br></td><td rowspan="1" colspan="1">dummy<br></td></tr><tr><td rowspan="1" colspan="1"></td></tr></table>'
     assert table_to_html(table, ignore_line_break=False)["html"] == expected
@@ -89,50 +93,15 @@ def test_paragraph_to_html():
         "direction": "horizontal",
         "box": [0, 0, 10, 10],
         "contents": "これはテストです。<a href='https://www.google.com'>Google</a>\n",
+        "order": 0,
     }
 
     paragraph = ParagraphSchema(**paragraph)
     expected = "<p>これはテストです。&lt;a href=&#x27;https://www.google.com&#x27;&gt;Google&lt;/a&gt;<br></p>"
-    assert (
-        paragraph_to_html(paragraph, ignore_line_break=False)["html"]
-        == expected
-    )
+    assert paragraph_to_html(paragraph, ignore_line_break=False)["html"] == expected
 
     expected = "<p>これはテストです。&lt;a href=&#x27;https://www.google.com&#x27;&gt;Google&lt;/a&gt;</p>"
-    assert (
-        paragraph_to_html(paragraph, ignore_line_break=True)["html"]
-        == expected
-    )
-
-
-def test_sort_elements():
-    elements = []
-    directions = []
-
-    assert sort_elements(elements, directions) == []
-    elements = [
-        {"box": [20, 10, 10, 10]},
-        {"box": [10, 0, 10, 10]},
-        {"box": [0, 20, 10, 10]},
-    ]
-
-    directions = ["horizontal"]
-    expected = [
-        {"box": [10, 0, 10, 10]},
-        {"box": [20, 10, 10, 10]},
-        {"box": [0, 20, 10, 10]},
-    ]
-
-    assert sort_elements(elements, directions) == expected
-
-    directions = ["vertical"]
-    expected = [
-        {"box": [20, 10, 10, 10]},
-        {"box": [10, 0, 10, 10]},
-        {"box": [0, 20, 10, 10]},
-    ]
-
-    assert sort_elements(elements, directions) == expected
+    assert paragraph_to_html(paragraph, ignore_line_break=True)["html"] == expected
 
 
 def test_escape_markdown_special_chars():
@@ -172,14 +141,13 @@ def test_paragraph_to_md():
         "direction": "horizontal",
         "box": [0, 0, 10, 10],
         "contents": "print('Hello, World!')\n",
+        "order": 0,
     }
 
     paragraph = ParagraphSchema(**paragraph)
 
     expected = "print\('Hello, World\!'\)<br>\n"
-    assert (
-        paragraph_to_md(paragraph, ignore_line_break=False)["md"] == expected
-    )
+    assert paragraph_to_md(paragraph, ignore_line_break=False)["md"] == expected
 
     expected = "print\('Hello, World\!'\)\n"
     assert paragraph_to_md(paragraph, ignore_line_break=True)["md"] == expected
@@ -213,7 +181,13 @@ def test_table_to_md():
         },
     ]
     cells = [TableCellSchema(**cell) for cell in cells]
-    table = {"box": [0, 0, 100, 100], "n_row": 2, "n_col": 2, "cells": cells}
+    table = {
+        "box": [0, 0, 100, 100],
+        "n_row": 2,
+        "n_col": 2,
+        "cells": cells,
+        "order": 0,
+    }
     table = TableStructureRecognizerSchema(**table)
 
     expected = "|dummy<br>|dummy<br>|\n|-|-|\n||dummy<br>|\n"
@@ -252,7 +226,13 @@ def test_table_to_csv():
         },
     ]
     cells = [TableCellSchema(**cell) for cell in cells]
-    table = {"box": [0, 0, 100, 100], "n_row": 2, "n_col": 2, "cells": cells}
+    table = {
+        "box": [0, 0, 100, 100],
+        "n_row": 2,
+        "n_col": 2,
+        "cells": cells,
+        "order": 0,
+    }
     table = TableStructureRecognizerSchema(**table)
 
     expected = [["dummy\n", "dummy\n"], ["", "dummy\n"]]
@@ -267,6 +247,7 @@ def test_paragraph_to_csv():
         "direction": "horizontal",
         "box": [0, 0, 10, 10],
         "contents": "dummy\n",
+        "order": 0,
     }
 
     paragraph = ParagraphSchema(**paragraph)
@@ -283,6 +264,7 @@ def test_paragraph_to_json():
         "direction": "horizontal",
         "box": [0, 0, 10, 10],
         "contents": "dummy\n",
+        "order": 0,
     }
 
     paragraph = ParagraphSchema(**paragraph)
@@ -322,7 +304,13 @@ def test_table_to_json():
         },
     ]
     cells = [TableCellSchema(**cell) for cell in cells]
-    table = {"box": [0, 0, 100, 100], "n_row": 2, "n_col": 2, "cells": cells}
+    table = {
+        "box": [0, 0, 100, 100],
+        "n_row": 2,
+        "n_col": 2,
+        "cells": cells,
+        "order": 0,
+    }
     table = TableStructureRecognizerSchema(**table)
 
     table_to_json(table, ignore_line_break=False)
@@ -425,6 +413,7 @@ def test_export(tmp_path):
         "n_row": 2,
         "n_col": 2,
         "cells": [table_cell],
+        "order": 0,
     }
 
     tsr = TableStructureRecognizerSchema(**tsr)
@@ -449,6 +438,7 @@ def test_export(tmp_path):
         "direction": "horizontal",
         "box": [0, 0, 10, 10],
         "contents": "dummy\n",
+        "order": 0,
     }
     paragraph = ParagraphSchema(**paragraph)
     out_path = tmp_path / "paragraph.json"
