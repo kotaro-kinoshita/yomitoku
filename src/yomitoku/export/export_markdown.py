@@ -1,7 +1,5 @@
 import re
 
-from .utils import sort_elements
-
 
 def escape_markdown_special_chars(text):
     special_chars = r"([`*_{}[\]()#+.!|-])"
@@ -17,6 +15,7 @@ def paragraph_to_md(paragraph, ignore_line_break):
         contents = contents.replace("\n", "<br>")
 
     return {
+        "order": paragraph.order,
         "box": paragraph.box,
         "md": contents + "\n",
     }
@@ -56,6 +55,7 @@ def table_to_md(table, ignore_line_break):
             table_md += f"|{header}|\n"
 
     return {
+        "order": table.order,
         "box": table.box,
         "md": table_md,
     }
@@ -66,13 +66,11 @@ def export_markdown(inputs, out_path: str, ignore_line_break: bool = False):
     for table in inputs.tables:
         elements.append(table_to_md(table, ignore_line_break))
 
-    for paraghraph in inputs.paragraphs:
-        elements.append(paragraph_to_md(paraghraph, ignore_line_break))
+    for paragraph in inputs.paragraphs:
+        elements.append(paragraph_to_md(paragraph, ignore_line_break))
 
-    directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
-    sort_elements(elements, directions)
-
-    markdonw = "\n".join([element["md"] for element in elements])
+    elements = sorted(elements, key=lambda x: x["order"])
+    markdown = "\n".join([element["md"] for element in elements])
 
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(markdonw)
+        f.write(markdown)

@@ -40,8 +40,6 @@ def process_single_file(args, analyzer, path, format):
             cv2.imwrite(out_path, layout)
             logger.info(f"Output file: {out_path}")
 
-        print(img.shape)
-
         # cv2.imwrite(
         #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"),
         #    img,

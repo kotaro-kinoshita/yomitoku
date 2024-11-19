@@ -1,7 +1,5 @@
 import csv
 
-from .utils import sort_elements
-
 
 def table_to_csv(table, ignore_line_break):
     num_rows = table.n_row
@@ -45,6 +43,7 @@ def export_csv(inputs, out_path: str, ignore_line_break: bool = False):
                 "type": "table",
                 "box": table.box,
                 "element": table_csv,
+                "order": table.order,
             }
         )
 
@@ -55,11 +54,11 @@ def export_csv(inputs, out_path: str, ignore_line_break: bool = False):
                 "type": "paragraph",
                 "box": paraghraph.box,
                 "element": contents,
+                "order": paraghraph.order,
             }
         )
 
-    directions = [paraghraph.direction for paraghraph in inputs.paragraphs]
-    elements = sort_elements(elements, directions)
+    elements = sorted(elements, key=lambda x: x["order"])
 
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)

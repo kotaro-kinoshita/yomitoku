@@ -11,12 +11,14 @@ from .layout_parser import Element
 from .ocr import OCR, WordPrediction
 from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.misc import is_contained, quad_to_xyxy
+from .reading_order import prediction_reading_order
 
 
 class ParagraphSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     contents: Union[str, None]
     direction: Union[str, None]
+    order: Union[int, None]
 
 
 class DocumentAnalyzerSchema(BaseSchema):
@@ -37,6 +39,26 @@ class DocumentAnalyzerSchema(BaseSchema):
 
 def combine_flags(flag1, flag2):
     return [f1 or f2 for f1, f2 in zip(flag1, flag2)]
+
+
+def judge_page_direction(paragraphs):
+    h_sum_area = 0
+    v_sum_area = 0
+
+    for paragraph in paragraphs:
+        x1, y1, x2, y2 = paragraph.box
+        w = x2 - x1
+        h = y2 - y1
+
+        if paragraph.direction == "horizontal":
+            h_sum_area += w * h
+        else:
+            v_sum_area += w * h
+
+    if h_sum_area > v_sum_area:
+        return "horizontal"
+
+    return "vertical"
 
 
 def extract_words_within_element(pred_words, element):
@@ -162,7 +184,9 @@ class DocumentAnalyzer:
                 "contents": words,
                 "box": paragraph.box,
                 "direction": direction,
+                "order": 0,
             }
+
             check_list = combine_flags(check_list, flags)
             paragraph = ParagraphSchema(**paragraph)
             paragraphs.append(paragraph)
@@ -174,10 +198,15 @@ class DocumentAnalyzer:
                     "contents": word.content,
                     "box": quad_to_xyxy(word.points),
                     "direction": direction,
+                    "order": 0,
                 }
 
                 paragraph = ParagraphSchema(**paragraph)
                 paragraphs.append(paragraph)
+
+        page_direction = judge_page_direction(paragraphs)
+        elements = paragraphs + layout_res.tables
+        prediction_reading_order(elements, page_direction)
 
         outputs = {
             "paragraphs": paragraphs,

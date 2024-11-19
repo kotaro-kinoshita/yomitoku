@@ -18,9 +18,7 @@ from .utils.visualizer import table_visualizer
 class TableStructureRecognizerModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
-        self.register(
-            "rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2
-        )
+        self.register("rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2)
 
 
 class TableCellSchema(BaseSchema):
@@ -37,6 +35,7 @@ class TableStructureRecognizerSchema(BaseSchema):
     n_row: int
     n_col: int
     cells: List[TableCellSchema]
+    order: int
 
 
 def extract_cells(row_boxes, col_boxes):
@@ -165,9 +164,7 @@ class TableStructureRecognizer(BaseModule):
         boxes = preds["boxes"]
         labels = preds["labels"]
 
-        category_elements = {
-            category: [] for category in self.label_mapper.values()
-        }
+        category_elements = {category: [] for category in self.label_mapper.values()}
         for box, score, label in zip(boxes, scores, labels):
             category = self.label_mapper[label.item()]
             box = box.astype(int).tolist()
@@ -200,6 +197,7 @@ class TableStructureRecognizer(BaseModule):
             "n_row": n_row,
             "n_col": n_col,
             "cells": cells,
+            "order": 0,
         }
 
         results = TableStructureRecognizerSchema(**table)
