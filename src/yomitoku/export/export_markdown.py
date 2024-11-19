@@ -1,4 +1,6 @@
 import re
+import cv2
+import os
 
 
 def escape_markdown_special_chars(text):
@@ -61,13 +63,77 @@ def table_to_md(table, ignore_line_break):
     }
 
 
-def export_markdown(inputs, out_path: str, ignore_line_break: bool = False):
+def figure_to_md(
+    figures,
+    img,
+    out_path,
+    export_figure_letter=False,
+    ignore_line_break=False,
+    width=200,
+    figure_dir="figures",
+):
+    elements = []
+    for i, figure in enumerate(figures):
+        x1, y1, x2, y2 = map(int, figure.box)
+        figure_img = img[y1:y2, x1:x2, :]
+        save_dir = os.path.dirname(out_path)
+        save_dir = os.path.join(save_dir, figure_dir)
+        os.makedirs(save_dir, exist_ok=True)
+
+        filename = os.path.splitext(os.path.basename(out_path))[0]
+        figure_name = f"{filename}_figure_{i}.png"
+        figure_path = os.path.join(save_dir, figure_name)
+        cv2.imwrite(figure_path, figure_img)
+
+        elements.append(
+            {
+                "order": figure.order,
+                "md": f'<img src="{figure_dir}/{figure_name}" width="{width}px"><br>',
+            }
+        )
+
+        if export_figure_letter:
+            paragraphs = sorted(figure.paragraphs, key=lambda x: x.order)
+            for paragraph in paragraphs:
+                element = paragraph_to_md(paragraph, ignore_line_break)
+                element = {
+                    "order": figure.order,
+                    "md": element["md"],
+                }
+                elements.append(element)
+
+    return elements
+
+
+def export_markdown(
+    inputs,
+    out_path: str,
+    img=None,
+    ignore_line_break: bool = False,
+    export_figure_letter=False,
+    export_figure=True,
+    figure_width=200,
+    figure_dir="figures",
+):
     elements = []
     for table in inputs.tables:
         elements.append(table_to_md(table, ignore_line_break))
 
     for paragraph in inputs.paragraphs:
         elements.append(paragraph_to_md(paragraph, ignore_line_break))
+
+    if export_figure:
+        elements.extend(
+            figure_to_md(
+                inputs.figures,
+                img,
+                out_path,
+                export_figure_letter,
+                ignore_line_break,
+                figure_width,
+                figure_dir=figure_dir,
+            )
+        )
 
     elements = sorted(elements, key=lambda x: x["order"])
     markdown = "\n".join([element["md"] for element in elements])

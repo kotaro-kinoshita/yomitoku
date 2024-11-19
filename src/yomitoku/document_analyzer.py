@@ -7,7 +7,6 @@ from pydantic import conlist
 from .base import BaseSchema
 from .export import export_csv, export_html, export_markdown
 from .layout_analyzer import LayoutAnalyzer
-from .layout_parser import Element
 from .ocr import OCR, WordPrediction
 from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.misc import is_contained, quad_to_xyxy
@@ -23,11 +22,19 @@ class ParagraphSchema(BaseSchema):
     order: Union[int, None]
 
 
+class FigureSchema(BaseSchema):
+    box: conlist(int, min_length=4, max_length=4)
+    order: Union[int, None]
+    paragraphs: List[ParagraphSchema]
+    order: Union[int, None]
+    direction: Union[str, None]
+
+
 class DocumentAnalyzerSchema(BaseSchema):
     paragraphs: List[ParagraphSchema]
     tables: List[TableStructureRecognizerSchema]
     words: List[WordPrediction]
-    figures: List[Element]
+    figures: List[FigureSchema]
 
     def to_html(self, out_path: str, **kwargs):
         export_html(self, out_path, **kwargs)
@@ -57,10 +64,32 @@ def judge_page_direction(paragraphs):
         else:
             v_sum_area += w * h
 
-    if h_sum_area > v_sum_area:
-        return "horizontal"
+    if v_sum_area > h_sum_area:
+        return "vertical"
 
-    return "vertical"
+    return "horizontal"
+
+
+def extract_paragraph_within_figure(paragraphs, figures):
+    new_figures = []
+    check_list = [False] * len(paragraphs)
+    for figure in figures:
+        figure = {"box": figure.box, "order": 0}
+        contained_paragraphs = []
+        for i, paragraph in enumerate(paragraphs):
+            if is_contained(figure["box"], paragraph.box, threshold=0.5):
+                contained_paragraphs.append(paragraph)
+                check_list[i] = True
+
+        figure["direction"] = judge_page_direction(contained_paragraphs)
+        figure_paragraphs = prediction_reading_order(
+            contained_paragraphs, figure["direction"]
+        )
+        figure["paragraphs"] = sorted(figure_paragraphs, key=lambda x: x.order)
+        figure = FigureSchema(**figure)
+        new_figures.append(figure)
+
+    return new_figures, check_list
 
 
 def extract_words_within_element(pred_words, element):
@@ -207,14 +236,25 @@ class DocumentAnalyzer:
                 paragraph = ParagraphSchema(**paragraph)
                 paragraphs.append(paragraph)
 
+        figures, check_list = extract_paragraph_within_figure(
+            paragraphs, layout_res.figures
+        )
+
+        paragraphs = [
+            paragraph for paragraph, flag in zip(paragraphs, check_list) if not flag
+        ]
+
         page_direction = judge_page_direction(paragraphs)
-        elements = paragraphs + layout_res.tables
+        elements = paragraphs + layout_res.tables + figures
         prediction_reading_order(elements, page_direction)
+        paragraphs = sorted(paragraphs, key=lambda x: x.order)
+        figures = sorted(figures, key=lambda x: x.order)
+        tables = sorted(layout_res.tables, key=lambda x: x.order)
 
         outputs = {
             "paragraphs": paragraphs,
-            "tables": layout_res.tables,
-            "figures": layout_res.figures,
+            "tables": tables,
+            "figures": figures,
             "words": ocr_res.words,
         }
 

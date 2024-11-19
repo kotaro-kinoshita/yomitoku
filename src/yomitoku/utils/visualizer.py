@@ -5,12 +5,8 @@ from PIL import Image, ImageDraw, ImageFont
 from ..constants import PALETTE
 
 
-def reading_order_visualizer(img, results, line_color=(0, 0, 255), tip_size=10):
-    elements = results.paragraphs + results.tables
-    elements = sorted(elements, key=lambda x: x.order)
-
+def _reading_order_visualizer(img, elements, line_color, tip_size):
     out = img.copy()
-
     for i, element in enumerate(elements):
         if i == 0:
             continue
@@ -44,6 +40,26 @@ def reading_order_visualizer(img, results, line_color=(0, 0, 255), tip_size=10):
             2,
             tipLength=tip_length,
         )
+    return out
+
+
+def reading_order_visualizer(
+    img,
+    results,
+    line_color=(0, 0, 255),
+    tip_size=10,
+    visualize_figure_letter=False,
+):
+    elements = results.paragraphs + results.tables + results.figures
+    elements = sorted(elements, key=lambda x: x.order)
+
+    out = _reading_order_visualizer(img, elements, line_color, tip_size)
+
+    if visualize_figure_letter:
+        for figure in results.figures:
+            out = _reading_order_visualizer(
+                out, figure.paragraphs, line_color=(0, 255, 0), tip_size=5
+            )
 
     return out
 

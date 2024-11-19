@@ -1,4 +1,7 @@
 import re
+import os
+import cv2
+
 from html import escape
 
 from lxml import etree, html
@@ -91,11 +94,59 @@ def paragraph_to_html(paragraph, ignore_line_break):
     }
 
 
+def figure_to_html(
+    figures,
+    img,
+    out_path,
+    export_figure_letter=False,
+    ignore_line_break=False,
+    figure_dir="figures",
+    width=200,
+):
+    elements = []
+    for i, figure in enumerate(figures):
+        x1, y1, x2, y2 = map(int, figure.box)
+        figure_img = img[y1:y2, x1:x2, :]
+        save_dir = os.path.dirname(out_path)
+        save_dir = os.path.join(save_dir, figure_dir)
+        os.makedirs(save_dir, exist_ok=True)
+
+        filename = os.path.splitext(os.path.basename(out_path))[0]
+        figure_name = f"{filename}_figure_{i}.png"
+        figure_path = os.path.join(save_dir, figure_name)
+        cv2.imwrite(figure_path, figure_img)
+
+        elements.append(
+            {
+                "order": figure.order,
+                "html": f'<img src="{figure_dir}/{figure_name}" width="{width}"><br>',
+            }
+        )
+
+        if export_figure_letter:
+            paragraphs = sorted(figure.paragraphs, key=lambda x: x.order)
+            for paragraph in paragraphs:
+                contents = paragraph_to_html(paragraph, ignore_line_break)
+                html = contents["html"]
+                elements.append(
+                    {
+                        "order": figure.order,
+                        "html": html,
+                    }
+                )
+
+    return elements
+
+
 def export_html(
     inputs,
     out_path: str,
     ignore_line_break: bool = False,
+    export_figure: bool = True,
+    export_figure_letter: bool = False,
     img=None,
+    figure_width=200,
+    figure_dir="figures",
 ):
     html_string = ""
     elements = []
@@ -104,6 +155,19 @@ def export_html(
 
     for paragraph in inputs.paragraphs:
         elements.append(paragraph_to_html(paragraph, ignore_line_break))
+
+    if export_figure:
+        elements.extend(
+            figure_to_html(
+                inputs.figures,
+                img,
+                out_path,
+                export_figure_letter,
+                ignore_line_break,
+                width=figure_width,
+                figure_dir=figure_dir,
+            ),
+        )
 
     elements = sorted(elements, key=lambda x: x["order"])
 

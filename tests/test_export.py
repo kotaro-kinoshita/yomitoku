@@ -1,7 +1,13 @@
 import json
 import os
 
-from yomitoku.document_analyzer import DocumentAnalyzerSchema, ParagraphSchema
+import numpy as np
+
+from yomitoku.document_analyzer import (
+    DocumentAnalyzerSchema,
+    ParagraphSchema,
+    FigureSchema,
+)
 from yomitoku.export.export_csv import paragraph_to_csv, table_to_csv
 from yomitoku.export.export_html import (
     convert_text_to_html,
@@ -446,12 +452,26 @@ def test_export(tmp_path):
     with open(out_path, "r") as f:
         assert json.load(f) == paragraph.dict()
 
+    figure = {
+        "direction": "horizontal",
+        "box": [0, 0, 10, 10],
+        "paragraphs": [paragraph],
+        "order": 0,
+    }
+    figure = FigureSchema(**figure)
+    out_path = tmp_path / "figure.json"
+    figure.to_json(out_path)
+    with open(out_path, "r") as f:
+        assert json.load(f) == figure.dict()
+
     document_analyzer = {
         "paragraphs": [paragraph],
         "tables": [tsr],
-        "figures": [element],
+        "figures": [figure],
         "words": [words],
     }
+
+    img = np.zeros((100, 100, 3), dtype=np.uint8)
 
     document_analyzer = DocumentAnalyzerSchema(**document_analyzer)
     out_path = tmp_path / "document_analyzer.json"
@@ -460,8 +480,8 @@ def test_export(tmp_path):
         assert json.load(f) == document_analyzer.dict()
 
     document_analyzer.to_csv(tmp_path / "document_analyzer.csv")
-    document_analyzer.to_html(tmp_path / "document_analyzer.html")
-    document_analyzer.to_markdown(tmp_path / "document_analyzer.md")
+    document_analyzer.to_html(tmp_path / "document_analyzer.html", img=img)
+    document_analyzer.to_markdown(tmp_path / "document_analyzer.md", img=img)
 
     assert os.path.exists(tmp_path / "document_analyzer.csv")
     assert os.path.exists(tmp_path / "document_analyzer.html")
