@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import cv2
+import time
 
 from ..constants import SUPPORT_OUTPUT_FORMAT
 from ..data.functions import load_image, load_pdf
@@ -209,8 +210,11 @@ def main():
         all_files = [f for f in path.rglob("*") if f.is_file()]
         for f in all_files:
             try:
+                start = time.time()
                 file_path = Path(f)
                 process_single_file(args, analyzer, file_path, format)
+                end = time.time()
+                logger.info(f"Total Processing time: {end-start:.2f} sec")
             except Exception:
                 continue
     else:
