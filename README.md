@@ -24,14 +24,14 @@ YomiToku は日本語の文書画像解析に特化した AI ベースの文章�
 |                    レイアウト解析の結果                   |                    エクスポート<br>(HTMLで出力したものをスクショ)                    |
 | <img src="static/out/in_demo_p1_layout.jpg" width="400px"> | <img src="static/out/demo_html.png" width="400px"> |
 
-レイアウト解析の結果について
-- `赤枠`　図、画像等
-- `緑枠` 表
-- `ピンク枠` 表のセル構造
-- `青枠` 段落、テキストグループ
-- `赤矢印` 読み順推定の結果
-
 Markdown でエクスポートした結果は関してはリポジトリ内の[demo.md](demo.md)を参照
+
+- `赤枠` : 図、画像等
+- `緑枠` : 表
+- `ピンク枠` : 表のセル構造
+- `青枠` : 段落、テキストグループ
+- `赤矢印` : 読み順推定の結果
+
 
 画像の出典:[「令和 6 年版情報通信白書 3 章 2 節 AI の進化に伴い発展するテクノロジー」](https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf)：（総務省） を加工して作成
 
