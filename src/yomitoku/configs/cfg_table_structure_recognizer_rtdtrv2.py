@@ -65,7 +65,7 @@ class TableStructureRecognizerRTDETRv2Config:
     hf_hub_repo: str = (
         "KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta"
     )
-    thresh_score: float = 0.6
+    thresh_score: float = 0.4
     data: Data = Data()
     PResNet: BackBone = BackBone()
     HybridEncoder: Encoder = Encoder()
