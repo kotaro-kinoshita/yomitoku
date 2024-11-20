@@ -212,13 +212,18 @@ def main():
             try:
                 start = time.time()
                 file_path = Path(f)
+                logger.info(f"Processing file: {file_path}")
                 process_single_file(args, analyzer, file_path, format)
                 end = time.time()
                 logger.info(f"Total Processing time: {end-start:.2f} sec")
             except Exception:
                 continue
     else:
+        start = time.time()
+        logger.info(f"Processing file: {path}")
         process_single_file(args, analyzer, path, format)
+        end = time.time()
+        logger.info(f"Total Processing time: {end-start:.2f} sec")
 
 
 if __name__ == "__main__":

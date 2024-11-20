@@ -68,7 +68,7 @@ def _priority_dfs(nodes):
             pending_nodes.remove(node)
             break
         else:
-            if not all(visited) and len(pending_nodes) != 0:
+            if not all(visited) and len(open_list) != 0:
                 node = open_list.pop(0)
                 visited[node.id] = True
                 order.append(node.id)

@@ -20,10 +20,10 @@ pdf ファイルの解析を行うためには、別途、[poppler](https://popp
     apt install poppler-utils -y
     ```
 
-## TestPYPI からインストール
+## PIP でインストール
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ yomitoku
+pip install git+https://github.com/kotaro-kinoshita/yomitoku-dev.git@main
 ```
 
 ## UV でのインストール
