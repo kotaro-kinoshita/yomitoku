@@ -43,7 +43,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[d
 ## 💡 インストールの方法
 
 ```
-pip install --index-url https://test.pypi.org/simple/ yomitoku
+pip install git+https://github.com/kotaro-kinoshita/yomitoku-dev.git@main
 ```
 
 - pytorchがご自身のGPUの環境にあったものをインストールしてください
