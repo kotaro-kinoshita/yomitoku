@@ -12,7 +12,7 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Cleanup disk space
         run: |
           sudo apt-get clean
