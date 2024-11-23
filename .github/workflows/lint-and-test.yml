@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: sudo apt install -y libopencv-dev poppler-utils
       - name: Install tox-uv
-        run: uv tool install tox
+        run: uv tool install tox --with tox-uv
       - name: Run linter
         run: tox -e lint
       - name: Run tests
