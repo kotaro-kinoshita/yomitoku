@@ -100,6 +100,7 @@ def test_paragraph_to_html():
         "box": [0, 0, 10, 10],
         "contents": "これはテストです。<a href='https://www.google.com'>Google</a>\n",
         "order": 0,
+        "role": None,
     }
 
     paragraph = ParagraphSchema(**paragraph)
@@ -148,6 +149,7 @@ def test_paragraph_to_md():
         "box": [0, 0, 10, 10],
         "contents": "print('Hello, World!')\n",
         "order": 0,
+        "role": None,
     }
 
     paragraph = ParagraphSchema(**paragraph)
@@ -254,6 +256,7 @@ def test_paragraph_to_csv():
         "box": [0, 0, 10, 10],
         "contents": "dummy\n",
         "order": 0,
+        "role": None,
     }
 
     paragraph = ParagraphSchema(**paragraph)
@@ -271,6 +274,7 @@ def test_paragraph_to_json():
         "box": [0, 0, 10, 10],
         "contents": "dummy\n",
         "order": 0,
+        "role": None,
     }
 
     paragraph = ParagraphSchema(**paragraph)
@@ -373,10 +377,7 @@ def test_export(tmp_path):
     with open(out_path, "r") as f:
         assert json.load(f) == ocr.dict()
 
-    element = {
-        "box": [0, 0, 10, 10],
-        "score": 0.9,
-    }
+    element = {"box": [0, 0, 10, 10], "score": 0.9, "role": None}
     element = Element(**element)
     out_path = tmp_path / "element.json"
     element.to_json(out_path)
@@ -445,6 +446,7 @@ def test_export(tmp_path):
         "box": [0, 0, 10, 10],
         "contents": "dummy\n",
         "order": 0,
+        "role": None,
     }
     paragraph = ParagraphSchema(**paragraph)
     out_path = tmp_path / "paragraph.json"

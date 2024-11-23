@@ -23,6 +23,7 @@ def _priority_dfs(nodes):
 
     order = []
     open_list = []
+
     while not all(visited):
         while stack:
             is_updated = False

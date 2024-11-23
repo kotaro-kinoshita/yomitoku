@@ -39,7 +39,7 @@ class Encoder:
 
 @dataclass
 class Decoder:
-    num_classes: int = 3
+    num_classes: int = 6
     feat_channels: List[int] = field(default_factory=lambda: [256, 256, 256])
     feat_strides: List[int] = field(default_factory=lambda: [8, 16, 32])
     hidden_dim: int = 256
@@ -62,10 +62,8 @@ class Decoder:
 
 @dataclass
 class LayoutParserRTDETRv2Config:
-    hf_hub_repo: str = (
-        "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
-    )
-    thresh_score: float = 0.4
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
+    thresh_score: float = 0.5
     data: Data = Data()
     PResNet: BackBone = BackBone()
     HybridEncoder: Encoder = Encoder()
@@ -76,5 +74,16 @@ class LayoutParserRTDETRv2Config:
             "tables",
             "figures",
             "paragraphs",
+            "section_headings",
+            "page_header",
+            "page_footer",
+        ]
+    )
+
+    role: List[str] = field(
+        default_factory=lambda: [
+            "section_headings",
+            "page_header",
+            "page_footer",
         ]
     )

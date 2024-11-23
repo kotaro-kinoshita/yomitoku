@@ -88,12 +88,19 @@ def layout_visualizer(results, img):
     for id, (category, preds) in enumerate(results_dict.items()):
         for element in preds:
             box = element["box"]
+            role = element["role"]
+
+            if role is None:
+                role = ""
+            else:
+                role = f"({role})"
+
             color = PALETTE[id % len(PALETTE)]
             x1, y1, x2, y2 = tuple(map(int, box))
             out = cv2.rectangle(out, (x1, y1), (x2, y2), color, 2)
             out = cv2.putText(
                 out,
-                category,
+                category + role,
                 (x1, y1),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.5,

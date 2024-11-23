@@ -37,10 +37,19 @@ class TextDetector(BaseModule):
     model_catalog = TextDetectorModelCatalog()
 
     def __init__(
-        self, model_name="dbnet", path_cfg=None, device="cuda", visualize=False
+        self,
+        model_name="dbnet",
+        path_cfg=None,
+        device="cuda",
+        visualize=False,
+        from_pretrained=True,
     ):
         super().__init__()
-        self.load_model(model_name, path_cfg)
+        self.load_model(
+            model_name,
+            path_cfg,
+            from_pretrained=True,
+        )
 
         self.device = device
         self.visualize = visualize

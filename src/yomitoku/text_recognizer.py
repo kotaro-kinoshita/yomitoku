@@ -41,9 +41,14 @@ class TextRecognizer(BaseModule):
         path_cfg=None,
         device="cuda",
         visualize=False,
+        from_pretrained=True,
     ):
         super().__init__()
-        self.load_model(model_name, path_cfg)
+        self.load_model(
+            model_name,
+            path_cfg,
+            from_pretrained=True,
+        )
         self.charset = load_charset(self._cfg.charset)
         self.tokenizer = Tokenizer(self.charset)
 

@@ -2,27 +2,27 @@ import argparse
 
 import torch
 
-from yomitoku.layout_parse import LayoutParser
-from yomitoku.table_structure_recognition import TableStructureRecognizer
-from yomitoku.text_detection import TextDetector
-from yomitoku.text_recognition import TextRecognizer
+from yomitoku.layout_parser import LayoutParser
+from yomitoku.table_structure_recognizer import TableStructureRecognizer
+from yomitoku.text_detector import TextDetector
+from yomitoku.text_recognizer import TextRecognizer
 
 
 def get_module(module_name):
     if module_name == "text_detector":
-        module = TextDetector()
+        module = TextDetector(from_pretrained=False)
         return module
 
     elif module_name == "text_recognizer":
-        module = TextRecognizer()
+        module = TextRecognizer(from_pretrained=False)
         return module
 
     elif module_name == "layout_parser":
-        module = LayoutParser()
+        module = LayoutParser(from_pretrained=False)
         return module
 
     elif module_name == "table_structure_recognizer":
-        module = TableStructureRecognizer()
+        module = TableStructureRecognizer(from_pretrained=False)
         return module
 
     raise ValueError(f"Invalid module name: {module_name}")
