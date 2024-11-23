@@ -20,16 +20,16 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           sudo rm -rf /opt/ghc
           df -h
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v3
+      - name: Set up Python 3.13
+        uses: actions/setup-python@4
         with:
-          python-version: "3.9"
+          python-version: "3.13"
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
       - name: pin python version
-        run: uv python pin 3.9
+        run: uv python pin 3.13
       - name: Install dependencies
         run: sudo apt install -y libopencv-dev poppler-utils
       - name: Install tox-uv
