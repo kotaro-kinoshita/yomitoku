@@ -267,7 +267,7 @@ class DocumentAnalyzer:
 
         prediction_reading_order(headers, page_direction)
         prediction_reading_order(footers, page_direction)
-        prediction_reading_order(elements, page_direction)
+        prediction_reading_order(elements, page_direction, self.img)
 
         for i, element in enumerate(elements):
             element.order += len(headers)
