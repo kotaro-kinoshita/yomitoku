@@ -12,8 +12,6 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Check available disk space
-        run: df -h
       - uses: actions/checkout@v4
       - name: Set up Python 3.9
         uses: actions/setup-python@v3
@@ -27,6 +25,8 @@ jobs:
         run: uv python pin 3.9
       - name: Install dependencies
         run: sudo apt install -y libopencv-dev poppler-utils
+      - name: Check available disk space
+        run: df -h
       - name: Install tox-uv
         run: uv tool install tox
       - name: Run linter
