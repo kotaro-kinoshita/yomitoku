@@ -10,9 +10,7 @@ class BackBone:
 
 @dataclass
 class Decoder:
-    in_channels: list[int] = field(
-        default_factory=lambda: [256, 512, 1024, 2048]
-    )
+    in_channels: list[int] = field(default_factory=lambda: [256, 512, 1024, 2048])
     hidden_dim: int = 256
     adaptive: bool = True
     serial: bool = True
@@ -44,8 +42,8 @@ class Visualize:
 @dataclass
 class TextDetectorDBNetConfig:
     hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-detector-dbnet-open-beta"
-    backbone: BackBone = BackBone()
-    decoder: Decoder = Decoder()
-    data: Data = Data()
-    post_process: PostProcess = PostProcess()
-    visualize: Visualize = Visualize()
+    backbone: BackBone = field(default_factory=BackBone)
+    decoder: Decoder = field(default_factory=Decoder)
+    data: Data = field(default_factory=Data)
+    post_process: PostProcess = field(default_factory=PostProcess)
+    visualize: Visualize = field(default_factory=Visualize)

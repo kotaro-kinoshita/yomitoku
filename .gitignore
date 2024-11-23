@@ -8,6 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+.tox
 
 # Dev tools cache
 .ruff_cache

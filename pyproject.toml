@@ -44,3 +44,23 @@ dev-dependencies = [
 [project.scripts]
 yomitoku = "yomitoku.cli.main:main"
 
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = lint, py39, py310, py311, py312, docs
+
+[testenv]
+deps = pytest
+commands = 
+    pytest tests
+
+[testenv:lint]
+deps = ruff
+commands = 
+    ruff check
+
+[testenv:docs]
+deps = mkdocs-material
+commands = 
+    mkdocs gh-deploy --force
+"""
