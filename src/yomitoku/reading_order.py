@@ -11,7 +11,7 @@ def is_locked_node(node):
     return all([child.is_locked for child in node.children])
 
 
-def _priority_dfs(nodes):
+def _priority_dfs(nodes, direction):
     if len(nodes) == 0:
         return []
 
@@ -53,9 +53,15 @@ def _priority_dfs(nodes):
                         children.append(node)
                         stack.remove(node)
 
-                children = sorted(
-                    children, key=lambda x: x.prop["box"][0], reverse=True
-                )
+                if direction == "horizontal":
+                    children = sorted(
+                        children, key=lambda x: x.prop["box"][0], reverse=True
+                    )
+                else:
+                    children = sorted(
+                        children, key=lambda x: x.prop["box"][1], reverse=True
+                    )
+
                 stack.extend(children)
                 continue
 
@@ -87,10 +93,10 @@ def _exist_other_node_between_vertical(node, other_node, nodes):
         _, ny1, _, ny2 = node.prop["box"]
 
         if is_intersected_vertical(search_node.prop["box"], node.prop["box"]):
-            if ny1 < sy1 < oy1 and ny2 < sy2 < oy2:
+            if ny2 < sy1 < oy1 and ny2 < sy2 < oy1:
                 return True
 
-            if oy1 < sy1 < ny1 and oy2 < sy2 < ny2:
+            if oy2 < sy1 < ny1 and oy2 < sy2 < ny1:
                 return True
 
     return False
@@ -106,10 +112,10 @@ def _exist_other_node_between_horizontal(node, other_node, nodes):
         nx1, _, nx2, _ = node.prop["box"]
 
         if is_intersected_horizontal(search_node.prop["box"], node.prop["box"]):
-            if nx1 < sx1 < ox1 or nx2 < sx2 < ox2:
+            if nx2 < sx1 < ox1 and nx2 < sx2 < ox1:
                 return True
 
-            if ox1 < sx1 < nx1 or ox2 < sx2 < nx2:
+            if ox2 < sx1 < nx1 and ox2 < sx2 < nx1:
                 return True
 
     return False
@@ -166,7 +172,7 @@ def _create_graph_vertical(nodes):
         node.children = sorted(node.children, key=lambda x: x.prop["box"][1])
 
 
-def prediction_reading_order(elements, direction):
+def prediction_reading_order(elements, direction, img=None):
     if len(elements) < 2:
         return elements
 
@@ -177,9 +183,10 @@ def prediction_reading_order(elements, direction):
         _create_graph_vertical(nodes)
 
     # For debugging
-    # visualize_graph(img, nodes)
+    # if img is not None:
+    #    visualize_graph(img, nodes)
 
-    order = _priority_dfs(nodes)
+    order = _priority_dfs(nodes, direction)
     for i, index in enumerate(order):
         elements[index].order = i
 
