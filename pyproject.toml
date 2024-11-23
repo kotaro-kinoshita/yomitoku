@@ -57,7 +57,7 @@ commands =
 [testenv:lint]
 deps = ruff
 commands = 
-    uv run ruff check
+    ruff check
 
 [testenv:docs]
 deps = mkdocs-material
