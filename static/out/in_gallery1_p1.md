@@ -1,33 +1,30 @@
-<img src="figures/in_gallery1_p1_figure_0.png" width="200px"><br>
 TELEWORK TELEWORK TELEWORK
 
-2
+特集
+
+テレワークのさらなる普及·定着に向け「テレワーク月間」を実施します\! TELEWORK
 
 ORK TELEWORK TELEWORK TELEWORK TELEWORK TELEWORK
 
-テレワークのさらなる普及·定着に向け<br>「テレワーク月間」<br>を実施します\!
+# テレワークのさらなる普及·定着に向け<br>「テレワーク月間」<br>を実施します\!
 
-<img src="figures/in_gallery1_p1_figure_1.png" width="200px"><br>
+<img src="figures/in_gallery1_p1_figure_0.png" width="200px"><br>
 今年度は育児·介護休業法の改正法が成立し、<br>来年度以降は3歳未満の子を育てる社員がテレ<br>ワークを選択できるように措置を講ずることが、<br>事業主の努力義務になります。
 
 総務省では、地方や中小企業等を含め、テレ<br>ワークの活用により、多様な働き手が活躍の機<br>会を持てるよう、テレビ番組とのタイアップを<br>通じて、テレワークの必要性を改めて実感でき<br>るような情報発信を行います。また、全国の総<br>合通信局等では、それぞれの地域における取組<br>やテレワーク活用を進める先進企業を紹介する<br>催しを実施します。
 
-MIC 2024 November Vol\.287
-
 総務省は、内閣官房、内閣府、デジタル庁<br>厚生労働省、経済産業省、国土交通省、観光庁<br>環境省、日本テレワーク協会、日本テレワーク<br>学会と連携して、11月をテレワーク月間とし、<br>テレワークのさらなる普及·定着に向けた各種<br>イベント等を集中的に開催します。テレワーク<br>月間期間中は駅構内やイベント会場等にポス<br>ターを掲出するほか、ホームページ\(※\)にて、テ<br>レワーク実施団体·実施者の登録受付や、テレ<br>ワーク活用に関するトピック·コンテンツの掲<br>載、各種イベントに係る情報発信等を行います。
 
-<img src="figures/in_gallery1_p1_figure_2.png" width="200px"><br>
+<img src="figures/in_gallery1_p1_figure_1.png" width="200px"><br>
 令和6年度テレワーク月間ポスター
 
+<img src="figures/in_gallery1_p1_figure_2.png" width="200px"><br>
 <img src="figures/in_gallery1_p1_figure_3.png" width="200px"><br>
-<img src="figures/in_gallery1_p1_figure_4.png" width="200px"><br>
 ※テレワーク月間ホームページ
 
 https://teleworkgekkan\.go\.jp/
 
 特集
-
-テレワークのさらなる普及·定着に向け「テレワーク月間」を実施します\! TELEWORK
 
 テレワーク月間最終週の11月25日\(月\)には、内閣府、総務省、厚生労働省、<br>経済産業省、国土交通省主催で「働く、を変える\!テレワークイベントを開催し、<br>テレワークトップランナー 2024\(総務大臣賞\)、輝くテレワーク大賞\(厚生労<br>働大臣\)および地方創生テレワークアワード\(地方創生担当大臣賞\)の合同表彰<br>式を実施予定です。
 
@@ -50,20 +47,20 @@ https://teleworkgekkan\.go\.jp/
 |株式会社<br>テレワーク<br>マネジメント|専門·<br>技術サービス業<br>北海道、11人|· 社内 SNS 及びパーチャルオフィスにて社内コミュニケーションを統一し、<br>全員が同じルールの下で活用することを徹底することで、効率の良い意<br>思疎通、社員の一体感の醸成を図っている<br>·簡単な操作で細かく労働時間を記録できるシステムの運用により、フェ<br>アに働ける環境を実現|
 |株式会社<br>プログレス|情報通信業<br>東京都、86人|·コミュニケーションの促進に向け、対面でのチームビルディング、バーチャ<br>ルオフィスの活用等、多数の取り組みを進める他、コミュニケーション<br>時の留意点等を示したガイドを全社員に向けて公開<br>·リーダー間でのメンバー状態の共有、社員への毎月サーベイを実施し<br>社員の変化に対し、きめ細やか且つ早期にフォローできる仕組みを構築|
 
+<img src="figures/in_gallery1_p1_figure_4.png" width="200px"><br>
 <img src="figures/in_gallery1_p1_figure_5.png" width="200px"><br>
-<img src="figures/in_gallery1_p1_figure_6.png" width="200px"><br>
 主催者代表挨拶<br>\(小森総務大臣政務官\)
 
-<img src="figures/in_gallery1_p1_figure_7.png" width="200px"><br>
+<img src="figures/in_gallery1_p1_figure_6.png" width="200px"><br>
 表彰状授与
 
-<img src="figures/in_gallery1_p1_figure_8.png" width="200px"><br>
+<img src="figures/in_gallery1_p1_figure_7.png" width="200px"><br>
 受賞企業集合写真\(3府省合同\)
 
-<img src="figures/in_gallery1_p1_figure_9.png" width="200px"><br>
+<img src="figures/in_gallery1_p1_figure_8.png" width="200px"><br>
 テレワークトップランナー 2023<br>ロゴマーク
 
-<img src="figures/in_gallery1_p1_figure_10.png" width="200px"><br>
+<img src="figures/in_gallery1_p1_figure_9.png" width="200px"><br>
 テレワーク月間関連イベントの様子
 
 ※総務省主催セミナー「ニューノー<br>マル時代に求められる働き方·<br>環境整備の実態\|
@@ -71,6 +68,10 @@ https://teleworkgekkan\.go\.jp/
 セミナーのアーカイブ動画を、<br>テレワーク月間ホームページに<br>て公開しております。
 
 https://teleworkgekkan\.co\.ip/events/<br>telework\-seminar\-202403\.html
+
+2
+
+MIC 2024 November Vol\.287
 
 2024 November Vol\.287 MIC 
 

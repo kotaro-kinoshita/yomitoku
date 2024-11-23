@@ -25,7 +25,7 @@ YomiToku は日本語に特化した AI 文章画像解析エンジン(Document 
 |                    レイアウト解析の結果                   |                    エクスポート<br>(HTMLで出力したものをスクショ)                    |
 | <img src="static/out/in_demo_p1_layout.jpg" width="400px"> | <img src="static/out/demo_html.png" width="400px"> |
 
-Markdown でエクスポートした結果は関してはリポジトリ内の[demo.md](demo.md)を参照
+Markdown でエクスポートした結果は関してはリポジトリ内の[static/out/in_demo_p1.md](static/out/in_demo_p1.md)を参照
 
 - `赤枠` : 図、画像等の位置
 - `緑枠` : 表領域全体の位置

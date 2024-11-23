@@ -39,13 +39,9 @@ def observer(cls, func):
             start = time.time()
             result = func(*args, **kwargs)
             elapsed = time.time() - start
-            logger.info(
-                f"{cls.__name__} {func.__name__} elapsed_time: {elapsed}"
-            )
+            logger.info(f"{cls.__name__} {func.__name__} elapsed_time: {elapsed}")
         except Exception as e:
-            logger.error(
-                f"Error occurred in {cls.__name__} {func.__name__}: {e}"
-            )
+            logger.error(f"Error occurred in {cls.__name__} {func.__name__}: {e}")
             raise e
         return result
 
@@ -81,10 +77,13 @@ class BaseModule:
         cls.__call__ = observer(cls, cls.__call__)
         return super().__new__(cls)
 
-    def load_model(self, name, path_cfg):
+    def load_model(self, name, path_cfg, from_pretrained=True):
         default_cfg, Net = self.model_catalog.get(name)
         self._cfg = load_config(default_cfg, path_cfg)
-        self.model = Net.from_pretrained(self._cfg.hf_hub_repo, cfg=self._cfg)
+        if from_pretrained:
+            self.model = Net.from_pretrained(self._cfg.hf_hub_repo, cfg=self._cfg)
+        else:
+            self.model = Net(cfg=self._cfg)
 
     def save_config(self, path_cfg):
         OmegaConf.save(self._cfg, path_cfg)

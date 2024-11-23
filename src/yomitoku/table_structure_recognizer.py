@@ -108,9 +108,14 @@ class TableStructureRecognizer(BaseModule):
         path_cfg=None,
         device="cuda",
         visualize=False,
+        from_pretrained=True,
     ):
         super().__init__()
-        self.load_model(model_name, path_cfg)
+        self.load_model(
+            model_name,
+            path_cfg,
+            from_pretrained=True,
+        )
         self.device = device
         self.visualize = visualize
 

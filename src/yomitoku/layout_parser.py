@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 import cv2
 import torch
@@ -17,6 +17,7 @@ from .utils.visualizer import layout_visualizer
 class Element(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     score: float
+    role: Union[str, None]
 
 
 class LayoutParserSchema(BaseSchema):
@@ -64,9 +65,7 @@ def filter_contained_rectangles_within_category(category_elements):
     return category_elements
 
 
-def filter_contained_rectangles_across_categories(
-    category_elements, source, target
-):
+def filter_contained_rectangles_across_categories(category_elements, source, target):
     """sourceカテゴリの矩形がtargetカテゴリの矩形に内包される場合、sourceカテゴリの矩形を除外"""
 
     src_boxes = [element["box"] for element in category_elements[source]]
@@ -78,9 +77,7 @@ def filter_contained_rectangles_across_categories(
             if is_contained(src_box, tgt_box):
                 check_list[j] = False
 
-    category_elements[target] = filter_by_flag(
-        category_elements[target], check_list
-    )
+    category_elements[target] = filter_by_flag(category_elements[target], check_list)
     return category_elements
 
 
@@ -93,9 +90,10 @@ class LayoutParser(BaseModule):
         path_cfg=None,
         device="cuda",
         visualize=False,
+        from_pretrained=True,
     ):
         super().__init__()
-        self.load_model(model_name, path_cfg)
+        self.load_model(model_name, path_cfg, from_pretrained)
         self.device = device
         self.visualize = visualize
 
@@ -120,6 +118,8 @@ class LayoutParser(BaseModule):
             id: category for id, category in enumerate(self._cfg.category)
         }
 
+        self.role = self._cfg.role
+
     def preprocess(self, img):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cv_img)
@@ -140,14 +140,24 @@ class LayoutParser(BaseModule):
         labels = preds["labels"]
 
         category_elements = {
-            category: [] for category in self.label_mapper.values()
+            category: []
+            for category in self.label_mapper.values()
+            if category not in self.role
         }
+
         for box, score, label in zip(boxes, scores, labels):
             category = self.label_mapper[label.item()]
+
+            role = None
+            if category in self.role:
+                role = category
+                category = "paragraphs"
+
             category_elements[category].append(
                 {
                     "box": box.astype(int).tolist(),
                     "score": float(score),
+                    "role": role,
                 }
             )
 

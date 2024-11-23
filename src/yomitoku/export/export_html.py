@@ -41,6 +41,10 @@ def add_html_tag(text):
     return f"<html><body>{text}</body></html>"
 
 
+def add_h1_tag(contents):
+    return f"<h1>{contents}</h1>"
+
+
 def table_to_html(table, ignore_line_break):
     pre_row = 1
     rows = []
@@ -86,6 +90,9 @@ def paragraph_to_html(paragraph, ignore_line_break):
         contents = contents.replace("\n", "")
     else:
         contents = contents.replace("\n", "<br>")
+
+    if paragraph.role == "section_headings":
+        contents = add_h1_tag(contents)
 
     return {
         "box": paragraph.box,

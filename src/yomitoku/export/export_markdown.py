@@ -16,6 +16,9 @@ def paragraph_to_md(paragraph, ignore_line_break):
     else:
         contents = contents.replace("\n", "<br>")
 
+    if paragraph.role == "section_headings":
+        contents = "# " + contents
+
     return {
         "order": paragraph.order,
         "box": paragraph.box,

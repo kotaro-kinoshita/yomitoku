@@ -20,6 +20,7 @@ class ParagraphSchema(BaseSchema):
     contents: Union[str, None]
     direction: Union[str, None]
     order: Union[int, None]
+    role: Union[str, None]
 
 
 class FigureSchema(BaseSchema):
@@ -77,7 +78,7 @@ def extract_paragraph_within_figure(paragraphs, figures):
         figure = {"box": figure.box, "order": 0}
         contained_paragraphs = []
         for i, paragraph in enumerate(paragraphs):
-            if is_contained(figure["box"], paragraph.box, threshold=0.5):
+            if is_contained(figure["box"], paragraph.box, threshold=0.7):
                 contained_paragraphs.append(paragraph)
                 check_list[i] = True
 
@@ -217,6 +218,7 @@ class DocumentAnalyzer:
                 "box": paragraph.box,
                 "direction": direction,
                 "order": 0,
+                "role": paragraph.role,
             }
 
             check_list = combine_flags(check_list, flags)
@@ -231,6 +233,7 @@ class DocumentAnalyzer:
                     "box": quad_to_xyxy(word.points),
                     "direction": direction,
                     "order": 0,
+                    "role": None,
                 }
 
                 paragraph = ParagraphSchema(**paragraph)
@@ -245,8 +248,33 @@ class DocumentAnalyzer:
         ]
 
         page_direction = judge_page_direction(paragraphs)
-        elements = paragraphs + layout_res.tables + figures
+
+        headers = [
+            paragraph for paragraph in paragraphs if paragraph.role == "page_header"
+        ]
+
+        footers = [
+            paragraph for paragraph in paragraphs if paragraph.role == "page_footer"
+        ]
+
+        page_contents = [
+            paragraph
+            for paragraph in paragraphs
+            if paragraph.role is None or paragraph.role == "section_headings"
+        ]
+
+        elements = page_contents + layout_res.tables + figures
+
+        prediction_reading_order(headers, page_direction)
+        prediction_reading_order(footers, page_direction)
         prediction_reading_order(elements, page_direction)
+
+        for i, element in enumerate(elements):
+            element.order += len(headers)
+        for i, footer in enumerate(footers):
+            footer.order += len(elements) + len(headers)
+
+        paragraphs = headers + page_contents + footers
         paragraphs = sorted(paragraphs, key=lambda x: x.order)
         figures = sorted(figures, key=lambda x: x.order)
         tables = sorted(layout_res.tables, key=lambda x: x.order)
