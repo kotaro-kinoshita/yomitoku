@@ -13,6 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Cleanup disk space
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          df -h
       - name: Set up Python 3.9
         uses: actions/setup-python@v3
         with:
@@ -25,8 +32,6 @@ jobs:
         run: uv python pin 3.9
       - name: Install dependencies
         run: sudo apt install -y libopencv-dev poppler-utils
-      - name: Check available disk space
-        run: df -h
       - name: Install tox-uv
         run: uv tool install tox
       - name: Run linter
