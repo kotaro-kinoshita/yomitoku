@@ -3,7 +3,7 @@
 | <img src="static/in/gallery1.jpg" width="400px"> ※1 | <img src="static/out/in_gallery1_p1_ocr.jpg" width="400px"> ※1 | <img src="static/out/in_gallery1_p1_layout.jpg" width="400px"> ※1 | [results1](static/out/in_gallery1_p1.md) |
 | <img src="static/in/gallery2.jpg" width="400px"> ※2 | <img src="static/out/in_gallery2_p1_ocr.jpg" width="400px"> ※2 | <img src="static/out/in_gallery2_p1_layout.jpg" width="400px"> ※2 | [results2](static/out/in_gallery2_p1.md) |
 | <img src="static/in/gallery3.jpg" width="400px"> ※3 | <img src="static/out/in_gallery3_p1_ocr.jpg" width="400px"> ※3 | <img src="static/out/in_gallery3_p1_layout.jpg" width="400px"> ※3 | [results3](static/out/in_gallery3_p1.md) |
-| <img src="static/in/gallery5.jpg" width="400px"> ※4 | <img src="static/out/in_gallery5_p1_ocr.jpg" width="400px"> ※4 | <img src="static/out/in_gallery5_p1_layout.jpg" width="400px"> ※4 | [results4](static/out/in_gallery5_p1.md) <br> (--figure_letterオプション使用)|
+| <img src="static/in/gallery5.jpg" width="400px"> ※4 | <img src="static/out/in_gallery5_p1_ocr.jpg" width="400px"> ※4 | <img src="static/out/in_gallery5_p1_layout.jpg" width="400px"> ※4 | [results4](static/out/in_gallery5_p1.md) |
 |  <img src="static/in/gallery4.jpg" width="400px">   |  <img src="static/out/in_gallery4_p1_ocr.jpg" width="400px">   |  <img src="static/out/in_gallery4_p1_layout.jpg" width="400px">   |   [results5](static/out/in_gallery4_p1.md) |
 |  <img src="static/in/gallery6.jpg" width="400px">   |  <img src="static/out/in_gallery6_p1_ocr.jpg" width="400px">   |  <img src="static/out/in_gallery6_p1_layout.jpg" width="400px">   | [results6](static/out/in_gallery6_p1.md) |
 
