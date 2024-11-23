@@ -25,7 +25,7 @@ def export_json(inputs, out_path, ignore_line_break=False):
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(
-            inputs.dict(),
+            inputs.model_dump(),
             f,
             ensure_ascii=False,
             indent=4,

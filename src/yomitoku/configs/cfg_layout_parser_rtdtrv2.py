@@ -64,10 +64,10 @@ class Decoder:
 class LayoutParserRTDETRv2Config:
     hf_hub_repo: str = "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
     thresh_score: float = 0.5
-    data: Data = Data()
-    PResNet: BackBone = BackBone()
-    HybridEncoder: Encoder = Encoder()
-    RTDETRTransformerv2: Decoder = Decoder()
+    data: Data = field(default_factory=Data)
+    PResNet: BackBone = field(default_factory=BackBone)
+    HybridEncoder: Encoder = field(default_factory=Encoder)
+    RTDETRTransformerv2: Decoder = field(default_factory=Decoder)
 
     category: List[str] = field(
         default_factory=lambda: [

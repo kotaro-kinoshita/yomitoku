@@ -343,7 +343,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "tr.json"
     texts.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == texts.dict()
+        assert json.load(f) == texts.model_dump()
 
     text_detection = {
         "points": [[[0, 0], [10, 10], [20, 20], [30, 30]]],
@@ -353,7 +353,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "td.json"
     texts.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == texts.dict()
+        assert json.load(f) == texts.model_dump()
 
     words = {
         "points": [[0, 0], [10, 10], [20, 20], [30, 30]],
@@ -367,7 +367,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "words.json"
     words.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == words.dict()
+        assert json.load(f) == words.model_dump()
 
     result = {"words": [words]}
     ocr = OCRSchema(**result)
@@ -375,14 +375,14 @@ def test_export(tmp_path):
     out_path = tmp_path / "ocr.yaml"
     ocr.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == ocr.dict()
+        assert json.load(f) == ocr.model_dump()
 
     element = {"box": [0, 0, 10, 10], "score": 0.9, "role": None}
     element = Element(**element)
     out_path = tmp_path / "element.json"
     element.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == element.dict()
+        assert json.load(f) == element.model_dump()
 
     layout_parser = {
         "paragraphs": [element],
@@ -394,11 +394,11 @@ def test_export(tmp_path):
     out_path = tmp_path / "layout_parser.json"
     layout_parser.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == layout_parser.dict()
+        assert json.load(f) == layout_parser.model_dump()
 
     layout_parser.to_json(out_path, ignore_line_break=True)
     with open(out_path, "r") as f:
-        assert json.load(f) == layout_parser.dict()
+        assert json.load(f) == layout_parser.model_dump()
 
     table_cell = {
         "box": [0, 0, 10, 10],
@@ -413,7 +413,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "table_cell.json"
     table_cell.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == table_cell.dict()
+        assert json.load(f) == table_cell.model_dump()
 
     tsr = {
         "box": [0, 0, 100, 100],
@@ -427,7 +427,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "tsr.json"
     tsr.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == tsr.dict()
+        assert json.load(f) == tsr.model_dump()
 
     layout_analyzer = {
         "paragraphs": [element],
@@ -439,7 +439,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "layout_analyzer.json"
     layout_analyzer.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == layout_analyzer.dict()
+        assert json.load(f) == layout_analyzer.model_dump()
 
     paragraph = {
         "direction": "horizontal",
@@ -452,7 +452,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "paragraph.json"
     paragraph.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == paragraph.dict()
+        assert json.load(f) == paragraph.model_dump()
 
     figure = {
         "direction": "horizontal",
@@ -464,7 +464,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "figure.json"
     figure.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == figure.dict()
+        assert json.load(f) == figure.model_dump()
 
     document_analyzer = {
         "paragraphs": [paragraph],
@@ -479,7 +479,7 @@ def test_export(tmp_path):
     out_path = tmp_path / "document_analyzer.json"
     document_analyzer.to_json(out_path)
     with open(out_path, "r") as f:
-        assert json.load(f) == document_analyzer.dict()
+        assert json.load(f) == document_analyzer.model_dump()
 
     document_analyzer.to_csv(tmp_path / "document_analyzer.csv")
     document_analyzer.to_html(tmp_path / "document_analyzer.html", img=img)

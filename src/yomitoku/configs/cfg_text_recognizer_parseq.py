@@ -37,17 +37,15 @@ class Visualize:
 
 @dataclass
 class TextRecognizerPARSeqConfig:
-    hf_hub_repo: str = (
-        "KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta"
-    )
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta"
     charset: str = str(ROOT_DIR + "/resource/charset.txt")
     num_tokens: int = 7312
     max_label_length: int = 100
     decode_ar: int = 1
     refine_iters: int = 1
 
-    data: Data = Data()
-    encoder: Encoder = Encoder()
-    decoder: Decoder = Decoder()
+    data: Data = field(default_factory=Data)
+    encoder: Encoder = field(default_factory=Encoder)
+    decoder: Decoder = field(default_factory=Decoder)
 
-    visualize: Visualize = Visualize()
+    visualize: Visualize = field(default_factory=Visualize)
