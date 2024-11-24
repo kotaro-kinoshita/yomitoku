@@ -37,4 +37,4 @@ jobs:
       - name: Run linter
         run: tox -e lint
       - name: Run tests
-        run:  tox r -p -e py39,py310,py311,py312
+        run:  tox -p -e py39,py310,py311,py312
