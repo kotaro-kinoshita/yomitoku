@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: lint
+        entry: bash -c '.tox/lint/bin/ruff check --fix'
+        language: system
+        types: [python]
+      - id: format
+        name: format
+        entry: bash -c '.tox/lint/bin/ruff format'
+        language: system
+        types: [python]
