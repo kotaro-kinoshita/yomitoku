@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "yomitoku"
 dynamic = ["version"]
-authors = [{name = "Kotaro Kinoshita"}]
+authors = [{name = "Kotaro Kinoshita", email = "kotaro.kinoshita@mlism.com"}]
 description = "Yomitoku is a document image analysis package powered by AI technology for the Japanese language."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -23,6 +23,7 @@ dependencies = [
     "torch>=2.5.0",
     "torchvision>=0.20.0",
 ]
+license = {text = "CC BY-NC-SA 4.0"}
 
 [tool.hatch.version]
 source = "vcs"
