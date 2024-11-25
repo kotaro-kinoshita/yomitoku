@@ -2,7 +2,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.9|3.10|3.11|3.12-F9DC3E.svg?logo=python&logoColor=&style=flat)
 ![Pytorch](https://img.shields.io/badge/Pytorch-2.5-EE4C2C.svg?logo=Pytorch&style=fla)
-![OS](https://img.shields.io/badge/OS-Linux|MacOS-1793D1.svg?&style=fla)
+![CUDA](https://img.shields.io/badge/CUDA->=11.8-76B900.svg?logo=NVIDIA&style=fla)
+![OS](https://img.shields.io/badge/OS-Linux|Mac|Win-1793D1.svg?&style=fla)
 [![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku-dev/)
 
 ## 🌟 概要
@@ -45,23 +46,8 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 pip install yomitoku
 ```
 
-- pytorch がご自身の GPU の環境にあったものをインストールしてください
-
-### 依存ライブラリ
-
-pdf ファイルの解析を行うためには、別途、[poppler](https://poppler.freedesktop.org/)のインストールが必要です。
-
-**Mac**
-
-```
-brew install poppler
-```
-
-**Linux**
-
-```
-apt install poppler-utils -y
-```
+- pytorch はご自身の CUDAのバージョンにあったものをインストールしてください。デフォルトではCUDA12.4以上に対応したものがインストールされます。
+- pytorch は2.5以上のバージョンに対応しています。その関係でCUDA11.8以上のバージョンが必要になります。対応できない場合は、リポジトリ内のDockerfileを利用してください。
 
 ## 🚀 実行方法
 
@@ -84,12 +70,15 @@ yomitoku ${path_data} -f md -o results -v --figure
 yomitoku --help
 ```
 
-### Note
-
-- CPU を用いての推論向けに最適化されておらず、処理時間が長くなりますので、GPU での実行を推奨します。
-- 活字のみ識別をサポートしております。手書き文字に関しては、読み取れる場合もありますが、公式にはサポートしておりません。
-- OCR は文書 OCR と情景 OCR(看板など紙以外にプリントされた文字)に大別されますが、Yomitoku は文書 OCR 向けに最適化されています。
-- AI-OCR の識別精度を高めるために、入力画像の解像度が重要です。低解像度画像では識別精度が低下します。最低でも画像の短辺を 720px 以上の画像で推論することをお勧めします。
+> **NOTE**
+>
+> ・GPU での実行を推奨します。CPU を用いての推論向けに最適化されておらず、処理時間が長くなります。
+>
+> ・活字のみ識別をサポートしております。手書き文字に関しては、読み取れる場合もありますが、公式にはサポートしておりません。
+>
+> ・OCR は文書 OCR と情景 OCR(看板など紙以外にプリントされた文字)に大別されますが、Yomitoku は文書 OCR 向けに最適化されています。
+>
+> ・AI-OCR の識別精度を高めるために、入力画像の解像度が重要です。低解像度画像では識別精度が低下します。最低でも画像の短辺を 720px 以上の画像で推論することをお勧めします。
 
 ## 📝 ドキュメント
 
@@ -98,7 +87,7 @@ yomitoku --help
 ## LICENSE
 
 本リポジトリ内に格納されているソースコードおよび本プロジェクトに関連する HuggingFaceHub 上のモデルの重みファイルのライセンスは CC BY-NC-SA 4.0 に従います。
-非商用での個人利用、研究目的での利用は自由に利用できます。
+非商用での個人利用、研究目的での利用はご自由にお使いください。
 商用目的での利用に関しては、別途、商用ライセンスを提供しますので、開発者にお問い合わせください。
 
 YomiToku © 2024 by MLism Inc. is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
