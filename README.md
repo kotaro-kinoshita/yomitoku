@@ -104,11 +104,3 @@ yomitoku --help
 商用目的での利用に関しては、別途、商用ライセンスを提供しますので、開発者にお問い合わせください。
 
 YomiToku © 2024 by MLism inc. is licensed under CC BY-NC 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc/4.0/
-
-## 🙏 謝辞
-
-YomiToku 内に搭載されているモデルは以下のオープンソース AI を参考し、開発しています。開発者の皆様に感謝申し上げます
-
-- [DBNet](https://github.com/MhLiao/DB)
-- [PARSeq](https://github.com/baudm/parseq)
-- [RTDETR](https://github.com/lyuwenyu/RT-DETR)
