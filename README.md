@@ -1,11 +1,9 @@
-# YomiToku
+<img src="static/logo/horizontal.png" width="800px">
 
 ![Python](https://img.shields.io/badge/Python-3.9|3.10|3.11|3.12-F9DC3E.svg?logo=python&logoColor=&style=flat)
 ![Pytorch](https://img.shields.io/badge/Pytorch-2.5-EE4C2C.svg?logo=Pytorch&style=fla)
 ![OS](https://img.shields.io/badge/OS-Linux|MacOS-1793D1.svg?&style=fla)
 [![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku-dev/)
-
-<img src="static/logo/horizontal.png" width="800px">
 
 ## 🌟 概要
 
@@ -44,7 +42,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 ## 💡 インストールの方法
 
 ```
-pip install git+https://github.com/kotaro-kinoshita/yomitoku-dev.git@main
+pip install yomitoku
 ```
 
 - pytorch がご自身の GPU の環境にあったものをインストールしてください
@@ -77,8 +75,8 @@ yomitoku ${path_data} -f md -o results -v --figure
 - `-v`, `--vis` を指定すると解析結果を可視化した画像を出力します。
 - `-d`, `--device` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
 - `--ignore_line_break` 画像の改行位置を無視して、段落内の文章を連結して返します。（デフォルト：画像通りの改行位置位置で改行します。）
-- `figure_letter` 検出した図表に含まれる文字も出力ファイルにエクスポートします。
-- `figure` 検出した図、画像を出力ファイルにエクスポートします。(html と markdown のみ)
+- `--figure_letter` 検出した図表に含まれる文字も出力ファイルにエクスポートします。
+- `--figure` 検出した図、画像を出力ファイルにエクスポートします。(html と markdown のみ)
 
 その他のオプションに関しては、ヘルプを参照
 
@@ -99,7 +97,7 @@ yomitoku --help
 
 ## LICENSE
 
-本リポジトリ内に格納されているリソースのライセンスは YomiToku は CC BY-NC-SA 4.0 に従います。
+本リポジトリ内に格納されているソースコードおよび本プロジェクトに関連する HuggingFaceHub 上のモデルの重みファイルのライセンスは CC BY-NC-SA 4.0 に従います。
 非商用での個人利用、研究目的での利用は自由に利用できます。
 商用目的での利用に関しては、別途、商用ライセンスを提供しますので、開発者にお問い合わせください。
 
