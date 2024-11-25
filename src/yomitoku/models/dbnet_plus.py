@@ -20,9 +20,7 @@ class BackboneBase(nn.Module):
             "layer4": "layer4",
         }
 
-        self.body = IntermediateLayerGetter(
-            backbone, return_layers=return_layers
-        )
+        self.body = IntermediateLayerGetter(backbone, return_layers=return_layers)
 
     def forward(self, tensor):
         xs = self.body(tensor)
@@ -57,18 +55,10 @@ class DBNetDecoder(nn.Module):
         self.training = True
         self.input_proj = nn.ModuleDict(
             {
-                "layer1": nn.Conv2d(
-                    in_channels[0], self.d_model, 1, bias=False
-                ),
-                "layer2": nn.Conv2d(
-                    in_channels[1], self.d_model, 1, bias=False
-                ),
-                "layer3": nn.Conv2d(
-                    in_channels[2], self.d_model, 1, bias=False
-                ),
-                "layer4": nn.Conv2d(
-                    in_channels[3], self.d_model, 1, bias=False
-                ),
+                "layer1": nn.Conv2d(in_channels[0], self.d_model, 1, bias=False),
+                "layer2": nn.Conv2d(in_channels[1], self.d_model, 1, bias=False),
+                "layer3": nn.Conv2d(in_channels[2], self.d_model, 1, bias=False),
+                "layer4": nn.Conv2d(in_channels[3], self.d_model, 1, bias=False),
             }
         )
 
@@ -89,9 +79,7 @@ class DBNetDecoder(nn.Module):
                         padding=1,
                         bias=False,
                     ),
-                    nn.Upsample(
-                        scale_factor=2, mode="bilinear", align_corners=False
-                    ),
+                    nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
                 ),
                 "layer3": nn.Sequential(
                     nn.Conv2d(
@@ -101,9 +89,7 @@ class DBNetDecoder(nn.Module):
                         padding=1,
                         bias=False,
                     ),
-                    nn.Upsample(
-                        scale_factor=4, mode="bilinear", align_corners=False
-                    ),
+                    nn.Upsample(scale_factor=4, mode="bilinear", align_corners=False),
                 ),
                 "layer4": nn.Sequential(
                     nn.Conv2d(
@@ -113,17 +99,13 @@ class DBNetDecoder(nn.Module):
                         padding=1,
                         bias=False,
                     ),
-                    nn.Upsample(
-                        scale_factor=4, mode="bilinear", align_corners=False
-                    ),
+                    nn.Upsample(scale_factor=4, mode="bilinear", align_corners=False),
                 ),
             }
         )
 
         self.binarize = nn.Sequential(
-            nn.Conv2d(
-                self.d_model, self.d_model // 4, 3, padding=1, bias=False
-            ),
+            nn.Conv2d(self.d_model, self.d_model // 4, 3, padding=1, bias=False),
             nn.BatchNorm2d(self.d_model // 4),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(self.d_model // 4, self.d_model // 4, 2, 2),
@@ -166,16 +148,12 @@ class DBNetDecoder(nn.Module):
             m.weight.data.fill_(1.0)
             m.bias.data.fill_(1e-4)
 
-    def _init_thresh(
-        self, inner_channels, serial=False, smooth=False, bias=False
-    ):
+    def _init_thresh(self, inner_channels, serial=False, smooth=False, bias=False):
         in_channels = inner_channels
         if serial:
             in_channels += 1
         self.thresh = nn.Sequential(
-            nn.Conv2d(
-                in_channels, inner_channels // 4, 3, padding=1, bias=bias
-            ),
+            nn.Conv2d(in_channels, inner_channels // 4, 3, padding=1, bias=bias),
             nn.BatchNorm2d(inner_channels // 4),
             nn.ReLU(inplace=True),
             self._init_upsample(
@@ -186,16 +164,12 @@ class DBNetDecoder(nn.Module):
             ),
             nn.BatchNorm2d(inner_channels // 4),
             nn.ReLU(inplace=True),
-            self._init_upsample(
-                inner_channels // 4, 1, smooth=smooth, bias=bias
-            ),
+            self._init_upsample(inner_channels // 4, 1, smooth=smooth, bias=bias),
             nn.Sigmoid(),
         )
         return self.thresh
 
-    def _init_upsample(
-        self, in_channels, out_channels, smooth=False, bias=False
-    ):
+    def _init_upsample(self, in_channels, out_channels, smooth=False, bias=False):
         if smooth:
             inter_out_channels = out_channels
             if out_channels == 1:

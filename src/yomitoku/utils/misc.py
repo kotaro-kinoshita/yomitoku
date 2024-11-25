@@ -1,5 +1,5 @@
 def load_charset(charset_path):
-    with open(charset_path, "r") as f:
+    with open(charset_path, "r", encoding="utf-8") as f:
         charset = f.read()
     return charset
 

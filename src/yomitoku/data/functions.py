@@ -3,7 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
-from pdf2image import convert_from_path
+import pypdfium2
 
 from ..constants import (
     MIN_IMAGE_SIZE,
@@ -70,6 +70,7 @@ def load_pdf(pdf_path: str, dpi=200) -> list[np.ndarray]:
     Returns:
         list[np.ndarray]: list of image data(BGR)
     """
+
     pdf_path = Path(pdf_path)
     if not pdf_path.exists():
         raise FileNotFoundError(f"File not found: {pdf_path}")
@@ -86,11 +87,19 @@ def load_pdf(pdf_path: str, dpi=200) -> list[np.ndarray]:
         )
 
     try:
-        images = convert_from_path(pdf_path, dpi=dpi)
+        doc = pypdfium2.PdfDocument(pdf_path)
+        renderer = doc.render(
+            pypdfium2.PdfBitmap.to_pil,
+            scale=dpi / 72,
+        )
+        images = list(renderer)
+        images = [np.array(image.convert("RGB"))[:, :, ::-1] for image in images]
+
+        doc.close()
     except Exception as e:
         raise ValueError(f"Failed to open the PDF file: {pdf_path}") from e
 
-    return [np.array(img)[:, :, ::-1] for img in images]
+    return images
 
 
 def resize_shortest_edge(
@@ -193,9 +202,7 @@ def validate_quads(img: np.ndarray, quads: list[list[list[int]]]):
         h, w = img.shape[:2]
 
         if x1 < 0 or x2 > w or y1 < 0 or y2 > h:
-            raise ValueError(
-                f"The vertices are out of the image. {quad.tolist()}"
-            )
+            raise ValueError(f"The vertices are out of the image. {quad.tolist()}")
 
     return True
 
