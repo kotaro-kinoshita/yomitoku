@@ -1,11 +1,9 @@
-# YomiToku
+<img src="static/logo/horizontal.png" width="800px">
 
 ![Python](https://img.shields.io/badge/Python-3.9|3.10|3.11|3.12-F9DC3E.svg?logo=python&logoColor=&style=flat)
 ![Pytorch](https://img.shields.io/badge/Pytorch-2.5-EE4C2C.svg?logo=Pytorch&style=fla)
 ![OS](https://img.shields.io/badge/OS-Linux|MacOS-1793D1.svg?&style=fla)
 [![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku-dev/)
-
-<img src="static/logo/horizontal.png" width="800px">
 
 ## 🌟 概要
 
