@@ -2,6 +2,9 @@
 requires = ["hatchling", "uv-dynamic-versioning"]
 build-backend = "hatchling.build"
 
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
 [project]
 name = "yomitoku"
 dynamic = ["version"]
@@ -27,7 +30,7 @@ dependencies = [
 [tool.uv-dynamic-versioning]
 vcs = "git"
 style = "semver"
-format = {base}
+format = "{base}"
 
 [tool.uv]
 dev-dependencies = [
