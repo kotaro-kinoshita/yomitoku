@@ -44,7 +44,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 ## 💡 インストールの方法
 
 ```
-pip install git+https://github.com/kotaro-kinoshita/yomitoku-dev.git@main
+pip install yomitoku
 ```
 
 - pytorch がご自身の GPU の環境にあったものをインストールしてください
@@ -99,7 +99,7 @@ yomitoku --help
 
 ## LICENSE
 
-本リポジトリ内に格納されているリソースのライセンスは YomiToku は CC BY-NC-SA 4.0 に従います。
+本リポジトリ内に格納されているソースコードおよび本プロジェクトに関連する HuggingFaceHub 上のモデルの重みファイルのライセンスは CC BY-NC-SA 4.0 に従います。
 非商用での個人利用、研究目的での利用は自由に利用できます。
 商用目的での利用に関しては、別途、商用ライセンスを提供しますので、開発者にお問い合わせください。
 
