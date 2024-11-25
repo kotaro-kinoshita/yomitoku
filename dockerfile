@@ -32,6 +32,6 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON
 
 RUN python -m pip install --upgrade pip
 
-RUN pip install git+https://github.com/kotaro-kinoshita/yomitoku-dev.git@main
+RUN pip install yomitoku
 
 WORKDIR /workspace

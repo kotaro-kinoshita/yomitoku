@@ -27,29 +27,21 @@ def test_initialize():
         },
     }
 
-    analyzer = DocumentAnalyzer(
-        configs=config, device=device, visualize=visualize
-    )
+    analyzer = DocumentAnalyzer(configs=config, device=device, visualize=visualize)
 
     # サブモジュールのパラメータが更新されているか確認
     assert analyzer.ocr.detector.device == torch.device(device)
     assert analyzer.ocr.recognizer.device == torch.device(device)
     assert analyzer.layout.layout_parser.device == torch.device(device)
-    assert analyzer.layout.table_structure_recognizer.device == torch.device(
-        device
-    )
+    assert analyzer.layout.table_structure_recognizer.device == torch.device(device)
 
     assert analyzer.ocr.detector.visualize == visualize
     assert analyzer.ocr.recognizer.visualize == visualize
     assert analyzer.layout.layout_parser.visualize == visualize
     assert analyzer.layout.table_structure_recognizer.visualize == visualize
 
-    text_detector_cfg = OmegaConf.load(
-        config["ocr"]["text_detector"]["path_cfg"]
-    )
-    text_recognizer_cfg = OmegaConf.load(
-        config["ocr"]["text_recognizer"]["path_cfg"]
-    )
+    text_detector_cfg = OmegaConf.load(config["ocr"]["text_detector"]["path_cfg"])
+    text_recognizer_cfg = OmegaConf.load(config["ocr"]["text_recognizer"]["path_cfg"])
     layout_parser_cfg = OmegaConf.load(
         config["layout_analyzer"]["layout_parser"]["path_cfg"]
     )
@@ -63,14 +55,10 @@ def test_initialize():
     )
 
     assert (
-        analyzer.ocr.recognizer.model.refine_iters
-        == text_recognizer_cfg.refine_iters
+        analyzer.ocr.recognizer.model.refine_iters == text_recognizer_cfg.refine_iters
     )
 
-    assert (
-        analyzer.layout.layout_parser.thresh_score
-        == layout_parser_cfg.thresh_score
-    )
+    assert analyzer.layout.layout_parser.thresh_score == layout_parser_cfg.thresh_score
 
     assert (
         analyzer.layout.table_structure_recognizer.thresh_score

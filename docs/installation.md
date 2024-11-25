@@ -2,24 +2,6 @@
 
 本パッケージは Python3.9+, Pytorch が実行に必要です。Pytorch はご自身の環境に合わせて、インストールが必要です。計算機は GPU(> VRAM 8G)を推奨しています。CPU でも動作しますが、現在、CPU 向けに処理が最適化されておらず、実行に時間がかかりますのでご注意ください。
 
-Linux および Mac OS で動作します。Windows 向けは動作確認未実施ですので、リポジトリの Dockerfile の利用を推奨します。
-
-## 依存パッケージのインストール
-
-pdf ファイルの解析を行うためには、別途、[poppler](https://poppler.freedesktop.org/)のインストールが必要です。
-
-=== "Mac"
-
-    ```
-    brew install poppler
-    ```
-
-=== "Linux"
-
-    ```
-    apt install poppler-utils -y
-    ```
-
 ## PYPI からインストール
 
 ```bash
@@ -45,11 +27,11 @@ docker build -t yomitoku .
 === "GPU"
 
     ```bash
-    docker run -it --gpus all -v $(pwd):/workspace --name yomitoku yomitoku /bin/bas
+    docker run -it --gpus all -v $(pwd):/workspace --name yomitoku yomitoku /bin/bash
     ```
 
 === "CPU"
 
     ```bash
-    docker run -it -v $(pwd):/workspace --name yomitoku yomitoku /bin/bas
+    docker run -it -v $(pwd):/workspace --name yomitoku yomitoku /bin/bash
     ```

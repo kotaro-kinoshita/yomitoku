@@ -26,9 +26,7 @@ from ..postprocessor import ParseqTokenizer as Tokenizer
 from .layers.parseq_transformer import Decoder, Encoder, TokenEmbedding
 
 
-def init_weights(
-    module: nn.Module, name: str = "", exclude: Sequence[str] = ()
-):
+def init_weights(module: nn.Module, name: str = "", exclude: Sequence[str] = ()):
     """Initialize the weights using the typical initialization schemes used in SOTA models."""
     if any(map(name.startswith, exclude)):
         return
@@ -41,9 +39,7 @@ def init_weights(
         if module.padding_idx is not None:
             module.weight.data[module.padding_idx].zero_()
     elif isinstance(module, nn.Conv2d):
-        nn.init.kaiming_normal_(
-            module.weight, mode="fan_out", nonlinearity="relu"
-        )
+        nn.init.kaiming_normal_(module.weight, mode="fan_out", nonlinearity="relu")
         if module.bias is not None:
             nn.init.zeros_(module.bias)
     elif isinstance(module, (nn.LayerNorm, nn.BatchNorm2d, nn.GroupNorm)):
@@ -93,9 +89,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
     @torch.jit.ignore
     def no_weight_decay(self):
         param_names = {"text_embed.embedding.weight", "pos_queries"}
-        enc_param_names = {
-            "encoder." + n for n in self.encoder.no_weight_decay()
-        }
+        enc_param_names = {"encoder." + n for n in self.encoder.no_weight_decay()}
         return param_names.union(enc_param_names)
 
     def encode(self, img: torch.Tensor):
@@ -149,9 +143,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
 
         # Special case for the forward permutation. Faster than using `generate_attn_masks()`
         tgt_mask = query_mask = torch.triu(
-            torch.ones(
-                (num_steps, num_steps), dtype=torch.bool, device=self._device
-            ),
+            torch.ones((num_steps, num_steps), dtype=torch.bool, device=self._device),
             1,
         )
 
@@ -185,10 +177,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     # greedy decode. add the next token index to the target input
                     tgt_in[:, j] = p_i.squeeze().argmax(-1)
                     # Efficient batch decoding: If all output words have at least one EOS token, end decoding.
-                    if (
-                        testing
-                        and (tgt_in == tokenizer.eos_id).any(dim=-1).all()
-                    ):
+                    if testing and (tgt_in == tokenizer.eos_id).any(dim=-1).all():
                         break
 
             logits = torch.cat(logits, dim=1)
@@ -227,9 +216,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                 # Prior context is the previous output.
                 tgt_in = torch.cat([bos, logits[:, :-1].argmax(-1)], dim=1)
                 # Mask tokens beyond the first EOS token.
-                tgt_padding_mask = (tgt_in == tokenizer.eos_id).int().cumsum(
-                    -1
-                ) > 0
+                tgt_padding_mask = (tgt_in == tokenizer.eos_id).int().cumsum(-1) > 0
                 tgt_out = self.decode(
                     tgt_in,
                     memory,

@@ -122,7 +122,5 @@ class ParseqTokenizer(BaseTokenizer):
             eos_idx = len(ids)  # Nothing to truncate.
         # Truncate after EOS
         ids = ids[:eos_idx]
-        probs = probs[
-            : eos_idx + 1
-        ]  # but include prob. for EOS (if it exists)
+        probs = probs[: eos_idx + 1]  # but include prob. for EOS (if it exists)
         return probs, ids

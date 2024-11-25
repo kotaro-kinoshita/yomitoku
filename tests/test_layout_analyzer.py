@@ -17,9 +17,7 @@ def test_layout():
         },
     }
 
-    analyzer = LayoutAnalyzer(
-        configs=config, device=device, visualize=visualize
-    )
+    analyzer = LayoutAnalyzer(configs=config, device=device, visualize=visualize)
 
     assert analyzer.layout_parser.device == torch.device(device)
     assert analyzer.table_structure_recognizer.device == torch.device(device)
@@ -32,9 +30,7 @@ def test_layout():
         config["table_structure_recognizer"]["path_cfg"]
     )
 
-    assert (
-        analyzer.layout_parser.thresh_score == layout_parser_cfg.thresh_score
-    )
+    assert analyzer.layout_parser.thresh_score == layout_parser_cfg.thresh_score
 
     assert (
         analyzer.table_structure_recognizer.thresh_score

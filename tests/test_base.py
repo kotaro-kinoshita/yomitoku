@@ -32,10 +32,7 @@ def test_load_config():
     path_config = "tests/yaml/layout_parser.yaml"
     cfg = load_config(default_config, path_config)
     assert cfg.thresh_score == 0.8
-    assert (
-        cfg.hf_hub_repo
-        == "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
-    )
+    assert cfg.hf_hub_repo == "KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta"
 
 
 class TestModelCatalog(BaseModelCatalog):

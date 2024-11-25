@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-
+from PIL import Image, ImageDraw, ImageFont, features
 from ..constants import PALETTE
+from .logger import set_logger
+
+logger = set_logger(__name__, "INFO")
 
 
 def _reading_order_visualizer(img, elements, line_color, tip_size):
@@ -148,13 +150,18 @@ def rec_visualizer(
     out = img.copy()
     pillow_img = Image.fromarray(out)
     draw = ImageDraw.Draw(pillow_img)
+    has_raqm = features.check_feature(feature="raqm")
+    if not has_raqm:
+        logger.warning(
+            "libraqm is not installed. Vertical text rendering is not supported. Rendering horizontally instead."
+        )
 
     for pred, quad, direction in zip(
         outputs.contents, outputs.points, outputs.directions
     ):
         quad = np.array(quad).astype(np.int32)
         font = ImageFont.truetype(font_path, font_size)
-        if direction == "horizontal":
+        if direction == "horizontal" or not has_raqm:
             x_offset = 0
             y_offset = -font_size
 

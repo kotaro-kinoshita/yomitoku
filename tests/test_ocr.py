@@ -27,14 +27,9 @@ def test_ocr():
     text_detector_cfg = OmegaConf.load(config["text_detector"]["path_cfg"])
     text_recognizer_cfg = OmegaConf.load(config["text_recognizer"]["path_cfg"])
 
-    assert (
-        ocr.detector.post_processor.thresh
-        == text_detector_cfg.post_process.thresh
-    )
+    assert ocr.detector.post_processor.thresh == text_detector_cfg.post_process.thresh
 
-    assert (
-        ocr.recognizer.model.refine_iters == text_recognizer_cfg.refine_iters
-    )
+    assert ocr.recognizer.model.refine_iters == text_recognizer_cfg.refine_iters
 
 
 def test_ocr_invalid_path():
