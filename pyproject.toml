@@ -1,11 +1,14 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling", "uv-dynamic-versioning"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
 
 [project]
 name = "yomitoku"
 dynamic = ["version"]
-authors = [{name = "Kotaro Kinoshita"}]
+authors = [{name = "Kotaro Kinoshita", email = "kotaro.kinoshita@mlism.com"}]
 description = "Yomitoku is a document image analysis package powered by AI technology for the Japanese language."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -23,15 +26,12 @@ dependencies = [
     "torch>=2.5.0",
     "torchvision>=0.20.0",
 ]
+license = {text = "CC BY-NC-SA 4.0"}
 
-[tool.hatch.version]
-source = "vcs"
-tag-pattern = "^v(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)$"
-
-
-[tool.hatch.version.raw-options]
-local_scheme = "no-local-version"
-version_scheme = "no-guess-dev"
+[tool.uv-dynamic-versioning]
+vcs = "git"
+style = "semver"
+format = "{base}"
 
 [tool.uv]
 dev-dependencies = [
