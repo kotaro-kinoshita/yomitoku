@@ -9,7 +9,7 @@ source = "uv-dynamic-versioning"
 name = "yomitoku"
 dynamic = ["version"]
 authors = [{name = "Kotaro Kinoshita", email = "kotaro.kinoshita@mlism.com"}]
-description = "Yomitoku is a document image analysis package powered by AI technology for the Japanese language."
+description = "Yomitoku is an AI-powered document image analysis package designed specifically for the Japanese language."
 readme = "README.md"
 license = {text = "CC BY-NC-SA 4.0"}
 requires-python = ">=3.9"
@@ -24,7 +24,7 @@ dependencies = [
     "shapely>=2.0.6",
     "timm>=1.0.11",
     "torchvision>=0.20.0",
-    "torch>=2.5.0",
+    "torch==2.5.0",
     "pypdfium2>=4.30.0",
 ]
 
@@ -36,7 +36,10 @@ format = "{base}"
 [tool.uv]
 dev-dependencies = [
     "mkdocs-material>=9.5.44",
+    "mkdocs-static-i18n",
     "mkdocs>=1.6.1",
+    "plantuml-markdown",
+    "pygments",
     "pytest-cov>=5.0.0",
     "pytest>=8.3.3",
     "ruff>=0.7.0",
@@ -45,12 +48,10 @@ dev-dependencies = [
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cuda124", marker = "platform_system == 'Windows'"},
-    { index = "pytorch-cuda124", marker = "platform_system == 'Linux'"},
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
 ]
 torchvision = [
     { index = "pytorch-cuda124", marker = "platform_system == 'Windows'"},
-    { index = "pytorch-cuda124", marker = "platform_system == 'Linux'"},
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
 ]
 
