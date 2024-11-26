@@ -90,4 +90,4 @@ The source code stored in this repository and the model weight files related to 
 You are free to use them for non-commercial personal use or research purposes.
 For commercial use, a separate commercial license is available. Please contact the developers for more information.
 
-YomiToku © 2024 by MLism Inc. is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
+YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
