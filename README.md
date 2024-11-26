@@ -1,3 +1,5 @@
+日本語版 | [English](README_EN.md)
+
 <img src="static/logo/horizontal.png" width="800px">
 
 ![Python](https://img.shields.io/badge/Python-3.9|3.10|3.11|3.12-F9DC3E.svg?logo=python&logoColor=&style=flat)
@@ -38,7 +40,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 
 ## 📣 リリース情報
 
-- 2024 年 12 月 XX YomiToku vX.X.X を公開
+- 2024 年 11 月 26 YomiToku v0.5.0 ベータ版を公開
 
 ## 💡 インストールの方法
 
@@ -86,4 +88,4 @@ yomitoku --help
 非商用での個人利用、研究目的での利用はご自由にお使いください。
 商用目的での利用に関しては、別途、商用ライセンスを提供しますので、開発者にお問い合わせください。
 
-YomiToku © 2024 by MLism Inc. is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
+YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/

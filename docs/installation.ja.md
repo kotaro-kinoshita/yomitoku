@@ -8,12 +8,21 @@
 pip install yomitoku
 ```
 
-## UV でのインストール
+## uv でのインストール
 
-本リポジトリはパッケージ管理ツールに [UV](https://docs.astral.sh/uv/) を使用しています。UV をインストール後、リポジトリをクローンし、以下のコマンドを実行してください
+本リポジトリはパッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。uv をインストール後、リポジトリをクローンし、以下のコマンドを実行してください
 
 ```bash
 uv sync
+```
+
+uvを利用する場合、`pyproject.toml`の以下の部分をご自身のcudaのバージョンに合わせて修正する必要があります。デフォルトではCUDA12.4に対応したpytorchがダウンロードされます。
+
+```pyproject.tom
+[[tool.uv.index]]
+name = "pytorch-cuda124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
 ```
 
 ## Docker 環境での実行
