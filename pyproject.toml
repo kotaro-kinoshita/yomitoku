@@ -12,7 +12,7 @@ authors = [{name = "Kotaro Kinoshita", email = "kotaro.kinoshita@mlism.com"}]
 description = "Yomitoku is an AI-powered document image analysis package designed specifically for the Japanese language."
 readme = "README.md"
 license = {text = "CC BY-NC-SA 4.0"}
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.13"
 keywords = ["Japanese", "OCR", "Deep Learning"]
 dependencies = [
     "huggingface-hub>=0.26.1",
@@ -24,7 +24,7 @@ dependencies = [
     "shapely>=2.0.6",
     "timm>=1.0.11",
     "torchvision>=0.20.0",
-    "torch==2.5.0",
+    "torch>=2.5.0",
     "pypdfium2>=4.30.0",
 ]
 
@@ -79,12 +79,18 @@ commands =
     pytest tests
 
 [testenv:lint]
+basepython = python3.12
 deps = ruff
 commands = 
     ruff check
 
 [testenv:docs]
-deps = mkdocs-material
+basepython = python3.12
+deps = 
+    mkdocs-material
+    pygments 
+    plantuml_markdown 
+    mkdocs-static-i18n
 commands = 
     mkdocs gh-deploy --force
 """

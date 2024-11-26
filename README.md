@@ -6,7 +6,7 @@
 ![Pytorch](https://img.shields.io/badge/Pytorch-2.5-EE4C2C.svg?logo=Pytorch&style=fla)
 ![CUDA](https://img.shields.io/badge/CUDA->=11.8-76B900.svg?logo=NVIDIA&style=fla)
 ![OS](https://img.shields.io/badge/OS-Linux|Mac|Win-1793D1.svg?&style=fla)
-[![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku-dev/)
+[![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku/)
 
 ## 🌟 概要
 
@@ -40,7 +40,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 
 ## 📣 リリース情報
 
-- 2024 年 11 月 26 YomiToku v0.5.1 (beta) を公開
+- 2024 年 11 月 26 日 YomiToku v0.5.1 (beta) を公開
 
 ## 💡 インストールの方法
 
@@ -80,7 +80,7 @@ yomitoku --help
 
 ## 📝 ドキュメント
 
-パッケージの詳細は[ドキュメント](https://kotaro-kinoshita.github.io/yomitoku-dev/)を確認してください。
+パッケージの詳細は[ドキュメント](https://kotaro-kinoshita.github.io/yomitoku/)を確認してください。
 
 ## LICENSE
 
