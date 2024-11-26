@@ -1,4 +1,5 @@
 import cv2
+import math
 import numpy as np
 import pyclipper
 from shapely.geometry import Polygon
@@ -80,9 +81,17 @@ class DBnetPostProcessor:
 
         return boxes, scores
 
-    def unclip(self, box, unclip_ratio=1.5):
+    def unclip(self, box, unclip_ratio=7):
+        # 小さい文字が見切れやすい、大きい文字のマージンが過度に大きくなる等の課題がある
+        # 対応として、文字の大きさに応じて、拡大パラメータを動的に変更する
+        # Note: こののルールはヒューリスティックで理論的根拠はない
         poly = Polygon(box)
-        distance = poly.area * unclip_ratio / poly.length
+        width = box[:, 0].max() - box[:, 0].min()
+        height = box[:, 1].max() - box[:, 1].min()
+        box_dist = min(width, height)
+        ratio = unclip_ratio / math.sqrt(box_dist)
+
+        distance = poly.area * ratio / poly.length
         offset = pyclipper.PyclipperOffset()
         offset.AddPath(box, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
         expanded = np.array(offset.Execute(distance))

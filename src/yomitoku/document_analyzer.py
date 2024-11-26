@@ -109,8 +109,8 @@ def extract_words_within_element(pred_words, element):
     if len(contained_words) == 0:
         return None, None, check_list
 
-    mean_width = word_sum_width / len(contained_words)
-    mean_height = word_sum_height / len(contained_words)
+    # mean_width = word_sum_width / len(contained_words)
+    # mean_height = word_sum_height / len(contained_words)
 
     word_direction = [word.direction for word in contained_words]
     cnt_horizontal = word_direction.count("horizontal")
@@ -120,18 +120,12 @@ def extract_words_within_element(pred_words, element):
     if element_direction == "horizontal":
         contained_words = sorted(
             contained_words,
-            key=lambda x: (
-                x.points[0][1] // int(mean_height),
-                x.points[0][0],
-            ),
+            key=lambda x: (sum([p[1] for p in x.points]) / 4),
         )
     else:
         contained_words = sorted(
             contained_words,
-            key=lambda x: (
-                x.points[1][0] // int(mean_width),
-                x.points[1][1],
-            ),
+            key=lambda x: (sum([p[0] for p in x.points]) / 4),
             reverse=True,
         )
 
