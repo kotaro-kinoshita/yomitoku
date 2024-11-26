@@ -74,7 +74,6 @@ repo_url: https://github.com/kotaro-kinoshita/yomitoku-dev
 plugins:
   - search:
   - i18n:
-      default_language: ja
       languages:
         - locale: ja
           name: 日本語
