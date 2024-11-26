@@ -41,7 +41,7 @@ Source of the image: Created by processing content from “Reiwa 6 Edition Infor
 
 ## 📣 Release
 
-- Released YomiToku v0.5.0 (beta) on November 26, 2024.
+- Released YomiToku v0.5.1 (beta) on November 26, 2024.
 
 ## 💡 Installation
 
