@@ -14,6 +14,7 @@
 
 条件等
 
+<img src="figures/in_gallery5_p1_figure_0.png" width="200px"><br>
 見 本
 
 第 012345678900 号
@@ -40,4 +41,5 @@
 
 運転免許証
 
+<img src="figures/in_gallery5_p1_figure_1.png" width="200px"><br>
 公安委員会
