@@ -27,8 +27,7 @@ class LayoutAnalyzer:
 
         if isinstance(configs, dict):
             assert (
-                "layout_parser" in configs
-                or "table_structure_recognizer" in configs
+                "layout_parser" in configs or "table_structure_recognizer" in configs
             ), "Invalid config key. Please check the config keys."
 
             if "layout_parser" in configs:
@@ -53,9 +52,7 @@ class LayoutAnalyzer:
     def __call__(self, img):
         layout_results, vis = self.layout_parser(img)
         table_boxes = [table.box for table in layout_results.tables]
-        table_results, vis = self.table_structure_recognizer(
-            img, table_boxes, vis=vis
-        )
+        table_results, vis = self.table_structure_recognizer(img, table_boxes, vis=vis)
 
         results = LayoutAnalyzerSchema(
             paragraphs=layout_results.paragraphs,

@@ -5,9 +5,7 @@ from shapely.geometry import Polygon
 
 
 class DBnetPostProcessor:
-    def __init__(
-        self, min_size, thresh, box_thresh, max_candidates, unclip_ratio
-    ):
+    def __init__(self, min_size, thresh, box_thresh, max_candidates, unclip_ratio):
         self.min_size = min_size
         self.thresh = thresh
         self.box_thresh = box_thresh
@@ -24,9 +22,7 @@ class DBnetPostProcessor:
         pred = preds["binary"][0]
         segmentation = self.binarize(pred)[0]
         height, width = image_size
-        quads, scores = self.boxes_from_bitmap(
-            pred, segmentation, width, height
-        )
+        quads, scores = self.boxes_from_bitmap(pred, segmentation, width, height)
         return quads, scores
 
     def binarize(self, pred):
@@ -65,9 +61,7 @@ class DBnetPostProcessor:
             if self.box_thresh > score:
                 continue
 
-            box = self.unclip(points, unclip_ratio=self.unclip_ratio).reshape(
-                -1, 1, 2
-            )
+            box = self.unclip(points, unclip_ratio=self.unclip_ratio).reshape(-1, 1, 2)
             box, sside = self.get_mini_boxes(box)
             if sside < self.min_size + 2:
                 continue
@@ -76,9 +70,7 @@ class DBnetPostProcessor:
                 dest_width = dest_width.item()
                 dest_height = dest_height.item()
 
-            box[:, 0] = np.clip(
-                np.round(box[:, 0] / width * dest_width), 0, dest_width
-            )
+            box[:, 0] = np.clip(np.round(box[:, 0] / width * dest_width), 0, dest_width)
             box[:, 1] = np.clip(
                 np.round(box[:, 1] / height * dest_height), 0, dest_height
             )

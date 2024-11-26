@@ -6,9 +6,7 @@ from yomitoku.data.functions import load_pdf
 if __name__ == "__main__":
     PATH_IMGE = ""
 
-    configs = {
-        "ocr": {"text_detector": {"path_cfg": "demo/text_detector.yaml"}}
-    }
+    configs = {"ocr": {"text_detector": {"path_cfg": "demo/text_detector.yaml"}}}
 
     analyzer = DocumentAnalyzer(configs=configs, visualize=True, device="cuda")
 
