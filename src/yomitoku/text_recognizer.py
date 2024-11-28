@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import torch
+import unicodedata
 from pydantic import conlist
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
@@ -72,6 +73,8 @@ class TextRecognizer(BaseModule):
 
     def postprocess(self, p, points):
         pred, score = self.tokenizer.decode(p)
+        pred = [unicodedata.normalize("NFKC", x) for x in pred]
+
         directions = []
         for point in points:
             point = np.array(point)
