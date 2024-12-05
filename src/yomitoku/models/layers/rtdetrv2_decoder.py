@@ -1,4 +1,17 @@
-"""Copyright(c) 2023 lyuwenyu. All Rights Reserved."""
+# Scene Text Recognition Model Hub
+# Copyright 2023 lyuwenyu
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import copy
 import functools
@@ -27,7 +40,9 @@ def inverse_sigmoid(x: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
 
 
 class MLP(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, act="relu"):
+    def __init__(
+        self, input_dim, hidden_dim, output_dim, num_layers, act="relu"
+    ):
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
@@ -178,7 +193,9 @@ class MSDeformableAttention(nn.Module):
         elif reference_points.shape[-1] == 4:
             # reference_points [8, 480, None, 1,  4]
             # sampling_offsets [8, 480, 8,    12, 2]
-            num_points_scale = self.num_points_scale.to(dtype=query.dtype).unsqueeze(-1)
+            num_points_scale = self.num_points_scale.to(
+                dtype=query.dtype
+            ).unsqueeze(-1)
             offset = (
                 sampling_offsets
                 * num_points_scale
@@ -313,7 +330,9 @@ def deformable_attention_core_func_v2(
     _, Len_q, _, _, _ = sampling_locations.shape
 
     split_shape = [h * w for h, w in value_spatial_shapes]
-    value_list = value.permute(0, 2, 3, 1).flatten(0, 1).split(split_shape, dim=-1)
+    value_list = (
+        value.permute(0, 2, 3, 1).flatten(0, 1).split(split_shape, dim=-1)
+    )
 
     # sampling_offsets [8, 480, 8, 12, 2]
     if method == "default":
@@ -342,7 +361,8 @@ def deformable_attention_core_func_v2(
         elif method == "discrete":
             # n * m, seq, n, 2
             sampling_coord = (
-                sampling_grid_l * torch.tensor([[w, h]], device=value.device) + 0.5
+                sampling_grid_l * torch.tensor([[w, h]], device=value.device)
+                + 0.5
             ).to(torch.int64)
 
             # FIX ME? for rectangle input
@@ -369,7 +389,9 @@ def deformable_attention_core_func_v2(
     attn_weights = attention_weights.permute(0, 2, 1, 3).reshape(
         bs * n_head, 1, Len_q, sum(num_points_list)
     )
-    weighted_sample_locs = torch.concat(sampling_value_list, dim=-1) * attn_weights
+    weighted_sample_locs = (
+        torch.concat(sampling_value_list, dim=-1) * attn_weights
+    )
     output = weighted_sample_locs.sum(-1).reshape(bs, n_head * c, Len_q)
 
     return output.permute(0, 2, 1)
@@ -584,7 +606,9 @@ class RTDETRTransformerv2(nn.Module):
                         [
                             (
                                 "conv",
-                                nn.Conv2d(in_channels, self.hidden_dim, 1, bias=False),
+                                nn.Conv2d(
+                                    in_channels, self.hidden_dim, 1, bias=False
+                                ),
                             ),
                             (
                                 "norm",
@@ -665,9 +689,13 @@ class RTDETRTransformerv2(nn.Module):
                 torch.arange(h), torch.arange(w), indexing="ij"
             )
             grid_xy = torch.stack([grid_x, grid_y], dim=-1)
-            grid_xy = (grid_xy.unsqueeze(0) + 0.5) / torch.tensor([w, h], dtype=dtype)
+            grid_xy = (grid_xy.unsqueeze(0) + 0.5) / torch.tensor(
+                [w, h], dtype=dtype
+            )
             wh = torch.ones_like(grid_xy) * grid_size * (2.0**lvl)
-            lvl_anchors = torch.concat([grid_xy, wh], dim=-1).reshape(-1, h * w, 4)
+            lvl_anchors = torch.concat([grid_xy, wh], dim=-1).reshape(
+                -1, h * w, 4
+            )
             anchors.append(lvl_anchors)
 
         anchors = torch.concat(anchors, dim=1).to(device)
@@ -701,18 +729,22 @@ class RTDETRTransformerv2(nn.Module):
         )
 
         enc_topk_bboxes_list, enc_topk_logits_list = [], []
-        enc_topk_memory, enc_topk_logits, enc_topk_bbox_unact = self._select_topk(
-            output_memory,
-            enc_outputs_logits,
-            enc_outputs_coord_unact,
-            self.num_queries,
+        enc_topk_memory, enc_topk_logits, enc_topk_bbox_unact = (
+            self._select_topk(
+                output_memory,
+                enc_outputs_logits,
+                enc_outputs_coord_unact,
+                self.num_queries,
+            )
         )
 
         # if self.num_select_queries != self.num_queries:
         #     raise NotImplementedError('')
 
         if self.learn_query_content:
-            content = self.tgt_embed.weight.unsqueeze(0).tile([memory.shape[0], 1, 1])
+            content = self.tgt_embed.weight.unsqueeze(0).tile(
+                [memory.shape[0], 1, 1]
+            )
         else:
             content = enc_topk_memory.detach()
 
@@ -739,7 +771,9 @@ class RTDETRTransformerv2(nn.Module):
         topk: int,
     ):
         if self.query_select_method == "default":
-            _, topk_ind = torch.topk(outputs_logits.max(-1).values, topk, dim=-1)
+            _, topk_ind = torch.topk(
+                outputs_logits.max(-1).values, topk, dim=-1
+            )
 
         elif self.query_select_method == "one2many":
             _, topk_ind = torch.topk(outputs_logits.flatten(1), topk, dim=-1)
@@ -752,12 +786,16 @@ class RTDETRTransformerv2(nn.Module):
 
         topk_coords = outputs_coords_unact.gather(
             dim=1,
-            index=topk_ind.unsqueeze(-1).repeat(1, 1, outputs_coords_unact.shape[-1]),
+            index=topk_ind.unsqueeze(-1).repeat(
+                1, 1, outputs_coords_unact.shape[-1]
+            ),
         )
 
         topk_logits = outputs_logits.gather(
             dim=1,
-            index=topk_ind.unsqueeze(-1).repeat(1, 1, outputs_logits.shape[-1]),
+            index=topk_ind.unsqueeze(-1).repeat(
+                1, 1, outputs_logits.shape[-1]
+            ),
         )
 
         topk_memory = memory.gather(
