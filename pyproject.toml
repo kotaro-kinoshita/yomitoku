@@ -11,7 +11,7 @@ dynamic = ["version"]
 authors = [{name = "Kotaro Kinoshita", email = "kotaro.kinoshita@mlism.com"}]
 description = "Yomitoku is an AI-powered document image analysis package designed specifically for the Japanese language."
 readme = "README.md"
-license = {text = "CC BY-NC-SA 4.0"}
+license = {file = "LICENSE"}
 requires-python = ">=3.9,<3.13"
 keywords = ["Japanese", "OCR", "Deep Learning"]
 dependencies = [
