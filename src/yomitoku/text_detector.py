@@ -54,7 +54,7 @@ class TextDetector(BaseModule):
         self.load_model(
             model_name,
             path_cfg,
-            from_pretrained=True,
+            from_pretrained=from_pretrained,
         )
 
         self.device = device
@@ -70,10 +70,15 @@ class TextDetector(BaseModule):
             name = self._cfg.hf_hub_repo.split("/")[-1]
             path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
             if not os.path.exists(path_onnx):
-                self.convert_onnx()
+                self.convert_onnx(path_onnx)
 
             model = onnx.load(path_onnx)
-            self.sess = onnxruntime.InferenceSession(model.SerializeToString())
+            if torch.cuda.is_available() and device == "cuda":
+                self.sess = onnxruntime.InferenceSession(
+                    model.SerializeToString(), providers=["CUDAExecutionProvider"]
+                )
+            else:
+                self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
     def convert_onnx(self, path_onnx):
         dynamic_axes = {

@@ -77,7 +77,12 @@ class TextRecognizer(BaseModule):
                 self.convert_onnx(path_onnx)
 
             model = onnx.load(path_onnx)
-            self.sess = onnxruntime.InferenceSession(model.SerializeToString())
+            if torch.cuda.is_available() and device == "cuda":
+                self.sess = onnxruntime.InferenceSession(
+                    model.SerializeToString(), providers=["CUDAExecutionProvider"]
+                )
+            else:
+                self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
     def preprocess(self, img, polygons):
         dataset = ParseqDataset(self._cfg, img, polygons)
@@ -146,7 +151,7 @@ class TextRecognizer(BaseModule):
             else:
                 with torch.inference_mode():
                     data = data.to(self.device)
-                    p = self.model(self.tokenizer, data).softmax(-1)
+                    p = self.model(data).softmax(-1)
 
             pred, score, direction = self.postprocess(p, points)
             preds.extend(pred)

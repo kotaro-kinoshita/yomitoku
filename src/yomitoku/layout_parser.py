@@ -1,10 +1,15 @@
 from typing import List, Union
 
 import cv2
+import os
+import onnx
+import onnxruntime
 import torch
 import torchvision.transforms as T
 from PIL import Image
 from pydantic import conlist
+
+from .constants import ROOT_DIR
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import LayoutParserRTDETRv2Config
@@ -91,6 +96,7 @@ class LayoutParser(BaseModule):
         device="cuda",
         visualize=False,
         from_pretrained=True,
+        infer_onnx=False,
     ):
         super().__init__()
         self.load_model(model_name, path_cfg, from_pretrained)
@@ -119,11 +125,44 @@ class LayoutParser(BaseModule):
         }
 
         self.role = self._cfg.role
+        self.infer_onnx = infer_onnx
+        if infer_onnx:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+            if not os.path.exists(path_onnx):
+                self.convert_onnx(path_onnx)
+
+            model = onnx.load(path_onnx)
+            if torch.cuda.is_available() and device == "cuda":
+                self.sess = onnxruntime.InferenceSession(
+                    model.SerializeToString(), providers=["CUDAExecutionProvider"]
+                )
+            else:
+                self.sess = onnxruntime.InferenceSession(model.SerializeToString())
+
+    def convert_onnx(self, path_onnx):
+        dynamic_axes = {
+            "input": {0: "batch_size"},
+            "output": {0: "batch_size"},
+        }
+
+        img_size = self._cfg.data.img_size
+        dummy_input = torch.randn(1, 3, *img_size, requires_grad=True)
+
+        torch.onnx.export(
+            self.model,
+            dummy_input,
+            path_onnx,
+            opset_version=16,
+            input_names=["input"],
+            output_names=["pred_logits", "pred_boxes"],
+            dynamic_axes=dynamic_axes,
+        )
 
     def preprocess(self, img):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cv_img)
-        img_tensor = self.transforms(img)[None].to(self.device)
+        img_tensor = self.transforms(img)[None]
         return img_tensor
 
     def postprocess(self, preds, image_size):
@@ -175,8 +214,19 @@ class LayoutParser(BaseModule):
         ori_h, ori_w = img.shape[:2]
         img_tensor = self.preprocess(img)
 
-        with torch.inference_mode():
-            preds = self.model(img_tensor)
+        if self.infer_onnx:
+            input = img_tensor.numpy()
+            results = self.sess.run(None, {"input": input})
+            preds = {
+                "pred_logits": torch.tensor(results[0]).to(self.device),
+                "pred_boxes": torch.tensor(results[1]).to(self.device),
+            }
+
+        else:
+            with torch.inference_mode():
+                img_tensor = img_tensor.to(self.device)
+                preds = self.model(img_tensor)
+
         results = self.postprocess(preds, (ori_h, ori_w))
 
         vis = None
