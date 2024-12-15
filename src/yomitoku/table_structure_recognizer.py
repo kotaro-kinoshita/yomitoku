@@ -127,6 +127,8 @@ class TableStructureRecognizer(BaseModule):
             num_top_queries=self._cfg.RTDETRTransformerv2.num_queries,
         )
 
+        self.save_config("table_structure_recognitizer.yaml")
+
         self.transforms = T.Compose(
             [
                 T.Resize(self._cfg.data.img_size),

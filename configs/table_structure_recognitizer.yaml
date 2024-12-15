@@ -1,2 +1,67 @@
-hf_hub_repo: "KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta"
-thresh_score: 0.6
+hf_hub_repo: KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta
+thresh_score: 0.4
+data:
+  img_size:
+  - 640
+  - 640
+PResNet:
+  depth: 50
+  variant: d
+  freeze_at: 0
+  return_idx:
+  - 1
+  - 2
+  - 3
+  num_stages: 4
+  freeze_norm: true
+HybridEncoder:
+  in_channels:
+  - 512
+  - 1024
+  - 2048
+  feat_strides:
+  - 8
+  - 16
+  - 32
+  hidden_dim: 256
+  use_encoder_idx:
+  - 2
+  num_encoder_layers: 1
+  nhead: 8
+  dim_feedforward: 1024
+  dropout: 0.0
+  enc_act: gelu
+  expansion: 1.0
+  depth_mult: 1
+  act: silu
+RTDETRTransformerv2:
+  num_classes: 3
+  feat_channels:
+  - 256
+  - 256
+  - 256
+  feat_strides:
+  - 8
+  - 16
+  - 32
+  hidden_dim: 256
+  num_levels: 3
+  num_layers: 6
+  num_queries: 300
+  num_denoising: 100
+  label_noise_ratio: 0.5
+  box_noise_scale: 1.0
+  eval_spatial_size:
+  - 640
+  - 640
+  eval_idx: -1
+  num_points:
+  - 4
+  - 4
+  - 4
+  cross_attn_method: default
+  query_select_method: default
+category:
+- row
+- col
+- span

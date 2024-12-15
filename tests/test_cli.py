@@ -115,6 +115,7 @@ def test_run_jpg_html(monkeypatch, tmp_path):
             "--figure_width",
             "100",
             "--ignore_line_break",
+            "--lite",
         ],
     )
     main.main()
@@ -138,6 +139,7 @@ def test_run_tiff_csv(monkeypatch, tmp_path):
             "csv",
             "--tsr_cfg",
             "tests/yaml/table_structure_recognizer.yaml",
+            "--lite",
         ],
     )
     main.main()
@@ -166,6 +168,7 @@ def test_run_pdf_md(monkeypatch, tmp_path):
             "--figure_width",
             "100",
             "--ignore_line_break",
+            "--lite",
         ],
     )
     main.main()

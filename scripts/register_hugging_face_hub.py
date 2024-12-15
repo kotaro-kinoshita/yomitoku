@@ -14,7 +14,7 @@ def get_module(module_name):
         return module
 
     elif module_name == "text_recognizer":
-        module = TextRecognizer(from_pretrained=False)
+        module = TextRecognizer(from_pretrained=False, model_name="parseq-small")
         return module
 
     elif module_name == "layout_parser":

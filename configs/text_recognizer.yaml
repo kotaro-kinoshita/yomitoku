@@ -1,14 +1,32 @@
 hf_hub_repo: KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta
+charset: /home/kinoshita/Projects/know-how/yomitoku/src/yomitoku/resource/charset.txt
+num_tokens: 7312
 max_label_length: 100
 decode_ar: 1
 refine_iters: 1
 data:
   num_workers: 4
   batch_size: 128
+  img_size:
+  - 32
+  - 800
+encoder:
+  patch_size:
+  - 8
+  - 8
+  num_heads: 8
+  embed_dim: 512
+  mlp_ratio: 4
+  depth: 12
+decoder:
+  embed_dim: 512
+  num_heads: 8
+  mlp_ratio: 4
+  depth: 1
 visualize:
-  font: resource/MPLUS1p-Medium.ttf
+  font: /home/kinoshita/Projects/know-how/yomitoku/src/yomitoku/resource/MPLUS1p-Medium.ttf
   color:
-    - 0
-    - 0
-    - 255
+  - 0
+  - 0
+  - 255
   font_size: 18

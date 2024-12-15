@@ -105,6 +105,12 @@ def main():
         help="output directory",
     )
     parser.add_argument(
+        "-l",
+        "--lite",
+        action="store_true",
+        help="if set, use lite model",
+    )
+    parser.add_argument(
         "-d",
         "--device",
         type=str,
@@ -196,6 +202,9 @@ def main():
             },
         },
     }
+
+    if args.lite:
+        configs["ocr"]["text_recognizer"]["model_name"] = "parseq-small"
 
     analyzer = DocumentAnalyzer(
         configs=configs,
