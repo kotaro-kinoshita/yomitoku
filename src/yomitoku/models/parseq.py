@@ -22,7 +22,6 @@ from huggingface_hub import PyTorchModelHubMixin
 from timm.models.helpers import named_apply
 from torch import Tensor
 
-from ..postprocessor import ParseqTokenizer as Tokenizer
 from .layers.parseq_transformer import Decoder, Encoder, TokenEmbedding
 
 
@@ -123,7 +122,6 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
 
     def forward(
         self,
-        tokenizer: Tokenizer,
         images: Tensor,
         max_length: Optional[int] = None,
     ) -> Tensor:
@@ -150,11 +148,11 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         if self.decode_ar:
             tgt_in = torch.full(
                 (bs, num_steps),
-                tokenizer.pad_id,
+                self.tokenizer.pad_id,
                 dtype=torch.long,
                 device=self._device,
             )
-            tgt_in[:, 0] = tokenizer.bos_id
+            tgt_in[:, 0] = self.tokenizer.bos_id
 
             logits = []
             for i in range(num_steps):
@@ -177,7 +175,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     # greedy decode. add the next token index to the target input
                     tgt_in[:, j] = p_i.squeeze().argmax(-1)
                     # Efficient batch decoding: If all output words have at least one EOS token, end decoding.
-                    if testing and (tgt_in == tokenizer.eos_id).any(dim=-1).all():
+                    if testing and (tgt_in == self.tokenizer.eos_id).any(dim=-1).all():
                         break
 
             logits = torch.cat(logits, dim=1)
@@ -185,7 +183,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
             # No prior context, so input is just <bos>. We query all positions.
             tgt_in = torch.full(
                 (bs, 1),
-                tokenizer.bos_id,
+                self.tokenizer.bos_id,
                 dtype=torch.long,
                 device=self._device,
             )
@@ -208,7 +206,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
             ] = 0
             bos = torch.full(
                 (bs, 1),
-                tokenizer.bos_id,
+                self.tokenizer.bos_id,
                 dtype=torch.long,
                 device=self._device,
             )
@@ -216,7 +214,9 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                 # Prior context is the previous output.
                 tgt_in = torch.cat([bos, logits[:, :-1].argmax(-1)], dim=1)
                 # Mask tokens beyond the first EOS token.
-                tgt_padding_mask = (tgt_in == tokenizer.eos_id).int().cumsum(-1) > 0
+                tgt_padding_mask = (tgt_in == self.tokenizer.eos_id).int().cumsum(
+                    -1
+                ) > 0
                 tgt_out = self.decode(
                     tgt_in,
                     memory,

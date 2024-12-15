@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import torch
+import os
 from pydantic import conlist
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
@@ -14,6 +15,7 @@ from .data.functions import (
 from .models import DBNet
 from .postprocessor import DBnetPostProcessor
 from .utils.visualizer import det_visualizer
+from .constants import ROOT_DIR
 
 
 class TextDetectorModelCatalog(BaseModelCatalog):
@@ -58,6 +60,30 @@ class TextDetector(BaseModule):
         self.model.to(self.device)
 
         self.post_processor = DBnetPostProcessor(**self._cfg.post_process)
+
+        name = self._cfg.hf_hub_repo.split("/")[-1]
+        path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+
+        if not os.path.exists(path_onnx):
+            self.convert_onnx()
+
+    def convert_onnx(self, path_onnx):
+        dynamic_axes = {
+            "input": {0: "batch_size", 2: "height", 3: "width"},
+            "output": {0: "batch_size", 2: "height", 3: "width"},
+        }
+
+        dummy_input = torch.randn(1, 3, 256, 256, requires_grad=True)
+
+        torch.onnx.export(
+            self.model,
+            dummy_input,
+            path_onnx,
+            opset_version=14,
+            input_names=["input"],
+            output_names=["output"],
+            dynamic_axes=dynamic_axes,
+        )
 
     def preprocess(self, img):
         img = img.copy()

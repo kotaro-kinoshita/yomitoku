@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import torch
+import os
 import unicodedata
 from pydantic import conlist
 
@@ -59,10 +60,18 @@ class TextRecognizer(BaseModule):
 
         self.device = device
 
+        self.model.tokenizer = self.tokenizer
         self.model.eval()
         self.model.to(self.device)
 
         self.visualize = visualize
+
+        name = self._cfg.hf_hub_repo.split("/")[-1]
+        path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+
+        if infer_onnx:
+            if not os.path.exists(path_onnx):
+                self.convert_onnx()
 
     def preprocess(self, img, polygons):
         dataset = ParseqDataset(self._cfg, img, polygons)
@@ -75,16 +84,13 @@ class TextRecognizer(BaseModule):
 
         return dataloader
 
-    def convert_onnx(self):
+    def convert_onnx(self, path_onnx):
         img_size = self._cfg.data.img_size
         input = torch.randn(1, 3, *img_size, requires_grad=True)
         dynamic_axes = {
             "input": {0: "batch_size"},
             "output": {0: "batch_size"},
         }
-
-        name = self._cfg.hf_hub_repo.split("/")[-1]
-        path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
 
         torch.onnx.export(
             self.model,
