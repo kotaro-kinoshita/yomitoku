@@ -17,6 +17,9 @@ from .postprocessor import DBnetPostProcessor
 from .utils.visualizer import det_visualizer
 from .constants import ROOT_DIR
 
+import onnx
+import onnxruntime
+
 
 class TextDetectorModelCatalog(BaseModelCatalog):
     def __init__(self):
@@ -45,6 +48,7 @@ class TextDetector(BaseModule):
         device="cuda",
         visualize=False,
         from_pretrained=True,
+        infer_onnx=False,
     ):
         super().__init__()
         self.load_model(
@@ -60,12 +64,16 @@ class TextDetector(BaseModule):
         self.model.to(self.device)
 
         self.post_processor = DBnetPostProcessor(**self._cfg.post_process)
+        self.infer_onnx = infer_onnx
 
-        name = self._cfg.hf_hub_repo.split("/")[-1]
-        path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+        if infer_onnx:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+            if not os.path.exists(path_onnx):
+                self.convert_onnx()
 
-        if not os.path.exists(path_onnx):
-            self.convert_onnx()
+            model = onnx.load(path_onnx)
+            self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
     def convert_onnx(self, path_onnx):
         dynamic_axes = {
@@ -107,9 +115,16 @@ class TextDetector(BaseModule):
 
         ori_h, ori_w = img.shape[:2]
         tensor = self.preprocess(img)
-        tensor = tensor.to(self.device)
-        with torch.inference_mode():
-            preds = self.model(tensor)
+
+        if self.infer_onnx:
+            print("infer onnx")
+            input = tensor.numpy()
+            results = self.sess.run(["output"], {"input": input})
+            preds = {"binary": torch.tensor(results[0])}
+        else:
+            with torch.inference_mode():
+                tensor = tensor.to(self.device)
+                preds = self.model(tensor)
 
         quads, scores = self.postprocess(preds, (ori_h, ori_w))
         outputs = {"points": quads, "scores": scores}

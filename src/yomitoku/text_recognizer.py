@@ -15,6 +15,8 @@ from .utils.misc import load_charset
 from .utils.visualizer import rec_visualizer
 
 from .constants import ROOT_DIR
+import onnx
+import onnxruntime
 
 
 class TextRecognizerModelCatalog(BaseModelCatalog):
@@ -66,12 +68,16 @@ class TextRecognizer(BaseModule):
 
         self.visualize = visualize
 
-        name = self._cfg.hf_hub_repo.split("/")[-1]
-        path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+        self.infer_onnx = infer_onnx
 
         if infer_onnx:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
             if not os.path.exists(path_onnx):
-                self.convert_onnx()
+                self.convert_onnx(path_onnx)
+
+            model = onnx.load(path_onnx)
+            self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
     def preprocess(self, img, polygons):
         dataset = ParseqDataset(self._cfg, img, polygons)
@@ -133,13 +139,19 @@ class TextRecognizer(BaseModule):
         scores = []
         directions = []
         for data in dataloader:
-            data = data.to(self.device)
-            with torch.inference_mode():
-                p = self.model(self.tokenizer, data).softmax(-1)
-                pred, score, direction = self.postprocess(p, points)
-                preds.extend(pred)
-                scores.extend(score)
-                directions.extend(direction)
+            if self.infer_onnx:
+                input = data.numpy()
+                results = self.sess.run(["output"], {"input": input})
+                p = torch.tensor(results[0])
+            else:
+                with torch.inference_mode():
+                    data = data.to(self.device)
+                    p = self.model(self.tokenizer, data).softmax(-1)
+
+            pred, score, direction = self.postprocess(p, points)
+            preds.extend(pred)
+            scores.extend(score)
+            directions.extend(direction)
 
         outputs = {
             "contents": preds,

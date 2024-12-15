@@ -205,6 +205,8 @@ def main():
 
     if args.lite:
         configs["ocr"]["text_recognizer"]["model_name"] = "parseq-small"
+        configs["ocr"]["text_detector"]["infer_onnx"] = True
+        configs["ocr"]["text_recognizer"]["infer_onnx"] = True
 
     analyzer = DocumentAnalyzer(
         configs=configs,
