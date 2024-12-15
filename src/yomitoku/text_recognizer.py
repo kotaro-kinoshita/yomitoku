@@ -13,6 +13,8 @@ from .postprocessor import ParseqTokenizer as Tokenizer
 from .utils.misc import load_charset
 from .utils.visualizer import rec_visualizer
 
+from .constants import ROOT_DIR
+
 
 class TextRecognizerModelCatalog(BaseModelCatalog):
     def __init__(self):
@@ -44,6 +46,7 @@ class TextRecognizer(BaseModule):
         device="cuda",
         visualize=False,
         from_pretrained=True,
+        infer_onnx=False,
     ):
         super().__init__()
         self.load_model(
@@ -71,6 +74,28 @@ class TextRecognizer(BaseModule):
         )
 
         return dataloader
+
+    def convert_onnx(self):
+        img_size = self._cfg.data.img_size
+        input = torch.randn(1, 3, *img_size, requires_grad=True)
+        dynamic_axes = {
+            "input": {0: "batch_size"},
+            "output": {0: "batch_size"},
+        }
+
+        name = self._cfg.hf_hub_repo.split("/")[-1]
+        path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+
+        torch.onnx.export(
+            self.model,
+            input,
+            path_onnx,
+            opset_version=14,
+            input_names=["input"],
+            output_names=["output"],
+            do_constant_folding=True,
+            dynamic_axes=dynamic_axes,
+        )
 
     def postprocess(self, p, points):
         pred, score = self.tokenizer.decode(p)
