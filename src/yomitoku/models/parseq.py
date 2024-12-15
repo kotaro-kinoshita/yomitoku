@@ -198,7 +198,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     torch.ones(
                         num_steps,
                         num_steps,
-                        dtype=torch.bool,
+                        dtype=torch.int64,
                         device=self._device,
                     ),
                     2,

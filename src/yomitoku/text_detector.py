@@ -117,7 +117,6 @@ class TextDetector(BaseModule):
         tensor = self.preprocess(img)
 
         if self.infer_onnx:
-            print("infer onnx")
             input = tensor.numpy()
             results = self.sess.run(["output"], {"input": input})
             preds = {"binary": torch.tensor(results[0])}
