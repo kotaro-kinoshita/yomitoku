@@ -2,7 +2,7 @@
 
 <img src="static/logo/horizontal.png" width="800px">
 
-![Python](https://img.shields.io/badge/Python-3.9|3.10|3.11|3.12-F9DC3E.svg?logo=python&logoColor=&style=flat)
+![Python](https://img.shields.io/badge/Python-3.10|3.11|3.12-F9DC3E.svg?logo=python&logoColor=&style=flat)
 ![Pytorch](https://img.shields.io/badge/Pytorch-2.5-EE4C2C.svg?logo=Pytorch&style=fla)
 ![CUDA](https://img.shields.io/badge/CUDA->=11.8-76B900.svg?logo=NVIDIA&style=fla)
 ![OS](https://img.shields.io/badge/OS-Linux|Mac|Win-1793D1.svg?&style=fla)
@@ -61,7 +61,7 @@ yomitoku ${path_data} -f md -o results -v --figure　--lite
 - `-f`, `--format` 出力形式のファイルフォーマットを指定します。(json, csv, html, md をサポート)
 - `-o`, `--outdir` 出力先のディレクトリ名を指定します。存在しない場合は新規で作成されます。
 - `-v`, `--vis` を指定すると解析結果を可視化した画像を出力します。
-- `-l`, `--lite` を指定すると軽量モデルで推論を実行します。CPUでも高速に推論可能です。
+- `-l`, `--lite` を指定すると軽量モデルで推論を実行します。通常より高速に推論できますが、若干、精度が低下する可能性があります。
 - `-d`, `--device` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
 - `--ignore_line_break` 画像の改行位置を無視して、段落内の文章を連結して返します。（デフォルト：画像通りの改行位置位置で改行します。）
 - `--figure_letter` 検出した図表に含まれる文字も出力ファイルにエクスポートします。

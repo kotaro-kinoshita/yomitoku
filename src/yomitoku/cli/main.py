@@ -205,6 +205,12 @@ def main():
 
     if args.lite:
         configs["ocr"]["text_recognizer"]["model_name"] = "parseq-small"
+        configs["ocr"]["text_detector"]["infer_onnx"] = True
+
+        # Note: Text Detector以外はONNX推論よりもPyTorch推論の方が速いため、ONNX推論は行わない
+        # configs["ocr"]["text_recognizer"]["infer_onnx"] = True
+        # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
+        # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
 
     analyzer = DocumentAnalyzer(
         configs=configs,

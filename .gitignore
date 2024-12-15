@@ -21,3 +21,5 @@ weights/
 results/
 
 .coverage*
+
+*.onnx

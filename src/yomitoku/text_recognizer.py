@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import torch
+import os
 import unicodedata
 from pydantic import conlist
 
@@ -12,6 +13,10 @@ from .models import PARSeq
 from .postprocessor import ParseqTokenizer as Tokenizer
 from .utils.misc import load_charset
 from .utils.visualizer import rec_visualizer
+
+from .constants import ROOT_DIR
+import onnx
+import onnxruntime
 
 
 class TextRecognizerModelCatalog(BaseModelCatalog):
@@ -44,6 +49,7 @@ class TextRecognizer(BaseModule):
         device="cuda",
         visualize=False,
         from_pretrained=True,
+        infer_onnx=False,
     ):
         super().__init__()
         self.load_model(
@@ -56,10 +62,27 @@ class TextRecognizer(BaseModule):
 
         self.device = device
 
+        self.model.tokenizer = self.tokenizer
         self.model.eval()
         self.model.to(self.device)
 
         self.visualize = visualize
+
+        self.infer_onnx = infer_onnx
+
+        if infer_onnx:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+            if not os.path.exists(path_onnx):
+                self.convert_onnx(path_onnx)
+
+            model = onnx.load(path_onnx)
+            if torch.cuda.is_available() and device == "cuda":
+                self.sess = onnxruntime.InferenceSession(
+                    model.SerializeToString(), providers=["CUDAExecutionProvider"]
+                )
+            else:
+                self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
     def preprocess(self, img, polygons):
         dataset = ParseqDataset(self._cfg, img, polygons)
@@ -71,6 +94,25 @@ class TextRecognizer(BaseModule):
         )
 
         return dataloader
+
+    def convert_onnx(self, path_onnx):
+        img_size = self._cfg.data.img_size
+        input = torch.randn(1, 3, *img_size, requires_grad=True)
+        dynamic_axes = {
+            "input": {0: "batch_size"},
+            "output": {0: "batch_size"},
+        }
+
+        torch.onnx.export(
+            self.model,
+            input,
+            path_onnx,
+            opset_version=14,
+            input_names=["input"],
+            output_names=["output"],
+            do_constant_folding=True,
+            dynamic_axes=dynamic_axes,
+        )
 
     def postprocess(self, p, points):
         pred, score = self.tokenizer.decode(p)
@@ -102,13 +144,19 @@ class TextRecognizer(BaseModule):
         scores = []
         directions = []
         for data in dataloader:
-            data = data.to(self.device)
-            with torch.inference_mode():
-                p = self.model(self.tokenizer, data).softmax(-1)
-                pred, score, direction = self.postprocess(p, points)
-                preds.extend(pred)
-                scores.extend(score)
-                directions.extend(direction)
+            if self.infer_onnx:
+                input = data.numpy()
+                results = self.sess.run(["output"], {"input": input})
+                p = torch.tensor(results[0])
+            else:
+                with torch.inference_mode():
+                    data = data.to(self.device)
+                    p = self.model(data).softmax(-1)
+
+            pred, score, direction = self.postprocess(p, points)
+            preds.extend(pred)
+            scores.extend(score)
+            directions.extend(direction)
 
         outputs = {
             "contents": preds,

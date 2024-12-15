@@ -1,10 +1,15 @@
 from typing import List, Union
 
 import cv2
+import os
+import onnx
+import onnxruntime
 import torch
 import torchvision.transforms as T
 from PIL import Image
 from pydantic import conlist
+
+from .constants import ROOT_DIR
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
 from .configs import TableStructureRecognizerRTDETRv2Config
@@ -109,12 +114,13 @@ class TableStructureRecognizer(BaseModule):
         device="cuda",
         visualize=False,
         from_pretrained=True,
+        infer_onnx=False,
     ):
         super().__init__()
         self.load_model(
             model_name,
             path_cfg,
-            from_pretrained=True,
+            from_pretrained=from_pretrained,
         )
         self.device = device
         self.visualize = visualize
@@ -142,6 +148,40 @@ class TableStructureRecognizer(BaseModule):
             id: category for id, category in enumerate(self._cfg.category)
         }
 
+        self.infer_onnx = infer_onnx
+        if infer_onnx:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_onnx = f"{ROOT_DIR}/onnx/{name}.onnx"
+            if not os.path.exists(path_onnx):
+                self.convert_onnx(path_onnx)
+
+            model = onnx.load(path_onnx)
+            if torch.cuda.is_available() and device == "cuda":
+                self.sess = onnxruntime.InferenceSession(
+                    model.SerializeToString(), providers=["CUDAExecutionProvider"]
+                )
+            else:
+                self.sess = onnxruntime.InferenceSession(model.SerializeToString())
+
+    def convert_onnx(self, path_onnx):
+        dynamic_axes = {
+            "input": {0: "batch_size"},
+            "output": {0: "batch_size"},
+        }
+
+        img_size = self._cfg.data.img_size
+        dummy_input = torch.randn(1, 3, *img_size, requires_grad=True)
+
+        torch.onnx.export(
+            self.model,
+            dummy_input,
+            path_onnx,
+            opset_version=16,
+            input_names=["input"],
+            output_names=["pred_logits", "pred_boxes"],
+            dynamic_axes=dynamic_axes,
+        )
+
     def preprocess(self, img, boxes):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -151,7 +191,7 @@ class TableStructureRecognizer(BaseModule):
             table_img = cv_img[y1:y2, x1:x2, :]
             th, hw = table_img.shape[:2]
             table_img = Image.fromarray(table_img)
-            img_tensor = self.transforms(table_img)[None].to(self.device)
+            img_tensor = self.transforms(table_img)[None]
             table_imgs.append(
                 {
                     "tensor": img_tensor,
@@ -228,8 +268,19 @@ class TableStructureRecognizer(BaseModule):
         img_tensors = self.preprocess(img, table_boxes)
         outputs = []
         for data in img_tensors:
-            with torch.inference_mode():
-                pred = self.model(data["tensor"])
+            if self.infer_onnx:
+                input = data["tensor"].numpy()
+                results = self.sess.run(None, {"input": input})
+                pred = {
+                    "pred_logits": torch.tensor(results[0]).to(self.device),
+                    "pred_boxes": torch.tensor(results[1]).to(self.device),
+                }
+
+            else:
+                with torch.inference_mode():
+                    data["tensor"] = data["tensor"].to(self.device)
+                    pred = self.model(data["tensor"])
+
             table = self.postprocess(pred, data)
             outputs.append(table)
 
