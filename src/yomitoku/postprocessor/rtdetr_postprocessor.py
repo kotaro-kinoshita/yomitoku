@@ -54,16 +54,12 @@ class RTDETRPostProcessor(nn.Module):
         logits, boxes = outputs["pred_logits"], outputs["pred_boxes"]
         # orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
-        bbox_pred = torchvision.ops.box_convert(
-            boxes, in_fmt="cxcywh", out_fmt="xyxy"
-        )
+        bbox_pred = torchvision.ops.box_convert(boxes, in_fmt="cxcywh", out_fmt="xyxy")
         bbox_pred *= orig_target_sizes.repeat(1, 2).unsqueeze(1)
 
         if self.use_focal_loss:
             scores = F.sigmoid(logits)
-            scores, index = torch.topk(
-                scores.flatten(1), self.num_top_queries, dim=-1
-            )
+            scores, index = torch.topk(scores.flatten(1), self.num_top_queries, dim=-1)
             # TODO for older tensorrt
             # labels = index % self.num_classes
             labels = mod(index, self.num_classes)
@@ -77,9 +73,7 @@ class RTDETRPostProcessor(nn.Module):
             scores = F.softmax(logits)[:, :, :-1]
             scores, labels = scores.max(dim=-1)
             if scores.shape[1] > self.num_top_queries:
-                scores, index = torch.topk(
-                    scores, self.num_top_queries, dim=-1
-                )
+                scores, index = torch.topk(scores, self.num_top_queries, dim=-1)
                 labels = torch.gather(labels, dim=1, index=index)
                 boxes = torch.gather(
                     boxes,
@@ -97,10 +91,7 @@ class RTDETRPostProcessor(nn.Module):
 
             labels = (
                 torch.tensor(
-                    [
-                        mscoco_label2category[int(x.item())]
-                        for x in labels.flatten()
-                    ]
+                    [mscoco_label2category[int(x.item())] for x in labels.flatten()]
                 )
                 .to(boxes.device)
                 .reshape(labels.shape)

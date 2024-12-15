@@ -63,6 +63,7 @@ yomitoku ${path_data} -f md -o results -v --figure
 - `-f`, `--format`: Specify the output file format. Supported formats are json, csv, html, and md.
 - `-o`, `--outdir`: Specify the name of the output directory. If it does not exist, it will be created.
 - `-v`, `--vis`: If specified, outputs visualized images of the analysis results.
+- `-l`, `--lite`: inference is performed using a lightweight model. This enables fast inference even on a CPU.
 - `-d`, `--device`: Specify the device for running the model. If a GPU is unavailable, inference will be executed on the CPU. (Default: cuda)
 - `--ignore_line_break`: Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.)
 - `--figure_letter`: Exports characters contained within detected figures and tables to the output file.

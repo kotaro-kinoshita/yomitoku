@@ -59,9 +59,7 @@ class ConvNormLayer(nn.Module):
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(
-        self, ch_in, ch_out, stride, shortcut, act="relu", variant="b"
-    ):
+    def __init__(self, ch_in, ch_out, stride, shortcut, act="relu", variant="b"):
         super().__init__()
 
         self.shortcut = shortcut
@@ -100,9 +98,7 @@ class BasicBlock(nn.Module):
 class BottleNeck(nn.Module):
     expansion = 4
 
-    def __init__(
-        self, ch_in, ch_out, stride, shortcut, act="relu", variant="b"
-    ):
+    def __init__(self, ch_in, ch_out, stride, shortcut, act="relu", variant="b"):
         super().__init__()
 
         if variant == "a":
@@ -125,17 +121,13 @@ class BottleNeck(nn.Module):
                             ("pool", nn.AvgPool2d(2, 2, 0, ceil_mode=True)),
                             (
                                 "conv",
-                                ConvNormLayer(
-                                    ch_in, ch_out * self.expansion, 1, 1
-                                ),
+                                ConvNormLayer(ch_in, ch_out * self.expansion, 1, 1),
                             ),
                         ]
                     )
                 )
             else:
-                self.short = ConvNormLayer(
-                    ch_in, ch_out * self.expansion, 1, stride
-                )
+                self.short = ConvNormLayer(ch_in, ch_out * self.expansion, 1, stride)
 
         self.act = nn.Identity() if act is None else get_activation(act)
 
@@ -156,9 +148,7 @@ class BottleNeck(nn.Module):
 
 
 class Blocks(nn.Module):
-    def __init__(
-        self, block, ch_in, ch_out, count, stage_num, act="relu", variant="b"
-    ):
+    def __init__(self, block, ch_in, ch_out, count, stage_num, act="relu", variant="b"):
         super().__init__()
 
         self.blocks = nn.ModuleList()

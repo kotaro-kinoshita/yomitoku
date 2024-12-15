@@ -252,9 +252,7 @@ class HybridEncoder(nn.Module):
         for in_channel in in_channels:
             if version == "v1":
                 proj = nn.Sequential(
-                    nn.Conv2d(
-                        in_channel, hidden_dim, kernel_size=1, bias=False
-                    ),
+                    nn.Conv2d(in_channel, hidden_dim, kernel_size=1, bias=False),
                     nn.BatchNorm2d(hidden_dim),
                 )
             elif version == "v2":
@@ -290,9 +288,7 @@ class HybridEncoder(nn.Module):
 
         self.encoder = nn.ModuleList(
             [
-                TransformerEncoder(
-                    copy.deepcopy(encoder_layer), num_encoder_layers
-                )
+                TransformerEncoder(copy.deepcopy(encoder_layer), num_encoder_layers)
                 for _ in range(len(use_encoder_idx))
             ]
         )
@@ -347,9 +343,7 @@ class HybridEncoder(nn.Module):
                 # self.register_buffer(f'pos_embed{idx}', pos_embed)
 
     @staticmethod
-    def build_2d_sincos_position_embedding(
-        w, h, embed_dim=256, temperature=10000.0
-    ):
+    def build_2d_sincos_position_embedding(w, h, embed_dim=256, temperature=10000.0):
         """ """
         grid_w = torch.arange(int(w), dtype=torch.float32)
         grid_h = torch.arange(int(h), dtype=torch.float32)
@@ -387,9 +381,7 @@ class HybridEncoder(nn.Module):
                         src_flatten.device
                     )
 
-                memory: torch.Tensor = self.encoder[i](
-                    src_flatten, pos_embed=pos_embed
-                )
+                memory: torch.Tensor = self.encoder[i](src_flatten, pos_embed=pos_embed)
                 proj_feats[enc_ind] = (
                     memory.permute(0, 2, 1)
                     .reshape(-1, self.hidden_dim, h, w)
@@ -401,13 +393,9 @@ class HybridEncoder(nn.Module):
         for idx in range(len(self.in_channels) - 1, 0, -1):
             feat_heigh = inner_outs[0]
             feat_low = proj_feats[idx - 1]
-            feat_heigh = self.lateral_convs[len(self.in_channels) - 1 - idx](
-                feat_heigh
-            )
+            feat_heigh = self.lateral_convs[len(self.in_channels) - 1 - idx](feat_heigh)
             inner_outs[0] = feat_heigh
-            upsample_feat = F.interpolate(
-                feat_heigh, scale_factor=2.0, mode="nearest"
-            )
+            upsample_feat = F.interpolate(feat_heigh, scale_factor=2.0, mode="nearest")
             inner_out = self.fpn_blocks[len(self.in_channels) - 1 - idx](
                 torch.concat([upsample_feat, feat_low], dim=1)
             )

@@ -4,10 +4,12 @@ from .cfg_table_structure_recognizer_rtdtrv2 import (
 )
 from .cfg_text_detector_dbnet import TextDetectorDBNetConfig
 from .cfg_text_recognizer_parseq import TextRecognizerPARSeqConfig
+from .cfg_text_recognizer_parseq_small import TextRecognizerPARSeqSmallConfig
 
 __all__ = [
     "TextDetectorDBNetConfig",
     "TextRecognizerPARSeqConfig",
     "LayoutParserRTDETRv2Config",
     "TableStructureRecognizerRTDETRv2Config",
+    "TextRecognizerPARSeqSmallConfig",
 ]
