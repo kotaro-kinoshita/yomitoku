@@ -1,7 +1,7 @@
 # Installation
 
 
-This package requires Python 3.9 or later and PyTorch 2.5 or later for execution. PyTorch must be installed according to your CUDA version. A GPU with more than 8GB of VRAM is recommended. While it can run on a CPU, please note that the processing is not currently optimized for CPUs, which may result in longer execution times.
+This package requires Python 3.10 or later and PyTorch 2.5 or later for execution. PyTorch must be installed according to your CUDA version. A GPU with more than 8GB of VRAM is recommended. While it can run on a CPU, please note that the processing is not currently optimized for CPUs, which may result in longer execution times.
 
 ## from PYPI
 
