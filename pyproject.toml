@@ -28,6 +28,10 @@ dependencies = [
     "pypdfium2>=4.30.0",
     "onnx>=1.17.0",
     "onnxruntime>=1.20.1",
+]
+
+[project.optional-dependencies]
+gpu = [
     "onnxruntime-gpu>=1.20.1",
 ]
 
