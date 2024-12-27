@@ -4,7 +4,7 @@ from yomitoku import LayoutAnalyzer
 from yomitoku.data.functions import load_pdf
 
 if __name__ == "__main__":
-    analyzer = LayoutAnalyzer(configs=None, visualize=True, device="cuda")
+    analyzer = LayoutAnalyzer(visualize=True, device="cuda")
     # PDFファイルを読み込み
     imgs = load_pdf("demo/sample.pdf")
     for i, img in enumerate(imgs):

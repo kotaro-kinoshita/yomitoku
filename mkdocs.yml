@@ -73,6 +73,7 @@ repo_url: https://github.com/kotaro-kinoshita/yomitoku-dev
 
 plugins:
   - search:
+  - codeinclude:
   - i18n:
       languages:
         - locale: ja
