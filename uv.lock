@@ -433,6 +433,19 @@ wheels = [
 ]
 
 [[package]]
+name = "mkdocs-codeinclude-plugin"
+version = "0.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mkdocs" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1b/b5/f72df157abc7f85e33ffa417464e9dd535ef5fda7654eda41190047a53b6/mkdocs-codeinclude-plugin-0.2.1.tar.gz", hash = "sha256:305387f67a885f0e36ec1cf977324fe1fe50d31301147194b63631d0864601b1", size = 8140 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4d/7b/60573ebf2a22b144eeaf3b29db9a6d4d342d68273f716ea2723d1ad723ba/mkdocs_codeinclude_plugin-0.2.1-py3-none-any.whl", hash = "sha256:172a917c9b257fa62850b669336151f85d3cd40312b2b52520cbcceab557ea6c", size = 8093 },
+]
+
+[[package]]
 name = "mkdocs-get-deps"
 version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1483,6 +1496,7 @@ gpu = [
 [package.dev-dependencies]
 dev = [
     { name = "mkdocs" },
+    { name = "mkdocs-codeinclude-plugin" },
     { name = "mkdocs-material" },
     { name = "mkdocs-static-i18n" },
     { name = "plantuml-markdown" },
@@ -1517,6 +1531,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "mkdocs", specifier = ">=1.6.1" },
+    { name = "mkdocs-codeinclude-plugin", specifier = ">=0.2.1" },
     { name = "mkdocs-material", specifier = ">=9.5.44" },
     { name = "mkdocs-static-i18n" },
     { name = "plantuml-markdown" },

@@ -10,7 +10,7 @@ yomitoku ${path_data} -f md -o results -v
 
 - `${path_data}` 解析対象の画像が含まれたディレクトリか画像ファイルのパスを直接して指定してください。かディレクトリを対象とした場合はディレクトリのサブディレクトリ内の画像も含めて処理を実行します。入力をサポートしているファイル形式は jpeg, png, bmp, tiff, pdf です。
 - `-f` 出力形式のファイルフォーマットを指定します。(json, csv, html, md をサポート)
-- `-l` 指定すると軽量モデルで推論を実行します。CPUでも高速に推論可能です。
+- `-l` 指定すると軽量モデルで推論を実行します。CPU でも高速に推論可能です。
 - `-o` 出力先のディレクトリ名を指定します。存在しない場合は新規で作成されます。
 - `-v` を指定すると解析結果を可視化した画像を出力します。
 - `-d` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
@@ -28,24 +28,11 @@ yomitoku ${path_data} -f md -o results -v
 
 Document Analyzer は OCR およびレイアウト解析を実行し、それらの結果を統合した解析結果を返却します。段落、表の構造解析、抽出、図表の検知など様々なユースケースにご利用いただけます。
 
-```python
-import cv2
+<!--codeinclude-->
 
-from yomitoku import DocumentAnalyzer
-from yomitoku.data.functions import load_image
+[demo/simple_document_analysis.py](../demo/simple_document_analysis.py)
 
-if __name__ == "__main__":
-    img = load_image(PATH_IMAGE)
-    analyzer = DocumentAnalyzer(configs=None, visualize=True, device="cuda")
-    results, ocr_vis, layout_vis = analyzer(img)
-
-    # HTML形式で解析結果をエクスポート
-    results.to_html(PATH_OUTPUT)
-
-    # 可視化画像を保存
-    cv2.imwrite("output_ocr.jpg", ocr_vis)
-    cv2.imwrite("output_layout.jpg", layout_vis)
-```
+<!--/codeinclude-->
 
 - `visualize` を True にすると各処理結果を可視化した結果を第２、第 3 戻り値に OCR、レアウト解析の処理結果をそれぞれ格納し、返却します。False にした場合は None を返却します。描画処理のための計算が増加しますので、デバック用途でない場合は、False を推奨します。
 - `device` には処理に用いる計算機を指定します。Default は"cuda". GPU が利用できない場合は、自動で CPU モードに切り替えて処理を実行します。
@@ -62,21 +49,11 @@ if __name__ == "__main__":
 
 AI-OCR では、テキスト検知と検知したテキストに対して、認識処理を実行し、画像内の文字の位置と読み取り結果を返却します。
 
-```python
-import cv2
+<!--codeinclude-->
 
-from yomitoku import OCR
-from yomitoku.data.functions import load_image
+[demo/simple_ocr.py](../demo/simple_ocr.py)
 
-if __name__ == "__main__":
-    img = load_image(PATH_IMAGE)
-    ocr = OCR(configs=None, visualize=True, device="cuda")
-    results, ocr_vis = ocr(img)
-
-    # JSON形式で解析結果をエクスポート
-    results.to_json(PATH_OUTPUT)
-    cv2.imwrite("output_ocr.jpg", ocr_vis)
-```
+<!--/codeinclude-->
 
 - `visualize` を True にすると各処理結果を可視化した結果を第２、第 3 戻り値に OCR、レアウト解析の処理結果をそれぞれ格納し、返却します。False にした場合は None を返却します。描画処理のための計算が増加しますので、デバック用途でない場合は、False を推奨します。
 - `device` には処理に用いる計算機を指定します。Default は"cuda". GPU が利用できない場合は、自動で CPU モードに切り替えて処理を実行します。
@@ -88,21 +65,11 @@ if __name__ == "__main__":
 
 LayoutAnalyzer では、テキスト検知と検知したテキストに対して、段落、図表の検知および表の構造解析処理 AI を実行し、文書内のレイアウト構造を解析します。
 
-```python
-import cv2
+<!--codeinclude-->
 
-from yomitoku import LayoutAnalyzer
-from yomitoku.data.functions import load_image
+[demo/simple_layout.py](../demo/simple_layout.py)
 
-if __name__ == "__main__":
-    img = load_image(PATH_IMAGE)
-    analyzer = LayoutAnalyzer(configs=None, visualize=True, device="cuda")
-    results, layout_vis = analyzer(img)
-
-    # JSON形式で解析結果をエクスポート
-    results.to_json(PATH_OUTPUT)
-    cv2.imwrite("output_layout.jpg", layout_vis)
-```
+<!--/codeinclude-->
 
 - `visualize` を True にすると各処理結果を可視化した結果を第２、第 3 戻り値に OCR、レアウト解析の処理結果をそれぞれ格納し、返却します。False にした場合は None を返却します。描画処理のための計算が増加しますので、デバック用途でない場合は、False を推奨します。
 - `device` には処理に用いる計算機を指定します。Default は"cuda". GPU が利用できない場合は、自動で CPU モードに切り替えて処理を実行します。
@@ -160,21 +127,11 @@ post_process:
 
 yaml ファイルのパスを config に格納する
 
-```python
-from yomitoku import DocumentAnalyzer
+<!--codeinclude-->
 
-if __name__ == "__main__":
-    # path_cfgに設定したymalのパスを記述する
-    configs = {
-        "ocr": {
-            "text_detector": {
-                "path_cfg": "text_detector.yaml"
-            }
-        }
-    }
+[demo/setting_document_anaysis.py](../demo/setting_document_anaysis.py)
 
-    DocumentAnalyzer(configs=configs)
-```
+<!--/codeinclude-->
 
 ## インターネットに接続できない環境での利用
 
@@ -204,18 +161,8 @@ hf_hub_repo: yomitoku-text-detector-dbnet-open-beta
 
 4. yaml ファイルのパスを config に格納する
 
-```python
-from yomitoku import DocumentAnalyzer
+<!--codeinclude-->
 
-if __name__ == "__main__":
-    # path_cfgに設定したymalのパスを記述する
-    configs = {
-        "ocr": {
-            "text_detector": {
-                "path_cfg": "text_detector.yaml"
-            }
-        }
-    }
+[demo/setting_document_anaysis.py](../demo/setting_document_anaysis.py)
 
-    DocumentAnalyzer(configs=configs)
-```
+<!--/codeinclude-->

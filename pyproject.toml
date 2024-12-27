@@ -42,6 +42,7 @@ format = "{base}"
 
 [tool.uv]
 dev-dependencies = [
+    "mkdocs-codeinclude-plugin>=0.2.1",
     "mkdocs-material>=9.5.44",
     "mkdocs-static-i18n",
     "mkdocs>=1.6.1",
