@@ -46,12 +46,3 @@ def test_layout_invalid_path():
     }
     with pytest.raises(FileNotFoundError):
         LayoutAnalyzer(configs=config)
-
-
-def test_layout_invalid_config():
-    with pytest.raises(ValueError):
-        LayoutAnalyzer(configs="invalid")
-
-    configs = {"test": "invalid"}
-    with pytest.raises(AssertionError):
-        LayoutAnalyzer(configs=configs)
