@@ -30,6 +30,8 @@ jobs:
           enable-cache: true
       - name: pin python version
         run: uv python pin 3.12
+      - name: Update apt
+        run: sudo apt update
       - name: Install dependencies
         run: sudo apt install -y libopencv-dev poppler-utils
       - name: Install tox-uv
@@ -37,4 +39,4 @@ jobs:
       - name: Run linter
         run: tox -e lint
       - name: Run tests
-        run:  tox -p -e py310,py311,py312
+        run: tox -p -e py310,py311,py312
