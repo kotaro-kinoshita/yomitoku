@@ -19,6 +19,7 @@ yomitoku ${path_data} -f md -o results -v
 - `--figure`: Exports detected figures and images to the output file (supported only for html and markdown).
 
 **NOTE**
+
 - It is recommended to run on a GPU. The system is not optimized for inference on CPUs, which may result in significantly longer processing times.
 - Only printed text recognition is supported. While it may occasionally read handwritten text, official support is not provided.
 - YomiToku is optimized for document OCR and is not designed for scene OCR (e.g., text printed on non-paper surfaces like signs).
@@ -30,24 +31,11 @@ yomitoku ${path_data} -f md -o results -v
 
 The Document Analyzer performs OCR and layout analysis, integrating these results into a comprehensive analysis output. It can be used for various use cases, including paragraph and table structure analysis, extraction, and figure/table detection.
 
-```python
-import cv2
+<!--codeinclude-->
 
-from yomitoku import DocumentAnalyzer
-from yomitoku.data.functions import load_image
+[demo/simple_document_analysis.py](../demo/simple_document_analysis.py)
 
-if __name__ == "__main__":
-    img = load_image(PATH_IMAGE)
-    analyzer = DocumentAnalyzer(configs=None, visualize=True, device="cuda")
-    results, ocr_vis, layout_vis = analyzer(img)
-
-    # HTML形式で解析結果をエクスポート
-    results.to_html(PATH_OUTPUT)
-
-    # 可視化画像を保存
-    cv2.imwrite("output_ocr.jpg", ocr_vis)
-    cv2.imwrite("output_layout.jpg", layout_vis)
-```
+<!--/codeinclude-->
 
 - Setting `visualize` to True enables the visualization of each processing result. The second and third return values will contain the OCR and layout analysis results, respectively. If set to False, None will be returned. Since visualization adds computational overhead, it is recommended to set it to False unless needed for debugging purposes.
 - The `device` parameter specifies the computation device to be used. The default is "cuda". If a GPU is unavailable, it automatically switches to CPU mode for processing.
@@ -55,31 +43,20 @@ if __name__ == "__main__":
 
 The results of DocumentAnalyzer can be exported in the following formats:
 
-`to_json()`: JSON format (*.json)
-`to_html()`: HTML format (*.html)
-`to_csv()`: Comma-separated CSV format (*.csv)
-`to_markdown()`: Markdown format (*.md)
-
+`to_json()`: JSON format (_.json)
+`to_html()`: HTML format (_.html)
+`to_csv()`: Comma-separated CSV format (_.csv)
+`to_markdown()`: Markdown format (_.md)
 
 ### Using AI-OCR Only
 
-AI-OCR performs text detection and recognition on the detected text, returning the positions of the text within the image along with the recognition results.
+AI-OCR performs text detection and recognition on the detected text, returning the positions of the text within the image along with the
 
-```python
-import cv2
+<!--codeinclude-->
 
-from yomitoku import OCR
-from yomitoku.data.functions import load_image
+[demo/simple_ocr.py](../demo/simple_ocr.py)
 
-if __name__ == "__main__":
-    img = load_image(PATH_IMAGE)
-    ocr = OCR(configs=None, visualize=True, device="cuda")
-    results, ocr_vis = ocr(img)
-
-    # JSON形式で解析結果をエクスポート
-    results.to_json(PATH_OUTPUT)
-    cv2.imwrite("output_ocr.jpg", ocr_vis)
-```
+<!--/codeinclude-->
 
 - Setting `visualize` to True enables the visualization of each processing result. The second and third return values will contain the OCR and layout analysis results, respectively. If set to False, None will be returned. Since visualization adds computational overhead, it is recommended to set it to False unless needed for debugging purposes.
 - The `device` parameter specifies the computation device to be used. The default is "cuda". If a GPU is unavailable, it automatically switches to CPU mode for processing.
@@ -91,22 +68,11 @@ The results of OCR processing support export in JSON format (`to_json()`) only.
 
 The `LayoutAnalyzer` performs text detection, followed by AI-based paragraph, figure/table detection, and table structure analysis. It analyzes the layout structure within the document.
 
-```python
-import cv2
+<!--codeinclude-->
 
-from yomitoku import LayoutAnalyzer
-from yomitoku.data.functions import load_image
+[demo/simple_layout.py](../demo/simple_layout.py)
 
-if __name__ == "__main__":
-    img = load_image(PATH_IMAGE)
-    analyzer = LayoutAnalyzer(configs=None, visualize=True, device="cuda")
-    results, layout_vis = analyzer(img)
-
-    # JSON形式で解析結果をエクスポート
-    results.to_json(PATH_OUTPUT)
-    cv2.imwrite("output_layout.jpg", layout_vis)
-```
-
+<!--/codeinclude-->
 
 - Setting `visualize` to True enables the visualization of each processing result. The second and third return values will contain the OCR and layout analysis results, respectively. If set to False, None will be returned. Since visualization adds computational overhead, it is recommended to set it to False unless needed for debugging purposes.
 - The `device` parameter specifies the computation device to be used. The default is "cuda". If a GPU is unavailable, it automatically switches to CPU mode for processing.
@@ -150,7 +116,6 @@ if __name__ == "__main__":
 
 ### Defining Parameters in an YAML File
 
-
 By providing the path to a YAML file in the config, you can adjust detailed parameters for inference. Examples of YAML files can be found in the `configs` directory within the repository. While the model's network parameters cannot be modified, certain aspects like post-processing parameters and input image size can be adjusted.
 
 For instance, you can define post-processing thresholds for the Text Detector in a YAML file and set its path in the config. The config file does not need to include all parameters; you only need to specify the parameters that require changes.
@@ -163,21 +128,11 @@ post_process:
 
 Storing the Path to a YAML File in the Config
 
-```python
-from yomitoku import DocumentAnalyzer
+<!--codeinclude-->
 
-if __name__ == "__main__":
-    # path_cfgに設定したymalのパスを記述する
-    configs = {
-        "ocr": {
-            "text_detector": {
-                "path_cfg": "text_detector.yaml"
-            }
-        }
-    }
+[demo/setting_document_anaysis.py](../demo/setting_document_anaysis.py)
 
-    DocumentAnalyzer(configs=configs)
-```
+<!--/codeinclude-->
 
 ## Using in an Offline Environment
 
@@ -185,7 +140,6 @@ Yomitoku automatically downloads models from Hugging Face Hub during the first e
 
 1. Install [Git Large File Storage](https://docs.github.com/ja/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)
 2. In an environment with internet access, download the model repository. Copy the cloned repository to your target environment using your preferred tools.
-
 
 The following is the command to download the model repository from Hugging Face Hub.
 
@@ -207,18 +161,8 @@ hf_hub_repo: yomitoku-text-detector-dbnet-open-beta
 
 4. Storing the Path to a YAML File in the Config
 
-```python
-from yomitoku import DocumentAnalyzer
+<!--codeinclude-->
 
-if __name__ == "__main__":
-    # path_cfgに設定したymalのパスを記述する
-    configs = {
-        "ocr": {
-            "text_detector": {
-                "path_cfg": "text_detector.yaml"
-            }
-        }
-    }
+[demo/setting_document_anaysis.py](../demo/setting_document_anaysis.py)
 
-    DocumentAnalyzer(configs=configs)
-```
+<!--/codeinclude-->

@@ -15,7 +15,7 @@ class LayoutAnalyzerSchema(BaseSchema):
 
 
 class LayoutAnalyzer:
-    def __init__(self, configs=None, device="cuda", visualize=False):
+    def __init__(self, configs={}, device="cuda", visualize=False):
         layout_parser_kwargs = {
             "device": device,
             "visualize": visualize,
@@ -26,10 +26,6 @@ class LayoutAnalyzer:
         }
 
         if isinstance(configs, dict):
-            assert (
-                "layout_parser" in configs or "table_structure_recognizer" in configs
-            ), "Invalid config key. Please check the config keys."
-
             if "layout_parser" in configs:
                 layout_parser_kwargs.update(configs["layout_parser"])
 

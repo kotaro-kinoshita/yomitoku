@@ -8,10 +8,9 @@ from .base import BaseSchema
 from .export import export_csv, export_html, export_markdown
 from .layout_analyzer import LayoutAnalyzer
 from .ocr import OCR, WordPrediction
+from .reading_order import prediction_reading_order
 from .table_structure_recognizer import TableStructureRecognizerSchema
 from .utils.misc import is_contained, quad_to_xyxy
-from .reading_order import prediction_reading_order
-
 from .utils.visualizer import reading_order_visualizer
 
 
@@ -149,7 +148,7 @@ def recursive_update(original, new_data):
 
 
 class DocumentAnalyzer:
-    def __init__(self, configs=None, device="cuda", visualize=False):
+    def __init__(self, configs={}, device="cuda", visualize=False):
         default_configs = {
             "ocr": {
                 "text_detector": {
