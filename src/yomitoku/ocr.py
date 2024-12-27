@@ -25,7 +25,7 @@ class OCRSchema(BaseSchema):
 
 
 class OCR:
-    def __init__(self, configs=None, device="cuda", visualize=False):
+    def __init__(self, configs={}, device="cuda", visualize=False):
         text_detector_kwargs = {
             "device": device,
             "visualize": visualize,
@@ -36,10 +36,6 @@ class OCR:
         }
 
         if isinstance(configs, dict):
-            assert (
-                "text_detector" in configs or "text_recognizer" in configs
-            ), "Invalid config key. Please check the config keys."
-
             if "text_detector" in configs:
                 text_detector_kwargs.update(configs["text_detector"])
             if "text_recognizer" in configs:
