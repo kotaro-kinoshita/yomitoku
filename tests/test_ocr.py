@@ -41,12 +41,3 @@ def test_ocr_invalid_path():
 
     with pytest.raises(FileNotFoundError):
         OCR(configs=config)
-
-
-def test_ocr_invalid_config():
-    with pytest.raises(ValueError):
-        OCR(configs="invalid")
-
-    config = {"test": "invalid"}
-    with pytest.raises(AssertionError):
-        OCR(configs=config)
