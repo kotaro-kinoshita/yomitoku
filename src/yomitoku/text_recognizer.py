@@ -86,14 +86,25 @@ class TextRecognizer(BaseModule):
 
     def preprocess(self, img, polygons):
         dataset = ParseqDataset(self._cfg, img, polygons)
-        dataloader = torch.utils.data.DataLoader(
-            dataset,
-            batch_size=self._cfg.data.batch_size,
-            shuffle=False,
-            num_workers=self._cfg.data.num_workers,
-        )
+        dataloader = self._make_mini_batch(dataset)
 
         return dataloader
+
+    def _make_mini_batch(self, dataset):
+        mini_batches = []
+        mini_batch = []
+        for data in dataset:
+            data = torch.unsqueeze(data, 0)
+            mini_batch.append(data)
+
+            if len(mini_batch) == self._cfg.data.batch_size:
+                mini_batches.append(torch.cat(mini_batch, 0))
+                mini_batch = []
+        else:
+            if len(mini_batch) > 0:
+                mini_batches.append(torch.cat(mini_batch, 0))
+
+        return mini_batches
 
     def convert_onnx(self, path_onnx):
         img_size = self._cfg.data.img_size
