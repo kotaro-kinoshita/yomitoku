@@ -13,6 +13,13 @@ from ..utils.logger import set_logger
 logger = set_logger(__name__, "INFO")
 
 
+def validate_encoding(encoding):
+    if encoding not in ["utf-8", "shift-jis", "euc-jp", "cp932"]:
+        raise ValueError(f"Invalid encoding: {encoding}")
+
+    return True
+
+
 def process_single_file(args, analyzer, path, format):
     if path.suffix[1:].lower() in ["pdf"]:
         imgs = load_pdf(path)
@@ -47,11 +54,13 @@ def process_single_file(args, analyzer, path, format):
             results.to_json(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
+                encoding=args.encoding,
             )
         elif format == "csv":
             results.to_csv(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
+                encoding=args.encoding,
             )
         elif format == "html":
             results.to_html(
@@ -62,6 +71,7 @@ def process_single_file(args, analyzer, path, format):
                 export_figure_letter=args.figure_letter,
                 figure_width=args.figure_width,
                 figure_dir=args.figure_dir,
+                encoding=args.encoding,
             )
         elif format == "md":
             results.to_markdown(
@@ -72,6 +82,7 @@ def process_single_file(args, analyzer, path, format):
                 export_figure_letter=args.figure_letter,
                 figure_width=args.figure_width,
                 figure_dir=args.figure_dir,
+                encoding=args.encoding,
             )
 
         logger.info(f"Output file: {out_path}")
@@ -168,6 +179,12 @@ def main():
         default="figures",
         help="directory to save figure images",
     )
+    parser.add_argument(
+        "--encoding",
+        type=str,
+        default="utf-8",
+        help="Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored.",
+    )
 
     args = parser.parse_args()
 
@@ -180,6 +197,8 @@ def main():
         raise ValueError(
             f"Invalid output format: {args.format}. Supported formats are {SUPPORT_OUTPUT_FORMAT}"
         )
+
+    validate_encoding(args.encoding)
 
     if format == "markdown":
         format = "md"
