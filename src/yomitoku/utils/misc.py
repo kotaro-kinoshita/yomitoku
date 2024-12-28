@@ -9,6 +9,24 @@ def filter_by_flag(elements, flags):
     return [element for element, flag in zip(elements, flags) if flag]
 
 
+def calc_overlap_ratio(rect_a, rect_b):
+    intersection = calc_intersection(rect_a, rect_b)
+    if intersection is None:
+        return 0
+
+    ix1, iy1, ix2, iy2 = intersection
+
+    overlap_width = ix2 - ix1
+    overlap_height = iy2 - iy1
+    bx1, by1, bx2, by2 = rect_b
+
+    b_area = (bx2 - bx1) * (by2 - by1)
+    overlap_area = overlap_width * overlap_height
+
+    overlap_ratio = overlap_area / b_area
+    return overlap_ratio
+
+
 def is_contained(rect_a, rect_b, threshold=0.8):
     """二つの矩形A, Bが与えられたとき、矩形Bが矩形Aに含まれるかどうかを判定する。
     ずれを許容するため、重複率求め、thresholdを超える場合にTrueを返す。
@@ -23,25 +41,12 @@ def is_contained(rect_a, rect_b, threshold=0.8):
         bool: 矩形Bが矩形Aに含まれる場合True
     """
 
-    intersection = calc_intersection(rect_a, rect_b)
-    if intersection is None:
-        return False, 0
-
-    ix1, iy1, ix2, iy2 = intersection
-
-    overlap_width = ix2 - ix1
-    overlap_height = iy2 - iy1
-    bx1, by1, bx2, by2 = rect_b
-
-    b_area = (bx2 - bx1) * (by2 - by1)
-    overlap_area = overlap_width * overlap_height
-
-    overlap_ratio = overlap_area / b_area
+    overlap_ratio = calc_overlap_ratio(rect_a, rect_b)
 
     if overlap_ratio > threshold:
-        return True, overlap_ratio
+        return True
 
-    return False, overlap_ratio
+    return False
 
 
 def calc_intersection(rect_a, rect_b):
