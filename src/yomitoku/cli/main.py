@@ -205,7 +205,9 @@ def main():
 
     if args.lite:
         configs["ocr"]["text_recognizer"]["model_name"] = "parseq-small"
-        configs["ocr"]["text_detector"]["infer_onnx"] = True
+
+        if args.device == "cpu":
+            configs["ocr"]["text_detector"]["infer_onnx"] = True
 
         # Note: Text Detector以外はONNX推論よりもPyTorch推論の方が速いため、ONNX推論は行わない
         # configs["ocr"]["text_recognizer"]["infer_onnx"] = True
