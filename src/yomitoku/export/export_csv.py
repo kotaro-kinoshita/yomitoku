@@ -65,7 +65,7 @@ def export_csv(
 
     elements = sorted(elements, key=lambda x: x["order"])
 
-    with open(out_path, "w", newline="", encoding=encoding) as f:
+    with open(out_path, "w", newline="", encoding=encoding, errors="ignore") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         for element in elements:
             if element["type"] == "table":
