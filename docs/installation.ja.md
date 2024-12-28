@@ -8,12 +8,22 @@
 pip install yomitoku
 ```
 
+onnxruntimeの実行にGPUを使用する場合
+```bash
+pip install yomitoku[gpu]
+```
+
 ## uv でのインストール
 
 本リポジトリはパッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。uv をインストール後、リポジトリをクローンし、以下のコマンドを実行してください
 
 ```bash
 uv sync
+```
+
+onnxruntimeの実行にGPUを使用する場合
+```bash
+uv sync --extra gpu
 ```
 
 uvを利用する場合、`pyproject.toml`の以下の部分をご自身のcudaのバージョンに合わせて修正する必要があります。デフォルトではCUDA12.4に対応したpytorchがダウンロードされます。
