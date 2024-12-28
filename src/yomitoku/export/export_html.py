@@ -185,5 +185,5 @@ def export_html(
     parsed_html = html.fromstring(html_string)
     formatted_html = etree.tostring(parsed_html, pretty_print=True, encoding="unicode")
 
-    with open(out_path, "w", encoding=encoding) as f:
+    with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(formatted_html)

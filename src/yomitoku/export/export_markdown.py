@@ -142,5 +142,5 @@ def export_markdown(
     elements = sorted(elements, key=lambda x: x["order"])
     markdown = "\n".join([element["md"] for element in elements])
 
-    with open(out_path, "w", encoding=encoding) as f:
+    with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(markdown)

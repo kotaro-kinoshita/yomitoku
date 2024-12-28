@@ -28,7 +28,7 @@ def export_json(
         for paragraph in inputs.paragraphs:
             paragraph_to_json(paragraph, ignore_line_break)
 
-    with open(out_path, "w", encoding=encoding) as f:
+    with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         json.dump(
             inputs.model_dump(),
             f,
