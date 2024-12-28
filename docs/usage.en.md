@@ -17,6 +17,7 @@ yomitoku ${path_data} -f md -o results -v
 - `--ignore_line_break`: Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.)
 - `--figure_letter`: Exports characters contained within detected figures and tables to the output file.
 - `--figure`: Exports detected figures and images to the output file (supported only for html and markdown).
+- `--encoding`:  Specifies the character encoding for the output file to be exported. (utf-8, shift-jis, enc-jp, cp932)
 
 **NOTE**
 
