@@ -33,7 +33,12 @@ def paragraph_to_csv(paragraph, ignore_line_break):
     return contents
 
 
-def export_csv(inputs, out_path: str, ignore_line_break: bool = False):
+def export_csv(
+    inputs,
+    out_path: str,
+    ignore_line_break: bool = False,
+    encoding: str = "utf-8",
+):
     elements = []
     for table in inputs.tables:
         table_csv = table_to_csv(table, ignore_line_break)
@@ -60,7 +65,7 @@ def export_csv(inputs, out_path: str, ignore_line_break: bool = False):
 
     elements = sorted(elements, key=lambda x: x["order"])
 
-    with open(out_path, "w", newline="", encoding="utf-8") as f:
+    with open(out_path, "w", newline="", encoding=encoding, errors="ignore") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         for element in elements:
             if element["type"] == "table":

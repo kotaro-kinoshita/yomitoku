@@ -154,6 +154,7 @@ def export_html(
     img=None,
     figure_width=200,
     figure_dir="figures",
+    encoding: str = "utf-8",
 ):
     html_string = ""
     elements = []
@@ -184,5 +185,5 @@ def export_html(
     parsed_html = html.fromstring(html_string)
     formatted_html = etree.tostring(parsed_html, pretty_print=True, encoding="unicode")
 
-    with open(out_path, "w", encoding="utf-8") as f:
+    with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(formatted_html)

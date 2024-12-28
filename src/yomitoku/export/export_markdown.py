@@ -117,6 +117,7 @@ def export_markdown(
     export_figure=True,
     figure_width=200,
     figure_dir="figures",
+    encoding: str = "utf-8",
 ):
     elements = []
     for table in inputs.tables:
@@ -141,5 +142,5 @@ def export_markdown(
     elements = sorted(elements, key=lambda x: x["order"])
     markdown = "\n".join([element["md"] for element in elements])
 
-    with open(out_path, "w", encoding="utf-8") as f:
+    with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(markdown)
