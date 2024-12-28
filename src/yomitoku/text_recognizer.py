@@ -64,7 +64,6 @@ class TextRecognizer(BaseModule):
 
         self.model.tokenizer = self.tokenizer
         self.model.eval()
-        self.model.to(self.device)
 
         self.visualize = visualize
 
@@ -76,6 +75,8 @@ class TextRecognizer(BaseModule):
             if not os.path.exists(path_onnx):
                 self.convert_onnx(path_onnx)
 
+            self.model = None
+
             model = onnx.load(path_onnx)
             if torch.cuda.is_available() and device == "cuda":
                 self.sess = onnxruntime.InferenceSession(
@@ -83,6 +84,9 @@ class TextRecognizer(BaseModule):
                 )
             else:
                 self.sess = onnxruntime.InferenceSession(model.SerializeToString())
+
+        if self.model is not None:
+            self.model.to(self.device)
 
     def preprocess(self, img, polygons):
         dataset = ParseqDataset(self._cfg, img, polygons)
