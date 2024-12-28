@@ -77,7 +77,7 @@ def extract_paragraph_within_figure(paragraphs, figures):
         figure = {"box": figure.box, "order": 0}
         contained_paragraphs = []
         for i, paragraph in enumerate(paragraphs):
-            if is_contained(figure["box"], paragraph.box, threshold=0.7):
+            if is_contained(figure["box"], paragraph.box, threshold=0.7)[0]:
                 contained_paragraphs.append(paragraph)
                 check_list[i] = True
 
@@ -92,14 +92,14 @@ def extract_paragraph_within_figure(paragraphs, figures):
     return new_figures, check_list
 
 
-def extract_words_within_element(pred_words, element):
+def extract_words_within_element(pred_words, element, join=True):
     contained_words = []
     word_sum_width = 0
     word_sum_height = 0
     check_list = [False] * len(pred_words)
     for i, word in enumerate(pred_words):
         word_box = quad_to_xyxy(word.points)
-        if is_contained(element.box, word_box, threshold=0.5):
+        if is_contained(element.box, word_box, threshold=0.5)[0]:
             contained_words.append(word)
             word_sum_width += word_box[2] - word_box[0]
             word_sum_height += word_box[3] - word_box[1]
@@ -128,7 +128,9 @@ def extract_words_within_element(pred_words, element):
             reverse=True,
         )
 
+    # if join:
     contained_words = "\n".join([content.content for content in contained_words])
+
     return (contained_words, element_direction, check_list)
 
 
@@ -187,6 +189,56 @@ class DocumentAnalyzer:
         paragraphs = []
         check_list = [False] * len(ocr_res.words)
         for table in layout_res.tables:
+            #    table_words, _, flags = extract_words_within_element(
+            #        ocr_res.words, table, join=False
+            #    )
+            #
+            #    check_list = combine_flags(check_list, flags)
+            #
+            #    intersections = [[0 for cell in table.cells] for word in table_words]
+            #    print(intersections)
+            #    print(len(table.cells))
+            #
+            #    for i, word in enumerate(table_words):
+            #        word_box = quad_to_xyxy(word.points)
+            #        for j, cell in enumerate(table.cells):
+            #            intersections[i][j] = is_contained(word_box, cell.box)[1]
+            #
+            #    print(intersections)
+            #    allocated_cell = [cells.index(max(cells)) for cells in intersections]
+            #
+            #    # print(allocated_cell)
+            #
+            #    for j, cell in enumerate(table.cells):
+            #        contained_words = [
+            #            table_words[i] for i, idx in enumerate(allocated_cell) if idx == j
+            #        ]
+            #
+            #        word_direction = [word.direction for word in contained_words]
+            #        cnt_horizontal = word_direction.count("horizontal")
+            #        cnt_vertical = word_direction.count("vertical")
+            #
+            #        element_direction = (
+            #            "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
+            #        )
+            #        if element_direction == "horizontal":
+            #            contained_words = sorted(
+            #                contained_words,
+            #                key=lambda x: (sum([p[1] for p in x.points]) / 4),
+            #            )
+            #        else:
+            #            contained_words = sorted(
+            #                contained_words,
+            #                key=lambda x: (sum([p[0] for p in x.points]) / 4),
+            #                reverse=True,
+            #            )
+            #
+            #        contained_words = "\n".join(
+            #            [content.content for content in contained_words]
+            #        )
+            #
+            #        cell.contents = contained_words
+
             for cell in table.cells:
                 words, direction, flags = extract_words_within_element(
                     ocr_res.words, cell

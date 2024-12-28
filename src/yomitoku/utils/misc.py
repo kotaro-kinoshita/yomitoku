@@ -25,7 +25,7 @@ def is_contained(rect_a, rect_b, threshold=0.8):
 
     intersection = calc_intersection(rect_a, rect_b)
     if intersection is None:
-        return False
+        return False, 0
 
     ix1, iy1, ix2, iy2 = intersection
 
@@ -36,10 +36,12 @@ def is_contained(rect_a, rect_b, threshold=0.8):
     b_area = (bx2 - bx1) * (by2 - by1)
     overlap_area = overlap_width * overlap_height
 
-    if overlap_area / b_area > threshold:
-        return True
+    overlap_ratio = overlap_area / b_area
 
-    return False
+    if overlap_ratio > threshold:
+        return True, overlap_ratio
+
+    return False, overlap_ratio
 
 
 def calc_intersection(rect_a, rect_b):
