@@ -48,6 +48,11 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 pip install yomitoku
 ```
 
+onnxruntimeの実行にGPUを使用する場合
+```
+pip install yomitoku[gpu]
+```
+
 - pytorch はご自身の CUDA のバージョンにあったものをインストールしてください。デフォルトでは CUDA12.4 以上に対応したものがインストールされます。
 - pytorch は 2.5 以上のバージョンに対応しています。その関係で CUDA11.8 以上のバージョンが必要になります。対応できない場合は、リポジトリ内の Dockerfile を利用してください。
 
