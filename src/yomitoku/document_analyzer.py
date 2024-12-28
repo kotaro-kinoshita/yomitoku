@@ -10,7 +10,7 @@ from .layout_analyzer import LayoutAnalyzer
 from .ocr import OCR, WordPrediction
 from .reading_order import prediction_reading_order
 from .table_structure_recognizer import TableStructureRecognizerSchema
-from .utils.misc import is_contained, quad_to_xyxy
+from .utils.misc import is_contained, quad_to_xyxy, calc_overlap_ratio
 from .utils.visualizer import reading_order_visualizer
 
 
@@ -77,7 +77,7 @@ def extract_paragraph_within_figure(paragraphs, figures):
         figure = {"box": figure.box, "order": 0}
         contained_paragraphs = []
         for i, paragraph in enumerate(paragraphs):
-            if is_contained(figure["box"], paragraph.box, threshold=0.7)[0]:
+            if is_contained(figure["box"], paragraph.box, threshold=0.7):
                 contained_paragraphs.append(paragraph)
                 check_list[i] = True
 
@@ -92,6 +92,49 @@ def extract_paragraph_within_figure(paragraphs, figures):
     return new_figures, check_list
 
 
+def _allocate_words_to_cells(words, table):
+    table_words, _, flags = extract_words_within_element(words, table, join=False)
+
+    intersections = [[0 for cell in table.cells] for word in table_words]
+
+    for i, word in enumerate(table_words):
+        word_box = quad_to_xyxy(word.points)
+        for j, cell in enumerate(table.cells):
+            intersections[i][j] = calc_overlap_ratio(word_box, cell.box)
+
+    allocated_cell = [cells.index(max(cells)) for cells in intersections]
+
+    for j, cell in enumerate(table.cells):
+        contained_words = [
+            table_words[i] for i, idx in enumerate(allocated_cell) if idx == j
+        ]
+
+        word_direction = [word.direction for word in contained_words]
+        cnt_horizontal = word_direction.count("horizontal")
+        cnt_vertical = word_direction.count("vertical")
+
+        element_direction = (
+            "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
+        )
+        if element_direction == "horizontal":
+            contained_words = sorted(
+                contained_words,
+                key=lambda x: (sum([p[1] for p in x.points]) / 4),
+            )
+        else:
+            contained_words = sorted(
+                contained_words,
+                key=lambda x: (sum([p[0] for p in x.points]) / 4),
+                reverse=True,
+            )
+
+        contained_words = "\n".join([content.content for content in contained_words])
+
+        cell.contents = contained_words
+
+    return flags
+
+
 def extract_words_within_element(pred_words, element, join=True):
     contained_words = []
     word_sum_width = 0
@@ -99,7 +142,7 @@ def extract_words_within_element(pred_words, element, join=True):
     check_list = [False] * len(pred_words)
     for i, word in enumerate(pred_words):
         word_box = quad_to_xyxy(word.points)
-        if is_contained(element.box, word_box, threshold=0.5)[0]:
+        if is_contained(element.box, word_box, threshold=0.5):
             contained_words.append(word)
             word_sum_width += word_box[2] - word_box[0]
             word_sum_height += word_box[3] - word_box[1]
@@ -128,8 +171,8 @@ def extract_words_within_element(pred_words, element, join=True):
             reverse=True,
         )
 
-    # if join:
-    contained_words = "\n".join([content.content for content in contained_words])
+    if join:
+        contained_words = "\n".join([content.content for content in contained_words])
 
     return (contained_words, element_direction, check_list)
 
@@ -189,66 +232,19 @@ class DocumentAnalyzer:
         paragraphs = []
         check_list = [False] * len(ocr_res.words)
         for table in layout_res.tables:
-            #    table_words, _, flags = extract_words_within_element(
-            #        ocr_res.words, table, join=False
+            flags = _allocate_words_to_cells(ocr_res.words, table)
+            check_list = combine_flags(check_list, flags)
+
+            # for cell in table.cells:
+            #    words, direction, flags = extract_words_within_element(
+            #        ocr_res.words, cell
             #    )
-            #
+
+            #    if words is None:
+            #        words = ""
+
+            #    cell.contents = words
             #    check_list = combine_flags(check_list, flags)
-            #
-            #    intersections = [[0 for cell in table.cells] for word in table_words]
-            #    print(intersections)
-            #    print(len(table.cells))
-            #
-            #    for i, word in enumerate(table_words):
-            #        word_box = quad_to_xyxy(word.points)
-            #        for j, cell in enumerate(table.cells):
-            #            intersections[i][j] = is_contained(word_box, cell.box)[1]
-            #
-            #    print(intersections)
-            #    allocated_cell = [cells.index(max(cells)) for cells in intersections]
-            #
-            #    # print(allocated_cell)
-            #
-            #    for j, cell in enumerate(table.cells):
-            #        contained_words = [
-            #            table_words[i] for i, idx in enumerate(allocated_cell) if idx == j
-            #        ]
-            #
-            #        word_direction = [word.direction for word in contained_words]
-            #        cnt_horizontal = word_direction.count("horizontal")
-            #        cnt_vertical = word_direction.count("vertical")
-            #
-            #        element_direction = (
-            #            "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
-            #        )
-            #        if element_direction == "horizontal":
-            #            contained_words = sorted(
-            #                contained_words,
-            #                key=lambda x: (sum([p[1] for p in x.points]) / 4),
-            #            )
-            #        else:
-            #            contained_words = sorted(
-            #                contained_words,
-            #                key=lambda x: (sum([p[0] for p in x.points]) / 4),
-            #                reverse=True,
-            #            )
-            #
-            #        contained_words = "\n".join(
-            #            [content.content for content in contained_words]
-            #        )
-            #
-            #        cell.contents = contained_words
-
-            for cell in table.cells:
-                words, direction, flags = extract_words_within_element(
-                    ocr_res.words, cell
-                )
-
-                if words is None:
-                    words = ""
-
-                cell.contents = words
-                check_list = combine_flags(check_list, flags)
 
         for paragraph in layout_res.paragraphs:
             words, direction, flags = extract_words_within_element(
