@@ -183,7 +183,7 @@ def main():
         "--encoding",
         type=str,
         default="utf-8",
-        help="encoding of the output file",
+        help="Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored.",
     )
 
     args = parser.parse_args()
