@@ -61,8 +61,6 @@ class TextDetector(BaseModule):
         self.visualize = visualize
 
         self.model.eval()
-        self.model.to(self.device)
-
         self.post_processor = DBnetPostProcessor(**self._cfg.post_process)
         self.infer_onnx = infer_onnx
 
@@ -72,6 +70,8 @@ class TextDetector(BaseModule):
             if not os.path.exists(path_onnx):
                 self.convert_onnx(path_onnx)
 
+            self.model = None
+
             model = onnx.load(path_onnx)
             if torch.cuda.is_available() and device == "cuda":
                 self.sess = onnxruntime.InferenceSession(
@@ -79,6 +79,11 @@ class TextDetector(BaseModule):
                 )
             else:
                 self.sess = onnxruntime.InferenceSession(model.SerializeToString())
+
+            self.model = None
+
+        if self.model is not None:
+            self.model.to(self.device)
 
     def convert_onnx(self, path_onnx):
         dynamic_axes = {
