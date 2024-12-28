@@ -9,11 +9,22 @@ This package requires Python 3.10 or later and PyTorch 2.5 or later for executio
 pip install yomitoku
 ```
 
+Using GPU with onnxruntime
+```bash
+pip install yomitoku[gpu]
+```
+
+
 ## using uv
 This repository uses the package management tool [uv](https://docs.astral.sh/uv/). After installing uv, clone the repository and execute the following commands:
 
 ```bash
 uv sync
+```
+
+Using GPU with onnxruntime
+```bash
+uv sync --extra gpu
 ```
 
 When using uv, you need to modify the following part of the pyproject.toml file to match your CUDA version. By default, PyTorch compatible with CUDA 12.4 will be downloaded.
