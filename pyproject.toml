@@ -27,6 +27,8 @@ dependencies = [
     "torch>=2.5.0",
     "pypdfium2>=4.30.0",
     "onnx>=1.17.0",
+    "torch>=2.5.0",
+    "torchvision>=0.20.0",
     "onnxruntime>=1.20.1",
 ]
 
@@ -55,11 +57,9 @@ dev-dependencies = [
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cuda124", marker = "platform_system == 'Windows'"},
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
 ]
 torchvision = [
-    { index = "pytorch-cuda124", marker = "platform_system == 'Windows'"},
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
 ]
 
