@@ -16,8 +16,8 @@ class WordPrediction(BaseSchema):
     )
     content: str
     direction: str
-    det_score: float
     rec_score: float
+    det_score: float
 
 
 class OCRSchema(BaseSchema):

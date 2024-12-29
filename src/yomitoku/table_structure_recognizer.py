@@ -297,7 +297,9 @@ class TableStructureRecognizer(BaseModule):
                     pred = self.model(data["tensor"])
 
             table = self.postprocess(pred, data)
-            outputs.append(table)
+
+            if table.n_row > 0 and table.n_col > 0:
+                outputs.append(table)
 
         if vis is None and self.visualize:
             vis = img.copy()
