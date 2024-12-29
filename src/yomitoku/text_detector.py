@@ -143,9 +143,9 @@ class TextDetector(BaseModule):
         vis = None
         if self.visualize:
             vis = det_visualizer(
-                preds,
                 img,
                 quads,
+                preds=preds,
                 vis_heatmap=self._cfg.visualize.heatmap,
                 line_color=tuple(self._cfg.visualize.color[::-1]),
             )

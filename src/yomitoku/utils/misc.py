@@ -12,7 +12,7 @@ def filter_by_flag(elements, flags):
 def calc_overlap_ratio(rect_a, rect_b):
     intersection = calc_intersection(rect_a, rect_b)
     if intersection is None:
-        return 0
+        return 0, None
 
     ix1, iy1, ix2, iy2 = intersection
 
@@ -24,7 +24,7 @@ def calc_overlap_ratio(rect_a, rect_b):
     overlap_area = overlap_width * overlap_height
 
     overlap_ratio = overlap_area / b_area
-    return overlap_ratio
+    return overlap_ratio, intersection
 
 
 def is_contained(rect_a, rect_b, threshold=0.8):
@@ -41,7 +41,7 @@ def is_contained(rect_a, rect_b, threshold=0.8):
         bool: 矩形Bが矩形Aに含まれる場合True
     """
 
-    overlap_ratio = calc_overlap_ratio(rect_a, rect_b)
+    overlap_ratio, _ = calc_overlap_ratio(rect_a, rect_b)
 
     if overlap_ratio > threshold:
         return True
