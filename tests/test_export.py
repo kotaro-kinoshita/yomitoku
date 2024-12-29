@@ -25,6 +25,7 @@ from yomitoku.layout_parser import Element, LayoutParserSchema
 from yomitoku.ocr import OCRSchema, WordPrediction
 from yomitoku.table_structure_recognizer import (
     TableCellSchema,
+    TableLineSchema,
     TableStructureRecognizerSchema,
 )
 from yomitoku.text_detector import TextDetectorSchema
@@ -78,14 +79,36 @@ def test_table_to_html():
             "contents": "",
         },
     ]
+
     cells = [TableCellSchema(**cell) for cell in cells]
+
+    rows = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    cols = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    rows = [TableLineSchema(**row) for row in rows]
+    cols = [TableLineSchema(**col) for col in cols]
+
     table = {
         "box": [0, 0, 100, 100],
         "n_row": 2,
         "n_col": 2,
         "cells": cells,
         "order": 0,
+        "rows": rows,
+        "cols": cols,
     }
+
     table = TableStructureRecognizerSchema(**table)
     expected = '<table border="1" style="border-collapse: collapse"><tr><td rowspan="2" colspan="1">dummy<br></td><td rowspan="1" colspan="1">dummy<br></td></tr><tr><td rowspan="1" colspan="1"></td></tr></table>'
     assert table_to_html(table, ignore_line_break=False)["html"] == expected
@@ -189,12 +212,32 @@ def test_table_to_md():
         },
     ]
     cells = [TableCellSchema(**cell) for cell in cells]
+
+    rows = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    cols = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    rows = [TableLineSchema(**row) for row in rows]
+    cols = [TableLineSchema(**col) for col in cols]
+
     table = {
         "box": [0, 0, 100, 100],
         "n_row": 2,
         "n_col": 2,
         "cells": cells,
         "order": 0,
+        "rows": rows,
+        "cols": cols,
     }
     table = TableStructureRecognizerSchema(**table)
 
@@ -234,12 +277,32 @@ def test_table_to_csv():
         },
     ]
     cells = [TableCellSchema(**cell) for cell in cells]
+
+    rows = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    cols = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    rows = [TableLineSchema(**row) for row in rows]
+    cols = [TableLineSchema(**col) for col in cols]
+
     table = {
         "box": [0, 0, 100, 100],
         "n_row": 2,
         "n_col": 2,
         "cells": cells,
         "order": 0,
+        "rows": rows,
+        "cols": cols,
     }
     table = TableStructureRecognizerSchema(**table)
 
@@ -314,12 +377,32 @@ def test_table_to_json():
         },
     ]
     cells = [TableCellSchema(**cell) for cell in cells]
+
+    rows = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    cols = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    rows = [TableLineSchema(**row) for row in rows]
+    cols = [TableLineSchema(**col) for col in cols]
+
     table = {
         "box": [0, 0, 100, 100],
         "n_row": 2,
         "n_col": 2,
         "cells": cells,
         "order": 0,
+        "rows": rows,
+        "cols": cols,
     }
     table = TableStructureRecognizerSchema(**table)
 
@@ -409,6 +492,23 @@ def test_export(tmp_path):
         "contents": "dummy\n",
     }
 
+    rows = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    cols = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
+    rows = [TableLineSchema(**row) for row in rows]
+    cols = [TableLineSchema(**col) for col in cols]
+
     table_cell = TableCellSchema(**table_cell)
     out_path = tmp_path / "table_cell.json"
     table_cell.to_json(out_path)
@@ -421,6 +521,8 @@ def test_export(tmp_path):
         "n_col": 2,
         "cells": [table_cell],
         "order": 0,
+        "rows": rows,
+        "cols": cols,
     }
 
     tsr = TableStructureRecognizerSchema(**tsr)
