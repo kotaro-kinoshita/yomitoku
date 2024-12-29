@@ -35,10 +35,17 @@ class TableCellSchema(BaseSchema):
     contents: Union[str, None]
 
 
+class TableLineSchema(BaseSchema):
+    box: conlist(int, min_length=4, max_length=4)
+    score: float
+
+
 class TableStructureRecognizerSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
     n_row: int
     n_col: int
+    rows: List[TableLineSchema]
+    cols: List[TableLineSchema]
     cells: List[TableCellSchema]
     order: int
 
@@ -235,7 +242,7 @@ class TableStructureRecognizer(BaseModule):
             category_elements
         )
 
-        cells, n_row, n_col = self.extract_cell_elements(category_elements)
+        cells, rows, cols = self.extract_cell_elements(category_elements)
 
         table_x, table_y = data["offset"]
         table_x2 = table_x + data["size"][1]
@@ -244,8 +251,10 @@ class TableStructureRecognizer(BaseModule):
 
         table = {
             "box": table_box,
-            "n_row": n_row,
-            "n_col": n_col,
+            "n_row": len(rows),
+            "n_col": len(cols),
+            "rows": rows,
+            "cols": cols,
             "cells": cells,
             "order": 0,
         }
@@ -265,7 +274,10 @@ class TableStructureRecognizer(BaseModule):
         cells = extract_cells(row_boxes, col_boxes)
         cells = filter_contained_cells_within_spancell(cells, span_boxes)
 
-        return cells, len(row_boxes), len(col_boxes)
+        rows = sorted(elements["row"], key=lambda x: x["box"][1])
+        cols = sorted(elements["col"], key=lambda x: x["box"][0])
+
+        return cells, rows, cols
 
     def __call__(self, img, table_boxes, vis=None):
         img_tensors = self.preprocess(img, table_boxes)
