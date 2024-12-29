@@ -209,7 +209,7 @@ class DocumentAnalyzer:
             )
 
         # self.ocr = OCR(configs=default_configs["ocr"])
-        self.tect_detector = TextDetector(
+        self.text_detector = TextDetector(
             **default_configs["ocr"]["text_detector"],
         )
         self.text_recognizer = TextRecognizer(
@@ -450,7 +450,7 @@ class DocumentAnalyzer:
             loop = asyncio.get_running_loop()
             tasks = [
                 # loop.run_in_executor(executor, self.ocr, img),
-                loop.run_in_executor(executor, self.tect_detector, img),
+                loop.run_in_executor(executor, self.text_detector, img),
                 loop.run_in_executor(executor, self.layout, img),
             ]
 
