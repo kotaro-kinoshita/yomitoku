@@ -244,16 +244,16 @@ def main():
     if path.is_dir():
         all_files = [f for f in path.rglob("*") if f.is_file()]
         for f in all_files:
-            # try:
-            start = time.time()
-            file_path = Path(f)
-            logger.info(f"Processing file: {file_path}")
-            print("aaa", file_path)
-            process_single_file(args, analyzer, file_path, format)
-            end = time.time()
-            logger.info(f"Total Processing time: {end-start:.2f} sec")
-            # except Exception:
-            #   continue
+            try:
+                start = time.time()
+                file_path = Path(f)
+                logger.info(f"Processing file: {file_path}")
+                print("aaa", file_path)
+                process_single_file(args, analyzer, file_path, format)
+                end = time.time()
+                logger.info(f"Total Processing time: {end-start:.2f} sec")
+            except Exception:
+                continue
     else:
         start = time.time()
         logger.info(f"Processing file: {path}")
