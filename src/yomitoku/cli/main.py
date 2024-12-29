@@ -248,7 +248,6 @@ def main():
                 start = time.time()
                 file_path = Path(f)
                 logger.info(f"Processing file: {file_path}")
-                print("aaa", file_path)
                 process_single_file(args, analyzer, file_path, format)
                 end = time.time()
                 logger.info(f"Total Processing time: {end-start:.2f} sec")
