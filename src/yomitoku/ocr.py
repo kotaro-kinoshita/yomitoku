@@ -16,12 +16,33 @@ class WordPrediction(BaseSchema):
     )
     content: str
     direction: str
-    det_score: float
     rec_score: float
+    det_score: float
 
 
 class OCRSchema(BaseSchema):
     words: List[WordPrediction]
+
+
+def ocr_aggregate(det_outputs, rec_outputs):
+    words = []
+    for points, det_score, pred, rec_score, direction in zip(
+        det_outputs.points,
+        det_outputs.scores,
+        rec_outputs.contents,
+        rec_outputs.scores,
+        rec_outputs.directions,
+    ):
+        words.append(
+            {
+                "points": points,
+                "content": pred,
+                "direction": direction,
+                "det_score": det_score,
+                "rec_score": rec_score,
+            }
+        )
+    return words
 
 
 class OCR:
@@ -48,26 +69,6 @@ class OCR:
         self.detector = TextDetector(**text_detector_kwargs)
         self.recognizer = TextRecognizer(**text_recognizer_kwargs)
 
-    def aggregate(self, det_outputs, rec_outputs):
-        words = []
-        for points, det_score, pred, rec_score, direction in zip(
-            det_outputs.points,
-            det_outputs.scores,
-            rec_outputs.contents,
-            rec_outputs.scores,
-            rec_outputs.directions,
-        ):
-            words.append(
-                {
-                    "points": points,
-                    "content": pred,
-                    "direction": direction,
-                    "det_score": det_score,
-                    "rec_score": rec_score,
-                }
-            )
-        return words
-
     def __call__(self, img):
         """_summary_
 
@@ -78,6 +79,6 @@ class OCR:
         det_outputs, vis = self.detector(img)
         rec_outputs, vis = self.recognizer(img, det_outputs.points, vis=vis)
 
-        outputs = {"words": self.aggregate(det_outputs, rec_outputs)}
+        outputs = {"words": ocr_aggregate(det_outputs, rec_outputs)}
         results = OCRSchema(**outputs)
         return results, vis

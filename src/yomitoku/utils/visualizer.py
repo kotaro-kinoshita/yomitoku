@@ -66,14 +66,14 @@ def reading_order_visualizer(
     return out
 
 
-def det_visualizer(preds, img, quads, vis_heatmap=False, line_color=(0, 255, 0)):
-    preds = preds["binary"][0]
-    binary = preds.detach().cpu().numpy()
+def det_visualizer(img, quads, preds=None, vis_heatmap=False, line_color=(0, 255, 0)):
     out = img.copy()
     h, w = out.shape[:2]
-    binary = binary.squeeze(0)
-    binary = (binary * 255).astype(np.uint8)
     if vis_heatmap:
+        preds = preds["binary"][0]
+        binary = preds.detach().cpu().numpy()
+        binary = binary.squeeze(0)
+        binary = (binary * 255).astype(np.uint8)
         binary = cv2.resize(binary, (w, h), interpolation=cv2.INTER_LINEAR)
         heatmap = cv2.applyColorMap(binary, cv2.COLORMAP_JET)
         out = cv2.addWeighted(out, 0.5, heatmap, 0.5, 0)

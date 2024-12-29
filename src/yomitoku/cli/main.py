@@ -28,7 +28,6 @@ def process_single_file(args, analyzer, path, format):
 
     for page, img in enumerate(imgs):
         results, ocr, layout = analyzer(img)
-
         dirname = path.parent.name
         filename = path.stem
 
