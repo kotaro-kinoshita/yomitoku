@@ -102,49 +102,6 @@ def extract_paragraph_within_figure(paragraphs, figures):
     return new_figures, check_list
 
 
-def _allocate_words_to_cells(words, table):
-    table_words, _, flags = extract_words_within_element(words, table, join=False)
-
-    intersections = [[0 for cell in table.cells] for word in table_words]
-
-    for i, word in enumerate(table_words):
-        word_box = quad_to_xyxy(word.points)
-        for j, cell in enumerate(table.cells):
-            intersections[i][j] = calc_overlap_ratio(word_box, cell.box)
-
-    allocated_cell = [cells.index(max(cells)) for cells in intersections]
-
-    for j, cell in enumerate(table.cells):
-        contained_words = [
-            table_words[i] for i, idx in enumerate(allocated_cell) if idx == j
-        ]
-
-        word_direction = [word.direction for word in contained_words]
-        cnt_horizontal = word_direction.count("horizontal")
-        cnt_vertical = word_direction.count("vertical")
-
-        element_direction = (
-            "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
-        )
-        if element_direction == "horizontal":
-            contained_words = sorted(
-                contained_words,
-                key=lambda x: (sum([p[1] for p in x.points]) / 4),
-            )
-        else:
-            contained_words = sorted(
-                contained_words,
-                key=lambda x: (sum([p[0] for p in x.points]) / 4),
-                reverse=True,
-            )
-
-        contained_words = "\n".join([content.content for content in contained_words])
-
-        cell.contents = contained_words
-
-    return flags
-
-
 def extract_words_within_element(pred_words, element, join=True):
     contained_words = []
     word_sum_width = 0
@@ -268,9 +225,6 @@ class DocumentAnalyzer:
         paragraphs = []
         check_list = [False] * len(ocr_res.words)
         for table in layout_res.tables:
-            # flags = _allocate_words_to_cells(ocr_res.words, table)
-            # check_list = combine_flags(check_list, flags)
-
             for cell in table.cells:
                 words, direction, flags = extract_words_within_element(
                     ocr_res.words, cell
@@ -368,32 +322,65 @@ class DocumentAnalyzer:
     def split_text_img_with_cell(self, results_det, results_layout):
         check_list = [False] * len(results_det.points)
         new_points = []
+        new_scores = []
         for table in results_layout.tables:
-            table_words = []
-            for i, points in enumerate(results_det.points):
+            table_words_horizontal = []
+            table_words_vertical = []
+            score_words_horizontal = []
+            score_words_vertical = []
+            for i, (points, score) in enumerate(
+                zip(results_det.points, results_det.scores)
+            ):
                 word_box = quad_to_xyxy(points)
                 if is_contained(table.box, word_box, threshold=0.5):
-                    table_words.append(points)
+                    if is_vertical(points):
+                        table_words_vertical.append(points)
+                        score_words_vertical.append(score)
+                    else:
+                        table_words_horizontal.append(points)
+                        score_words_horizontal.append(score)
                     check_list[i] = True
 
-            overlap_ratios = [[0 for row in table.rows] for word in table_words]
-            for i, point in enumerate(table_words):
+            overlap_ratios_horizontal = [
+                [0 for row in table.rows] for word in table_words_horizontal
+            ]
+
+            overlap_ratios_vertical = [
+                [0 for col in table.cols] for word in table_words_vertical
+            ]
+
+            for i, point in enumerate(table_words_horizontal):
                 word_box = quad_to_xyxy(point)
                 for j, row in enumerate(table.rows):
                     overlap_ratio, intersection = calc_overlap_ratio(
                         row.box,
                         word_box,
                     )
-                    overlap_ratios[i][j] = overlap_ratio
+                    overlap_ratios_horizontal[i][j] = overlap_ratio
 
-            allocated_rows = [rows.index(max(rows)) for rows in overlap_ratios]
+            for i, point in enumerate(table_words_vertical):
+                word_box = quad_to_xyxy(point)
+                for j, col in enumerate(table.cols):
+                    overlap_ratio, intersection = calc_overlap_ratio(
+                        col.box,
+                        word_box,
+                    )
+                    overlap_ratios_vertical[i][j] = overlap_ratio
+
+            allocated_rows = [
+                rows.index(max(rows)) for rows in overlap_ratios_horizontal
+            ]
+
+            allocated_cols = [cols.index(max(cols)) for cols in overlap_ratios_vertical]
+
             for i, row_index in enumerate(allocated_rows):
                 row_cells = []
                 for j, cell in enumerate(table.cells):
                     if cell.row <= (row_index + 1) < (cell.row + cell.row_span):
                         row_cells.append(cell)
 
-                word_point = table_words[i]
+                word_point = table_words_horizontal[i]
+                word_score = score_words_horizontal[i]
 
                 for cell in row_cells:
                     word_box = quad_to_xyxy(word_point)
@@ -403,31 +390,58 @@ class DocumentAnalyzer:
                         word_box,
                     )
 
-                    if intersection is not None and overlap_ratio > 0.1:
+                    if intersection is not None:
                         x1, y1, x2, y2 = intersection
-                        if is_vertical(word_point):
-                            new_point = [
-                                [word_point[0][0], max(word_point[0][1], y1)],
-                                [word_point[1][0], min(word_point[1][1], y2)],
-                                [word_point[2][0], min(word_point[2][1], y2)],
-                                [word_point[3][0], max(word_point[3][1], y1)],
-                            ]
-                        else:
-                            new_point = [
-                                [max(word_point[0][0], x1), word_point[0][1]],
-                                [min(word_point[1][0], x2), word_point[1][1]],
-                                [min(word_point[2][0], x2), word_point[2][1]],
-                                [max(word_point[3][0], x1), word_point[3][1]],
-                            ]
+
+                        new_point = [
+                            [max(word_point[0][0], x1), word_point[0][1]],
+                            [min(word_point[1][0], x2), word_point[1][1]],
+                            [min(word_point[2][0], x2), word_point[2][1]],
+                            [max(word_point[3][0], x1), word_point[3][1]],
+                        ]
 
                         if not is_noise(new_point):
                             new_points.append(new_point)
+                            new_scores.append(word_score)
+
+            for i, col_index in enumerate(allocated_cols):
+                col_cells = []
+                for j, cell in enumerate(table.cells):
+                    if cell.col <= (col_index + 1) < (cell.col + cell.col_span):
+                        col_cells.append(cell)
+
+                word_point = table_words_vertical[i]
+                word_score = score_words_vertical[i]
+
+                for cell in col_cells:
+                    word_box = quad_to_xyxy(word_point)
+
+                    overlap_ratio, intersection = calc_overlap_ratio(
+                        cell.box,
+                        word_box,
+                    )
+
+                    if intersection is not None:
+                        x1, y1, x2, y2 = intersection
+
+                        new_point = [
+                            [word_point[0][0], max(word_point[0][1], y1)],
+                            [word_point[1][0], max(word_point[1][1], y1)],
+                            [word_point[2][0], min(word_point[2][1], y2)],
+                            [word_point[3][0], min(word_point[3][1], y2)],
+                        ]
+
+                        if not is_noise(new_point):
+                            new_points.append(new_point)
+                            new_scores.append(word_score)
 
         for i, flag in enumerate(check_list):
             if not flag:
                 new_points.append(results_det.points[i])
+                new_scores.append(results_det.scores[i])
 
         results_det.points = new_points
+        results_det.scores = new_scores
 
         return results_det
 
