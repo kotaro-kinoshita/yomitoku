@@ -71,7 +71,7 @@ yomitoku ${path_data} -f md -o results -v --figure
 - `-d`, `--device`: Specify the device for running the model. If a GPU is unavailable, inference will be executed on the CPU. (Default: cuda)
 - `--ignore_line_break`: Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.)
 - `--figure_letter`: Exports characters contained within detected figures and tables to the output file.
-- `--figure`: Exports detected figures and images to the output file (supported only for html and markdown).
+- `--figure`: Exports detected figures and images to the output file 
 - `--encoding` Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (utf-8, utf-8-sig, shift-jis, enc-jp, cp932)
 
 
