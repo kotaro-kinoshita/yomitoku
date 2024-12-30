@@ -59,12 +59,18 @@ def process_single_file(args, analyzer, path, format):
                 out_path,
                 ignore_line_break=args.ignore_line_break,
                 encoding=args.encoding,
+                img=img,
+                export_figure=args.figure,
+                figure_dir=args.figure_dir,
             )
         elif format == "csv":
             results.to_csv(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
                 encoding=args.encoding,
+                img=img,
+                export_figure=args.figure,
+                figure_dir=args.figure_dir,
             )
         elif format == "html":
             results.to_html(

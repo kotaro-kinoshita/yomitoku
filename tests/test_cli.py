@@ -141,6 +141,7 @@ def test_run_tiff_csv(monkeypatch, tmp_path):
             "--tsr_cfg",
             "tests/yaml/table_structure_recognizer.yaml",
             "--lite",
+            "--figure",
         ],
     )
     main.main()
@@ -193,6 +194,7 @@ def test_run_dir_json(monkeypatch, tmp_path):
             str(tmp_path),
             "-f",
             "json",
+            "--figure",
         ],
     )
     main.main()
