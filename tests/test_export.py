@@ -583,7 +583,7 @@ def test_export(tmp_path):
     with open(out_path, "r") as f:
         assert json.load(f) == document_analyzer.model_dump()
 
-    document_analyzer.to_csv(tmp_path / "document_analyzer.csv")
+    document_analyzer.to_csv(tmp_path / "document_analyzer.csv", img=img)
     document_analyzer.to_html(tmp_path / "document_analyzer.html", img=img)
     document_analyzer.to_markdown(tmp_path / "document_analyzer.md", img=img)
 
