@@ -107,19 +107,25 @@ def extract_words_within_element(pred_words, element):
     word_sum_width = 0
     word_sum_height = 0
     check_list = [False] * len(pred_words)
+
     for i, word in enumerate(pred_words):
         word_box = quad_to_xyxy(word.points)
         if is_contained(element.box, word_box, threshold=0.5):
-            contained_words.append(word)
             word_sum_width += word_box[2] - word_box[0]
             word_sum_height += word_box[3] - word_box[1]
             check_list[i] = True
 
+            word_element = ParagraphSchema(
+                box=word_box,
+                contents=word.content,
+                direction=word.direction,
+                order=0,
+                role=None,
+            )
+            contained_words.append(word_element)
+
     if len(contained_words) == 0:
         return None, None, check_list
-
-    # mean_width = word_sum_width / len(contained_words)
-    # mean_height = word_sum_height / len(contained_words)
 
     element_direction = "horizontal"
     word_direction = [word.direction for word in contained_words]
@@ -127,19 +133,11 @@ def extract_words_within_element(pred_words, element):
     cnt_vertical = word_direction.count("vertical")
 
     element_direction = "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
-    if element_direction == "horizontal":
-        contained_words = sorted(
-            contained_words,
-            key=lambda x: (sum([p[1] for p in x.points]) / 4),
-        )
-    else:
-        contained_words = sorted(
-            contained_words,
-            key=lambda x: (sum([p[0] for p in x.points]) / 4),
-            reverse=True,
-        )
 
-    contained_words = "\n".join([content.content for content in contained_words])
+    prediction_reading_order(contained_words, element_direction)
+    contained_words = sorted(contained_words, key=lambda x: x.order)
+
+    contained_words = "\n".join([content.contents for content in contained_words])
 
     return (contained_words, element_direction, check_list)
 
