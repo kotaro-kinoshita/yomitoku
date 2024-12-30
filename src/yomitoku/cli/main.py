@@ -14,9 +14,14 @@ logger = set_logger(__name__, "INFO")
 
 
 def validate_encoding(encoding):
-    if encoding not in ["utf-8", "shift-jis", "euc-jp", "cp932"]:
+    if encoding not in [
+        "utf-8",
+        "utf-8-sig",
+        "shift-jis",
+        "euc-jp",
+        "cp932",
+    ]:
         raise ValueError(f"Invalid encoding: {encoding}")
-
     return True
 
 
