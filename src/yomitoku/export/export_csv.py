@@ -1,4 +1,6 @@
 import csv
+import cv2
+import os
 
 
 def table_to_csv(table, ignore_line_break):
@@ -33,11 +35,33 @@ def paragraph_to_csv(paragraph, ignore_line_break):
     return contents
 
 
+def save_figure(
+    figures,
+    img,
+    out_path,
+    figure_dir="figures",
+):
+    for i, figure in enumerate(figures):
+        x1, y1, x2, y2 = map(int, figure.box)
+        figure_img = img[y1:y2, x1:x2, :]
+        save_dir = os.path.dirname(out_path)
+        save_dir = os.path.join(save_dir, figure_dir)
+        os.makedirs(save_dir, exist_ok=True)
+
+        filename = os.path.splitext(os.path.basename(out_path))[0]
+        figure_name = f"{filename}_figure_{i}.png"
+        figure_path = os.path.join(save_dir, figure_name)
+        cv2.imwrite(figure_path, figure_img)
+
+
 def export_csv(
     inputs,
     out_path: str,
     ignore_line_break: bool = False,
     encoding: str = "utf-8",
+    img=None,
+    export_figure: bool = True,
+    figure_dir="figures",
 ):
     elements = []
     for table in inputs.tables:
@@ -61,6 +85,14 @@ def export_csv(
                 "element": contents,
                 "order": paraghraph.order,
             }
+        )
+
+    if export_figure:
+        save_figure(
+            inputs.figures,
+            img,
+            out_path,
+            figure_dir=figure_dir,
         )
 
     elements = sorted(elements, key=lambda x: x["order"])
