@@ -75,6 +75,8 @@ def figure_to_md(
     width=200,
     figure_dir="figures",
 ):
+    assert img is not None, "img is required for saving figures"
+
     elements = []
     for i, figure in enumerate(figures):
         x1, y1, x2, y2 = map(int, figure.box)

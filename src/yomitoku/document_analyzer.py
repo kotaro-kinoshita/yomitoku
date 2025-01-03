@@ -127,7 +127,6 @@ def extract_words_within_element(pred_words, element):
     if len(contained_words) == 0:
         return None, None, check_list
 
-    element_direction = "horizontal"
     word_direction = [word.direction for word in contained_words]
     cnt_horizontal = word_direction.count("horizontal")
     cnt_vertical = word_direction.count("vertical")

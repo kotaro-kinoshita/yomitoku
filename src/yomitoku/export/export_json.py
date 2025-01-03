@@ -21,6 +21,8 @@ def save_figure(
     out_path,
     figure_dir="figures",
 ):
+    assert img is not None, "img is required for saving figures"
+
     for i, figure in enumerate(figures):
         x1, y1, x2, y2 = map(int, figure.box)
         figure_img = img[y1:y2, x1:x2, :]

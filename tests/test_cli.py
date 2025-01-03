@@ -210,6 +210,7 @@ def test_validate_encoding():
         validate_encoding("utf-9")
 
     assert validate_encoding("utf-8")
+    assert validate_encoding("utf-8-sig")
     assert validate_encoding("shift-jis")
     assert validate_encoding("euc-jp")
     assert validate_encoding("cp932")
