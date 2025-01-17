@@ -22,12 +22,11 @@ YomiToku is a Document AI engine specialized in Japanese document image analysis
 
 The verification results for various types of images are also included in [gallery.md](gallery.md)
 
-|                          Input                          |                       Results of OCR                        |
+|                           Input                            |                     Results of OCR                      |
 | :--------------------------------------------------------: | :-----------------------------------------------------: |
 |        <img src="static/in/demo.jpg" width="400px">        | <img src="static/out/in_demo_p1_ocr.jpg" width="400px"> |
-|                    Results of Layout Analysis                    |    Results of HTML Export    |
+|                 Results of Layout Analysis                 |                 Results of HTML Export                  |
 | <img src="static/out/in_demo_p1_layout.jpg" width="400px"> |   <img src="static/out/demo_html.png" width="400px">    |
-
 
 For the results exported in Markdown, please refer to [static/out/in_demo_p1.md](static/out/in_demo_p1.md) in the repository.
 
@@ -50,6 +49,7 @@ pip install yomitoku
 ```
 
 Using GPU with onnxruntime
+
 ```
 pip install yomitoku[gpu]
 ```
@@ -60,7 +60,7 @@ pip install yomitoku[gpu]
 ## 🚀 Usage
 
 ```
-yomitoku ${path_data} -f md -o results -v --figure
+yomitoku ${path_data} -f md -o results -v --figure --lite
 ```
 
 - `${path_data}`: Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed.
@@ -71,16 +71,17 @@ yomitoku ${path_data} -f md -o results -v --figure
 - `-d`, `--device`: Specify the device for running the model. If a GPU is unavailable, inference will be executed on the CPU. (Default: cuda)
 - `--ignore_line_break`: Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.)
 - `--figure_letter`: Exports characters contained within detected figures and tables to the output file.
-- `--figure`: Exports detected figures and images to the output file 
+- `--figure`: Exports detected figures and images to the output file
 - `--encoding` Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (utf-8, utf-8-sig, shift-jis, enc-jp, cp932)
 
-
 For other options, please refer to the help documentation.
+
 ```
 yomitoku --help
 ```
 
 **NOTE**
+
 - It is recommended to run on a GPU. The system is not optimized for inference on CPUs, which may result in significantly longer processing times.
 - Only printed text recognition is supported. While it may occasionally read handwritten text, official support is not provided.
 - YomiToku is optimized for document OCR and is not designed for scene OCR (e.g., text printed on non-paper surfaces like signs).
