@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
 ## Defining Parameters in an YAML File
 
-By providing the path to a YAML file in the config, you can adjust detailed parameters for inference. Examples of YAML files can be found in the `configs` directory within the repository. While the model's network parameters cannot be modified, certain aspects like post-processing parameters and input image size can be adjusted.Refer to [configuration](configuration.md) for configurable parameters.
+By providing the path to a YAML file in the config, you can adjust detailed parameters for inference. Examples of YAML files can be found in the `configs` directory within the repository. While the model's network parameters cannot be modified, certain aspects like post-processing parameters and input image size can be adjusted.Refer to [configuration](configuration.en.mdmd) for configurable parameters.
 
 For instance, you can define post-processing thresholds for the Text Detector in a YAML file and set its path in the config. The config file does not need to include all parameters; you only need to specify the parameters that require changes.
 
