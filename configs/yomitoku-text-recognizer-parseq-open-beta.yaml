@@ -24,7 +24,7 @@ decoder:
   mlp_ratio: 4
   depth: 1
 visualize:
-  font: /home/kinoshita/Projects/know-how/yomitoku/src/yomitoku/resource/MPLUS1p-Medium.ttf
+  font: src/yomitoku/resource/MPLUS1p-Medium.ttf
   color:
   - 0
   - 0

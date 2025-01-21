@@ -4,10 +4,10 @@ backbone:
   dilation: true
 decoder:
   in_channels:
-    - 256
-    - 512
-    - 1024
-    - 2048
+  - 256
+  - 512
+  - 1024
+  - 2048
   hidden_dim: 256
   adaptive: true
   serial: true
@@ -21,10 +21,10 @@ post_process:
   thresh: 0.2
   box_thresh: 0.5
   max_candidates: 1500
-  unclip_ratio: 2.0
+  unclip_ratio: 7.0
 visualize:
   color:
-    - 0
-    - 255
-    - 0
+  - 0
+  - 255
+  - 0
   heatmap: false
