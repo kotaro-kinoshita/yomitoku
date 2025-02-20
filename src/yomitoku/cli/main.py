@@ -1,10 +1,10 @@
 import argparse
 import os
-import torch
+import time
 from pathlib import Path
 
 import cv2
-import time
+import torch
 
 from ..constants import SUPPORT_OUTPUT_FORMAT
 from ..data.functions import load_image, load_pdf
@@ -32,8 +32,9 @@ def process_single_file(args, analyzer, path, format):
     else:
         imgs = [load_image(path)]
 
+    results = []
     for page, img in enumerate(imgs):
-        results, ocr, layout = analyzer(img)
+        result, ocr, layout = analyzer(img)
         dirname = path.parent.name
         filename = path.stem
 
@@ -56,7 +57,7 @@ def process_single_file(args, analyzer, path, format):
         out_path = os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.{format}")
 
         if format == "json":
-            results.to_json(
+            result.to_json(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
                 encoding=args.encoding,
@@ -64,8 +65,9 @@ def process_single_file(args, analyzer, path, format):
                 export_figure=args.figure,
                 figure_dir=args.figure_dir,
             )
+
         elif format == "csv":
-            results.to_csv(
+            result.to_csv(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
                 encoding=args.encoding,
@@ -73,19 +75,9 @@ def process_single_file(args, analyzer, path, format):
                 export_figure=args.figure,
                 figure_dir=args.figure_dir,
             )
+
         elif format == "html":
-            results.to_html(
-                out_path,
-                ignore_line_break=args.ignore_line_break,
-                img=img,
-                export_figure=args.figure,
-                export_figure_letter=args.figure_letter,
-                figure_width=args.figure_width,
-                figure_dir=args.figure_dir,
-                encoding=args.encoding,
-            )
-        elif format == "md":
-            results.to_markdown(
+            html = result.to_html(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
                 img=img,
@@ -96,7 +88,28 @@ def process_single_file(args, analyzer, path, format):
                 encoding=args.encoding,
             )
 
+            results.append(html)
+
+        elif format == "md":
+            md = result.to_markdown(
+                out_path,
+                ignore_line_break=args.ignore_line_break,
+                img=img,
+                export_figure=args.figure,
+                export_figure_letter=args.figure_letter,
+                figure_width=args.figure_width,
+                figure_dir=args.figure_dir,
+                encoding=args.encoding,
+            )
+
+            results.append(md)
+
         logger.info(f"Output file: {out_path}")
+
+        output = "\n".join(results)
+        if output:
+            with open(out_path, "w", encoding=args.encoding) as f:
+                f.write(output)
 
 
 def main():

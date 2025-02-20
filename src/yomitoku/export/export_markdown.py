@@ -1,6 +1,7 @@
-import re
-import cv2
 import os
+import re
+
+import cv2
 
 
 def escape_markdown_special_chars(text):
@@ -146,3 +147,5 @@ def export_markdown(
 
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(markdown)
+
+    return markdown

@@ -1,9 +1,8 @@
-import re
 import os
-import cv2
-
+import re
 from html import escape
 
+import cv2
 from lxml import etree, html
 
 
@@ -189,3 +188,5 @@ def export_html(
 
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(formatted_html)
+
+    return formatted_html
