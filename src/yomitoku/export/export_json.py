@@ -1,7 +1,7 @@
 import json
+import os
 
 import cv2
-import os
 
 
 def paragraph_to_json(paragraph, ignore_line_break):
@@ -72,3 +72,5 @@ def export_json(
             sort_keys=True,
             separators=(",", ": "),
         )
+
+    return inputs.model_dump()

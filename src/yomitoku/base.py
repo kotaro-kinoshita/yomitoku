@@ -54,7 +54,7 @@ class BaseSchema(BaseModel):
         validate_assignment = True
 
     def to_json(self, out_path: str, **kwargs):
-        export_json(self, out_path, **kwargs)
+        return export_json(self, out_path, **kwargs)
 
 
 class BaseModule:

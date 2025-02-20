@@ -3,8 +3,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List, Union
 
 import numpy as np
-
 from pydantic import conlist
+
+from yomitoku.text_detector import TextDetector
+from yomitoku.text_recognizer import TextRecognizer
 
 from .base import BaseSchema
 from .export import export_csv, export_html, export_markdown
@@ -12,16 +14,8 @@ from .layout_analyzer import LayoutAnalyzer
 from .ocr import OCRSchema, WordPrediction, ocr_aggregate
 from .reading_order import prediction_reading_order
 from .table_structure_recognizer import TableStructureRecognizerSchema
-from .utils.misc import (
-    is_contained,
-    quad_to_xyxy,
-    calc_overlap_ratio,
-)
-from .utils.visualizer import reading_order_visualizer
-from yomitoku.text_detector import TextDetector
-from yomitoku.text_recognizer import TextRecognizer
-
-from .utils.visualizer import det_visualizer
+from .utils.misc import calc_overlap_ratio, is_contained, quad_to_xyxy
+from .utils.visualizer import det_visualizer, reading_order_visualizer
 
 
 class ParagraphSchema(BaseSchema):
@@ -47,13 +41,13 @@ class DocumentAnalyzerSchema(BaseSchema):
     figures: List[FigureSchema]
 
     def to_html(self, out_path: str, **kwargs):
-        export_html(self, out_path, **kwargs)
+        return export_html(self, out_path, **kwargs)
 
     def to_markdown(self, out_path: str, **kwargs):
-        export_markdown(self, out_path, **kwargs)
+        return export_markdown(self, out_path, **kwargs)
 
     def to_csv(self, out_path: str, **kwargs):
-        export_csv(self, out_path, **kwargs)
+        return export_csv(self, out_path, **kwargs)
 
 
 def combine_flags(flag1, flag2):

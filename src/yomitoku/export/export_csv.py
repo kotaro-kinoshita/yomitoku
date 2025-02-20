@@ -1,6 +1,7 @@
 import csv
-import cv2
 import os
+
+import cv2
 
 
 def table_to_csv(table, ignore_line_break):
