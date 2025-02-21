@@ -294,7 +294,7 @@ def main():
         help="Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored.",
     )
     parser.add_argument(
-        "--merge_all_pages",
+        "--combine",
         action="store_true",
         help="if set, merge all pages in the output",
     )
