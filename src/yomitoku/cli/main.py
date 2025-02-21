@@ -196,6 +196,11 @@ def main():
         default="utf-8",
         help="Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored.",
     )
+    parser.add_argument(
+        "--ignore_meta",
+        action="store_true",
+        help="if set, ignore meta information(header, footer) in the output",
+    )
 
     args = parser.parse_args()
 
@@ -248,6 +253,7 @@ def main():
         configs=configs,
         visualize=args.vis,
         device=args.device,
+        ignore_meta=args.ignore_meta,
     )
 
     os.makedirs(args.outdir, exist_ok=True)
