@@ -8,11 +8,6 @@
 pip install yomitoku
 ```
 
-onnxruntimeの実行にGPUを使用する場合
-```bash
-pip install yomitoku[gpu]
-```
-
 ## uv でのインストール
 
 本リポジトリはパッケージ管理ツールに [uv](https://docs.astral.sh/uv/) を使用しています。uv をインストール後、リポジトリをクローンし、以下のコマンドを実行してください
