@@ -181,12 +181,13 @@ def export_html(
     elements = sorted(elements, key=lambda x: x["order"])
 
     html_string = "".join([element["html"] for element in elements])
-    html_string = add_html_tag(html_string)
+    # html_string = add_html_tag(html_string)
 
     parsed_html = html.fromstring(html_string)
     formatted_html = etree.tostring(parsed_html, pretty_print=True, encoding="unicode")
-
-    with open(out_path, "w", encoding=encoding, errors="ignore") as f:
-        f.write(formatted_html)
-
     return formatted_html
+
+
+def save_html(out_path, encoding, html):
+    with open(out_path, "w", encoding=encoding, errors="ignore") as f:
+        f.write(html)
