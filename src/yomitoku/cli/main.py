@@ -298,6 +298,11 @@ def main():
         action="store_true",
         help="if set, merge all pages in the output",
     )
+    parser.add_argument(
+        "--ignore_meta",
+        action="store_true",
+        help="if set, ignore meta information(header, footer) in the output",
+    )
 
     args = parser.parse_args()
 
@@ -350,6 +355,7 @@ def main():
         configs=configs,
         visualize=args.vis,
         device=args.device,
+        ignore_meta=args.ignore_meta,
     )
 
     os.makedirs(args.outdir, exist_ok=True)
