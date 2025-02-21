@@ -106,5 +106,5 @@ yomitoku ${path_data} --ignore_meta
 If the PDF contains multiple pages, you can export them as a single file.
 
 ```
-yomitoku ${path_data} -f md --combine_all_pages
+yomitoku ${path_data} -f md --combine
 ```

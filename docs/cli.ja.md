@@ -103,5 +103,5 @@ yomitoku ${path_data} --ignore_meta
 PDFに複数ページが含まれる場合に複数ページを一つのファイルにまとめてエクスポートできます。
 
 ```
-yomitoku ${path_data} -f md -merge_all_pages
+yomitoku ${path_data} -f md --combine
 ```
