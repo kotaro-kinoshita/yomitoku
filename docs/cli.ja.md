@@ -89,3 +89,19 @@ yomitoku ${path_data} --encoding utf-8-sig
 ```
 yomitoku ${path_data} --td_cfg ${path_yaml}
 ```
+
+## メタ情報を出力ファイルに加えない
+
+ヘッダーやフッター等のメタデータを出力ファイルに加えないようにすることができます。
+
+```
+yomitoku ${path_data} --ignore_meta
+```
+
+## 複数ページを統合する
+
+PDFに複数ページが含まれる場合に複数ページを一つのファイルにまとめてエクスポートできます。
+
+```
+yomitoku ${path_data} -f md --combine
+```
