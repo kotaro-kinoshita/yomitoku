@@ -183,11 +183,11 @@ def process_single_file(args, analyzer, path, format):
                 }
             )
 
-            if not args.merge_all_pages:
+            if not args.combine:
                 save_markdown(out_path, args.encoding, md)
 
     out = merge_all_pages(results)
-    if args.merge_all_pages:
+    if args.combine:
         out_path = os.path.join(args.outdir, f"{dirname}_{filename}.{format}")
         save_merged_file(
             out_path,
