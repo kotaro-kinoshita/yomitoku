@@ -73,6 +73,8 @@ yomitoku ${path_data} -f md -o results -v --figure --lite
 - `--figure_letter`: Exports characters contained within detected figures and tables to the output file.
 - `--figure`: Exports detected figures and images to the output file
 - `--encoding` Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (utf-8, utf-8-sig, shift-jis, enc-jp, cp932)
+- `--combine` When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export.
+- `--ignore_meta` Excludes text information such as headers and footers from the output file.
 
 For other options, please refer to the help documentation.
 
