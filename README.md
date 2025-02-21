@@ -7,6 +7,7 @@
 ![CUDA](https://img.shields.io/badge/CUDA->=11.8-76B900.svg?logo=NVIDIA&style=fla)
 ![OS](https://img.shields.io/badge/OS-Linux|Mac|Win-1793D1.svg?&style=fla)
 [![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku/)
+[![PyPI Downloads](https://static.pepy.tech/badge/yomitoku)](https://pepy.tech/projects/yomitoku)
 
 ## 🌟 概要
 
