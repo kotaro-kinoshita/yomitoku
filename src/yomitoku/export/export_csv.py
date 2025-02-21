@@ -1,6 +1,7 @@
 import csv
-import cv2
 import os
+
+import cv2
 
 
 def table_to_csv(table, ignore_line_break):
@@ -98,7 +99,10 @@ def export_csv(
         )
 
     elements = sorted(elements, key=lambda x: x["order"])
+    return elements
 
+
+def save_csv(out_path, encoding, elements):
     with open(out_path, "w", newline="", encoding=encoding, errors="ignore") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         for element in elements:

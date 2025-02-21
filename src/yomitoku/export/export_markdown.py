@@ -1,6 +1,7 @@
-import re
-import cv2
 import os
+import re
+
+import cv2
 
 
 def escape_markdown_special_chars(text):
@@ -144,5 +145,9 @@ def export_markdown(
     elements = sorted(elements, key=lambda x: x["order"])
     markdown = "\n".join([element["md"] for element in elements])
 
+    return markdown
+
+
+def save_markdown(out_path, encoding, markdown):
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(markdown)
