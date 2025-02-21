@@ -119,7 +119,7 @@ def process_single_file(args, analyzer, path, format):
                 }
             )
 
-            if not args.merge_all_pages:
+            if not args.combine:
                 save_json(out_path, args.encoding, json)
 
         elif format == "csv":
@@ -139,7 +139,7 @@ def process_single_file(args, analyzer, path, format):
                 }
             )
 
-            if not args.merge_all_pages:
+            if not args.combine:
                 save_csv(out_path, args.encoding, csv)
 
         elif format == "html":
@@ -161,7 +161,7 @@ def process_single_file(args, analyzer, path, format):
                 }
             )
 
-            if not args.merge_all_pages:
+            if not args.combine:
                 save_html(out_path, args.encoding, html)
 
         elif format == "md":
