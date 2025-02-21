@@ -9,12 +9,6 @@ This package requires Python 3.10 or later and PyTorch 2.5 or later for executio
 pip install yomitoku
 ```
 
-Using GPU with onnxruntime
-```bash
-pip install yomitoku[gpu]
-```
-
-
 ## using uv
 This repository uses the package management tool [uv](https://docs.astral.sh/uv/). After installing uv, clone the repository and execute the following commands:
 
