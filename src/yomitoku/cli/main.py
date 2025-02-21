@@ -11,7 +11,53 @@ from ..data.functions import load_image, load_pdf
 from ..document_analyzer import DocumentAnalyzer
 from ..utils.logger import set_logger
 
+from ..export import save_csv, save_html, save_json, save_markdown
+
 logger = set_logger(__name__, "INFO")
+
+
+def merge_all_pages(results):
+    out = None
+    for result in results:
+        format = result["format"]
+        data = result["data"]
+
+        if format == "json":
+            if out is None:
+                out = [data]
+            else:
+                out.append(data)
+
+        elif format == "csv":
+            if out is None:
+                out = data
+            else:
+                out.extend(data)
+
+        elif format == "html":
+            if out is None:
+                out = data
+            else:
+                out += "\n" + data
+
+        elif format == "md":
+            if out is None:
+                out = data
+            else:
+                out += "\n" + data
+
+    return out
+
+
+def save_merged_file(out_path, args, out):
+    if args.format == "json":
+        save_json(out_path, args.encoding, out)
+    elif args.format == "csv":
+        save_csv(out_path, args.encoding, out)
+    elif args.format == "html":
+        save_html(out_path, args.encoding, out)
+    elif args.format == "md":
+        save_markdown(out_path, args.encoding, out)
 
 
 def validate_encoding(encoding):
@@ -57,7 +103,7 @@ def process_single_file(args, analyzer, path, format):
         out_path = os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.{format}")
 
         if format == "json":
-            result.to_json(
+            json = result.to_json(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
                 encoding=args.encoding,
@@ -66,8 +112,18 @@ def process_single_file(args, analyzer, path, format):
                 figure_dir=args.figure_dir,
             )
 
+            results.append(
+                {
+                    "format": format,
+                    "data": json,
+                }
+            )
+
+            if not args.merge_all_pages:
+                save_json(out_path, args.encoding, json)
+
         elif format == "csv":
-            result.to_csv(
+            csv = result.to_csv(
                 out_path,
                 ignore_line_break=args.ignore_line_break,
                 encoding=args.encoding,
@@ -75,6 +131,16 @@ def process_single_file(args, analyzer, path, format):
                 export_figure=args.figure,
                 figure_dir=args.figure_dir,
             )
+
+            results.append(
+                {
+                    "format": format,
+                    "data": csv,
+                }
+            )
+
+            if not args.merge_all_pages:
+                save_csv(out_path, args.encoding, csv)
 
         elif format == "html":
             html = result.to_html(
@@ -88,7 +154,15 @@ def process_single_file(args, analyzer, path, format):
                 encoding=args.encoding,
             )
 
-            results.append(html)
+            results.append(
+                {
+                    "format": format,
+                    "data": html,
+                }
+            )
+
+            if not args.merge_all_pages:
+                save_html(out_path, args.encoding, html)
 
         elif format == "md":
             md = result.to_markdown(
@@ -102,14 +176,24 @@ def process_single_file(args, analyzer, path, format):
                 encoding=args.encoding,
             )
 
-            results.append(md)
+            results.append(
+                {
+                    "format": format,
+                    "data": md,
+                }
+            )
 
-        logger.info(f"Output file: {out_path}")
+            if not args.merge_all_pages:
+                save_markdown(out_path, args.encoding, md)
 
-        output = "\n".join(results)
-        if output:
-            with open(out_path, "w", encoding=args.encoding) as f:
-                f.write(output)
+    out = merge_all_pages(results)
+    if args.merge_all_pages:
+        out_path = os.path.join(args.outdir, f"{dirname}_{filename}.{format}")
+        save_merged_file(
+            out_path,
+            args,
+            out,
+        )
 
 
 def main():
@@ -208,6 +292,11 @@ def main():
         type=str,
         default="utf-8",
         help="Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored.",
+    )
+    parser.add_argument(
+        "--merge_all_pages",
+        action="store_true",
+        help="if set, merge all pages in the output",
     )
 
     args = parser.parse_args()

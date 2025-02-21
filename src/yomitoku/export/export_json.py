@@ -63,14 +63,16 @@ def export_json(
                 figure_dir=figure_dir,
             )
 
+    return inputs.model_dump()
+
+
+def save_json(out_path, encoding, data):
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         json.dump(
-            inputs.model_dump(),
+            data,
             f,
             ensure_ascii=False,
             indent=4,
             sort_keys=True,
             separators=(",", ": "),
         )
-
-    return inputs.model_dump()
