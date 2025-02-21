@@ -48,12 +48,6 @@ Source of the image: Created by processing content from “Reiwa 6 Edition Infor
 pip install yomitoku
 ```
 
-Using GPU with onnxruntime
-
-```
-pip install yomitoku[gpu]
-```
-
 - Please install the version of PyTorch that matches your CUDA version. By default, a version compatible with CUDA 12.4 or higher will be installed.
 - PyTorch versions 2.5 and above are supported. As a result, CUDA version 11.8 or higher is required. If this is not feasible, please use the Dockerfile provided in the repository.
 

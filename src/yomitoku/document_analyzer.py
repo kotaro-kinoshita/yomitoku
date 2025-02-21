@@ -322,7 +322,13 @@ def _split_text_across_cells(results_det, results_layout):
 
 
 class DocumentAnalyzer:
-    def __init__(self, configs={}, device="cuda", visualize=False):
+    def __init__(
+        self,
+        configs={},
+        device="cuda",
+        visualize=False,
+        ignore_meta=False,
+    ):
         default_configs = {
             "ocr": {
                 "text_detector": {
@@ -364,6 +370,8 @@ class DocumentAnalyzer:
             configs=default_configs["layout_analyzer"],
         )
         self.visualize = visualize
+
+        self.ignore_meta = ignore_meta
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
@@ -425,11 +433,15 @@ class DocumentAnalyzer:
         page_direction = judge_page_direction(paragraphs)
 
         headers = [
-            paragraph for paragraph in paragraphs if paragraph.role == "page_header"
+            paragraph
+            for paragraph in paragraphs
+            if paragraph.role == "page_header" and not self.ignore_meta
         ]
 
         footers = [
-            paragraph for paragraph in paragraphs if paragraph.role == "page_footer"
+            paragraph
+            for paragraph in paragraphs
+            if paragraph.role == "page_footer" and not self.ignore_meta
         ]
 
         page_contents = [

@@ -93,3 +93,18 @@ Specify the path to the config files for each module as follows:
 ```
 yomitoku ${path_data} --td_cfg ${path_yaml}
 ```
+
+## Do not include metadata in the output file
+
+You can exclude metadata such as headers and footers from the output file.
+```
+yomitoku ${path_data} --ignore_meta
+```
+
+## Combine multiple pages
+
+If the PDF contains multiple pages, you can export them as a single file.
+
+```
+yomitoku ${path_data} -f md --combine
+```
