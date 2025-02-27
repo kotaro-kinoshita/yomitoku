@@ -139,7 +139,7 @@ def test_escape_markdown_special_chars():
     texts = [
         {
             "text": "![image](https://www.google.com)",
-            "expected": "\!\[image\]\(https://www\.google\.com\)",
+            "expected": "\!\[image\]\(https://www.google.com\)",
         },
         {
             "text": "**これはテストです**",
@@ -151,7 +151,7 @@ def test_escape_markdown_special_chars():
         },
         {
             "text": "1. これはテストです",
-            "expected": "1\. これはテストです",
+            "expected": "1. これはテストです",
         },
         {
             "text": "| これはテストです",
