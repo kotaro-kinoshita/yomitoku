@@ -132,7 +132,7 @@ def resize_shortest_edge(
     neww = max(int(new_w / 32) * 32, 32)
     newh = max(int(new_h / 32) * 32, 32)
 
-    img = cv2.resize(img, (neww, newh))
+    img = cv2.resize(img, (neww, newh), interpolation=cv2.INTER_AREA)
     return img
 
 
@@ -275,7 +275,7 @@ def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
     new_w = int(w * min(scale_w, scale_h))
     new_h = int(h * min(scale_w, scale_h))
 
-    resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
+    resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
     canvas = np.zeros((target_size[0], target_size[1], 3), dtype=np.uint8)
     canvas[:, :] = background_color
