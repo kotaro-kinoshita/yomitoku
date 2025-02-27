@@ -749,27 +749,6 @@ wheels = [
 ]
 
 [[package]]
-name = "onnxruntime-gpu"
-version = "1.20.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "coloredlogs" },
-    { name = "flatbuffers" },
-    { name = "numpy" },
-    { name = "packaging" },
-    { name = "protobuf" },
-    { name = "sympy" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/45/35/4f2df54e3161c61304d9463b5f2ee52c6408b5bca5960029bb787777d913/onnxruntime_gpu-1.20.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a5b4e1641db48752118dda353b8614c6d6570344062b58faea70b5350c41cf68", size = 291523128 },
-    { url = "https://files.pythonhosted.org/packages/d6/54/e2fb1eadc21b6f8347860e9d53ad0ed34fec462cf51ab1b4303027503706/onnxruntime_gpu-1.20.1-cp310-cp310-win_amd64.whl", hash = "sha256:5e2a1d659924f19425e6b2fde1f36c0998b398a8a9b76a2b266d4fa518cfe8ed", size = 279696832 },
-    { url = "https://files.pythonhosted.org/packages/e0/a5/5c2287d61f359c7342e9d59d1e3dd728a982dea85f846c7af305a801c3ca/onnxruntime_gpu-1.20.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1795e8bc6f9a1488a4d51d242edc4232a5ae60ec44ab4d4b0a7c65b3d17fcbff", size = 291519550 },
-    { url = "https://files.pythonhosted.org/packages/be/33/6f21ea03dc4eeaa3f049127f5f17360c38799134eefd1e524f0296b23cb4/onnxruntime_gpu-1.20.1-cp311-cp311-win_amd64.whl", hash = "sha256:1348e6a0af9e8f5e8e1cfc379b70356ea40497932f5bc7f858501fe7940794ff", size = 279698022 },
-    { url = "https://files.pythonhosted.org/packages/91/a8/6984a2fb070be372a866108e3e85c9eb6e8f0378a8567a66967d80befb75/onnxruntime_gpu-1.20.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1951f96cd534c6151721e552606d0d792ea6a4c3e57e2f10eed17cca8105e953", size = 291510989 },
-    { url = "https://files.pythonhosted.org/packages/e8/15/0a9887bd2931b7b7e5f36995f266d51e66c0e02f84d18cab65133b111ac1/onnxruntime_gpu-1.20.1-cp312-cp312-win_amd64.whl", hash = "sha256:696de465884480fad1deffd936bee05c6f10fdfe4f5fcef1927a71f5d28ed9ef", size = 279699210 },
-]
-
-[[package]]
 name = "opencv-python"
 version = "4.10.0.84"
 source = { registry = "https://pypi.org/simple" }
@@ -1578,7 +1557,7 @@ wheels = [
 
 [[package]]
 name = "yomitoku"
-version = "0.6.0"
+version = "0.7.1"
 source = { editable = "." }
 dependencies = [
     { name = "huggingface-hub" },
@@ -1596,11 +1575,6 @@ dependencies = [
     { name = "torch", version = "2.5.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_system != 'Darwin'" },
     { name = "torchvision", version = "0.20.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "platform_system == 'Darwin'" },
     { name = "torchvision", version = "0.20.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_system != 'Darwin'" },
-]
-
-[package.optional-dependencies]
-gpu = [
-    { name = "onnxruntime-gpu" },
 ]
 
 [package.dev-dependencies]
@@ -1623,7 +1597,6 @@ requires-dist = [
     { name = "omegaconf", specifier = ">=2.3.0" },
     { name = "onnx", specifier = ">=1.17.0" },
     { name = "onnxruntime", specifier = ">=1.20.1" },
-    { name = "onnxruntime-gpu", marker = "extra == 'gpu'", specifier = ">=1.20.1" },
     { name = "opencv-python", specifier = ">=4.10.0.84" },
     { name = "pyclipper", specifier = ">=1.3.0.post6" },
     { name = "pydantic", specifier = ">=2.9.2" },
