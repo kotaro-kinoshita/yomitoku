@@ -5,7 +5,7 @@ import cv2
 
 
 def escape_markdown_special_chars(text):
-    special_chars = r"([`*_{}[\]()#+.!|-])"
+    special_chars = r"([`*{}[\]()#+!~|-])"
     return re.sub(special_chars, r"\\\1", text)
 
 
