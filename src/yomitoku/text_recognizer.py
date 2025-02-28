@@ -118,6 +118,7 @@ class TextRecognizer(BaseModule):
             "output": {0: "batch_size"},
         }
 
+        self.model.export_onnx = True
         torch.onnx.export(
             self.model,
             input,
