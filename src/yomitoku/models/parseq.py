@@ -81,6 +81,8 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         named_apply(partial(init_weights, exclude=["encoder"]), self)
         nn.init.trunc_normal_(self.pos_queries, std=0.02)
 
+        self.export_onnx = False
+
     @property
     def _device(self) -> torch.device:
         return next(self.head.parameters(recurse=False)).device
@@ -175,7 +177,11 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     # greedy decode. add the next token index to the target input
                     tgt_in[:, j] = p_i.squeeze().argmax(-1)
                     # Efficient batch decoding: If all output words have at least one EOS token, end decoding.
-                    if testing and (tgt_in == self.tokenizer.eos_id).any(dim=-1).all():
+                    if (
+                        not self.export_onnx
+                        and testing
+                        and (tgt_in == self.tokenizer.eos_id).any(dim=-1).all()
+                    ):
                         break
 
             logits = torch.cat(logits, dim=1)
