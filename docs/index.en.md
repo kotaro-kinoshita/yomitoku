@@ -11,11 +11,14 @@ YomiToku is a Document AI engine specialized in Japanese document image analysis
 ## 🙋 FAQ
 
 ### Q. Is it possible to use YomiToku in an environment without internet access?
+
 A. Yes, it is possible.
-YomiToku connects to Hugging Face Hub to automatically download model files during the first execution, requiring internet access at that time. However, you can manually download the files in advance, allowing YomiToku to operate in an offline environment. For details, please refer to Usage under the section "Using YomiToku in an Offline Environment."
+YomiToku connects to Hugging Face Hub to automatically download model files during the first execution, requiring internet access at that time. However, you can manually download the files in advance, allowing YomiToku to operate in an offline environment. For details, please refer to [Module Usage](module.en.md) under the section "Using YomiToku in an Offline Environment."
 
 ### Q. Is commercial use allowed?
+
 A. This package is licensed under CC BY-NC 4.0. It is available for free for personal and research purposes. For commercial use, a paid commercial license is required. Please contact the developers for further details.
 
 ### Q. Can handwritten text be recognized?
+
 A. Only printed text recognition is supported. While handwritten text may occasionally be recognized, it is not officially supported.
