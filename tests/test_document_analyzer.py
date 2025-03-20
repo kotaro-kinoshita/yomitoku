@@ -366,6 +366,7 @@ def test_extract_words_within_table():
         "n_col": 2,
         "rows": [],
         "cols": [],
+        "spans": [],
         "cells": [],
         "order": 0,
     }
@@ -421,6 +422,10 @@ def test_correct_vertical_word_boxes():
         TableLineSchema(box=[0, 50, 20, 100], score=0.9),
     ]
 
+    spans = [
+        TableLineSchema(box=[0, 0, 20, 100], score=0.9),
+    ]
+
     cells = [
         {
             "col": 1,
@@ -448,6 +453,7 @@ def test_correct_vertical_word_boxes():
         "n_col": 1,
         "rows": rows,
         "cols": cols,
+        "spans": spans,
         "cells": cells,
         "order": 0,
     }
@@ -484,6 +490,10 @@ def test_correct_horizontal_word_boxes():
         TableLineSchema(box=[0, 0, 100, 20], score=0.9),
     ]
 
+    spans = [
+        TableLineSchema(box=[0, 0, 100, 20], score=0.9),
+    ]
+
     cells = [
         {
             "col": 1,
@@ -511,6 +521,7 @@ def test_correct_horizontal_word_boxes():
         "n_col": 1,
         "rows": rows,
         "cols": cols,
+        "spans": spans,
         "cells": cells,
         "order": 0,
     }
@@ -548,6 +559,10 @@ def test_split_text_across_cells():
         TableLineSchema(box=[0, 0, 100, 20], score=0.9),
     ]
 
+    spans = [
+        TableLineSchema(box=[0, 0, 100, 20], score=0.9),
+    ]
+
     cells = [
         {
             "col": 1,
@@ -575,6 +590,7 @@ def test_split_text_across_cells():
         "n_col": 1,
         "rows": rows,
         "cols": cols,
+        "spans": spans,
         "cells": cells,
         "order": 0,
     }
