@@ -47,6 +47,7 @@ class TableStructureRecognizerSchema(BaseSchema):
     rows: List[TableLineSchema]
     cols: List[TableLineSchema]
     cells: List[TableCellSchema]
+    spans: List[TableLineSchema]
     order: int
 
 
@@ -242,7 +243,7 @@ class TableStructureRecognizer(BaseModule):
             category_elements
         )
 
-        cells, rows, cols = self.extract_cell_elements(category_elements)
+        cells, rows, cols, spans = self.extract_cell_elements(category_elements)
 
         table_x, table_y = data["offset"]
         table_x2 = table_x + data["size"][1]
@@ -255,6 +256,7 @@ class TableStructureRecognizer(BaseModule):
             "n_col": len(cols),
             "rows": rows,
             "cols": cols,
+            "spans": spans,
             "cells": cells,
             "order": 0,
         }
@@ -276,8 +278,9 @@ class TableStructureRecognizer(BaseModule):
 
         rows = sorted(elements["row"], key=lambda x: x["box"][1])
         cols = sorted(elements["col"], key=lambda x: x["box"][0])
+        spans = sorted(elements["span"], key=lambda x: x["box"][1])
 
-        return cells, rows, cols
+        return cells, rows, cols, spans
 
     def __call__(self, img, table_boxes, vis=None):
         img_tensors = self.preprocess(img, table_boxes)
