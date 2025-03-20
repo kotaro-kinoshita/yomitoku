@@ -97,8 +97,16 @@ def test_table_to_html():
         }
     ]
 
+    spans = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
     rows = [TableLineSchema(**row) for row in rows]
     cols = [TableLineSchema(**col) for col in cols]
+    spans = [TableLineSchema(**span) for span in spans]
 
     table = {
         "box": [0, 0, 100, 100],
@@ -108,6 +116,7 @@ def test_table_to_html():
         "order": 0,
         "rows": rows,
         "cols": cols,
+        "spans": spans,
     }
 
     table = TableStructureRecognizerSchema(**table)
@@ -228,8 +237,16 @@ def test_table_to_md():
         }
     ]
 
+    spans = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
     rows = [TableLineSchema(**row) for row in rows]
     cols = [TableLineSchema(**col) for col in cols]
+    spans = [TableLineSchema(**span) for span in spans]
 
     table = {
         "box": [0, 0, 100, 100],
@@ -237,6 +254,7 @@ def test_table_to_md():
         "n_col": 2,
         "cells": cells,
         "order": 0,
+        "spans": spans,
         "rows": rows,
         "cols": cols,
     }
@@ -293,8 +311,16 @@ def test_table_to_csv():
         }
     ]
 
+    spans = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
     rows = [TableLineSchema(**row) for row in rows]
     cols = [TableLineSchema(**col) for col in cols]
+    spans = [TableLineSchema(**span) for span in spans]
 
     table = {
         "box": [0, 0, 100, 100],
@@ -302,6 +328,7 @@ def test_table_to_csv():
         "n_col": 2,
         "cells": cells,
         "order": 0,
+        "spans": spans,
         "rows": rows,
         "cols": cols,
     }
@@ -393,8 +420,16 @@ def test_table_to_json():
         }
     ]
 
+    spans = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
     rows = [TableLineSchema(**row) for row in rows]
     cols = [TableLineSchema(**col) for col in cols]
+    spans = [TableLineSchema(**span) for span in spans]
 
     table = {
         "box": [0, 0, 100, 100],
@@ -404,6 +439,7 @@ def test_table_to_json():
         "order": 0,
         "rows": rows,
         "cols": cols,
+        "spans": spans,
     }
     table = TableStructureRecognizerSchema(**table)
 
@@ -501,8 +537,16 @@ def test_export(tmp_path):
         }
     ]
 
+    spans = [
+        {
+            "box": [0, 0, 10, 10],
+            "score": 0.9,
+        }
+    ]
+
     rows = [TableLineSchema(**row) for row in rows]
     cols = [TableLineSchema(**col) for col in cols]
+    spans = [TableLineSchema(**span) for span in spans]
 
     table_cell = TableCellSchema(**table_cell)
     out_path = tmp_path / "table_cell.json"
@@ -519,6 +563,7 @@ def test_export(tmp_path):
         "order": 0,
         "rows": rows,
         "cols": cols,
+        "spans": spans,
     }
 
     tsr = TableStructureRecognizerSchema(**tsr)
