@@ -12,6 +12,7 @@ from ..document_analyzer import DocumentAnalyzer
 from ..utils.logger import set_logger
 
 from ..export import save_csv, save_html, save_json, save_markdown
+from ..export import convert_json, convert_csv, convert_html, convert_markdown
 
 logger = set_logger(__name__, "INFO")
 
@@ -51,13 +52,13 @@ def merge_all_pages(results):
 
 def save_merged_file(out_path, args, out):
     if args.format == "json":
-        save_json(out_path, args.encoding, out)
+        save_json(out, out_path, args.encoding)
     elif args.format == "csv":
-        save_csv(out_path, args.encoding, out)
+        save_csv(out, out_path, args.encoding)
     elif args.format == "html":
-        save_html(out_path, args.encoding, out)
+        save_html(out, out_path, args.encoding)
     elif args.format == "md":
-        save_markdown(out_path, args.encoding, out)
+        save_markdown(out, out_path, args.encoding)
 
 
 def validate_encoding(encoding):
@@ -84,6 +85,10 @@ def process_single_file(args, analyzer, path, format):
         dirname = path.parent.name
         filename = path.stem
 
+        # cv2.imwrite(
+        #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"), img
+        # )
+
         if ocr is not None:
             out_path = os.path.join(
                 args.outdir, f"{dirname}_{filename}_p{page+1}_ocr.jpg"
@@ -103,34 +108,51 @@ def process_single_file(args, analyzer, path, format):
         out_path = os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.{format}")
 
         if format == "json":
-            json = result.to_json(
-                out_path,
-                ignore_line_break=args.ignore_line_break,
-                encoding=args.encoding,
-                img=img,
-                export_figure=args.figure,
-                figure_dir=args.figure_dir,
-            )
+            if args.combine:
+                json = convert_json(
+                    result,
+                    out_path,
+                    args.ignore_line_break,
+                    img,
+                    args.figure,
+                    args.figure_dir,
+                )
+            else:
+                json = result.to_json(
+                    out_path,
+                    ignore_line_break=args.ignore_line_break,
+                    encoding=args.encoding,
+                    img=img,
+                    export_figure=args.figure,
+                    figure_dir=args.figure_dir,
+                )
 
             results.append(
                 {
                     "format": format,
-                    "data": json,
+                    "data": json.model_dump(),
                 }
             )
 
-            if not args.combine:
-                save_json(out_path, args.encoding, json)
-
         elif format == "csv":
-            csv = result.to_csv(
-                out_path,
-                ignore_line_break=args.ignore_line_break,
-                encoding=args.encoding,
-                img=img,
-                export_figure=args.figure,
-                figure_dir=args.figure_dir,
-            )
+            if args.combine:
+                csv = convert_csv(
+                    result,
+                    out_path,
+                    args.ignore_line_break,
+                    img,
+                    args.figure,
+                    args.figure_dir,
+                )
+            else:
+                csv = result.to_csv(
+                    out_path,
+                    ignore_line_break=args.ignore_line_break,
+                    encoding=args.encoding,
+                    img=img,
+                    export_figure=args.figure,
+                    figure_dir=args.figure_dir,
+                )
 
             results.append(
                 {
@@ -139,20 +161,29 @@ def process_single_file(args, analyzer, path, format):
                 }
             )
 
-            if not args.combine:
-                save_csv(out_path, args.encoding, csv)
-
         elif format == "html":
-            html = result.to_html(
-                out_path,
-                ignore_line_break=args.ignore_line_break,
-                img=img,
-                export_figure=args.figure,
-                export_figure_letter=args.figure_letter,
-                figure_width=args.figure_width,
-                figure_dir=args.figure_dir,
-                encoding=args.encoding,
-            )
+            if args.combine:
+                html, _ = convert_html(
+                    result,
+                    out_path,
+                    ignore_line_break=args.ignore_line_break,
+                    img=img,
+                    export_figure=args.figure,
+                    export_figure_letter=args.figure_letter,
+                    figure_width=args.figure_width,
+                    figure_dir=args.figure_dir,
+                )
+            else:
+                html = result.to_html(
+                    out_path,
+                    ignore_line_break=args.ignore_line_break,
+                    img=img,
+                    export_figure=args.figure,
+                    export_figure_letter=args.figure_letter,
+                    figure_width=args.figure_width,
+                    figure_dir=args.figure_dir,
+                    encoding=args.encoding,
+                )
 
             results.append(
                 {
@@ -161,20 +192,29 @@ def process_single_file(args, analyzer, path, format):
                 }
             )
 
-            if not args.combine:
-                save_html(out_path, args.encoding, html)
-
         elif format == "md":
-            md = result.to_markdown(
-                out_path,
-                ignore_line_break=args.ignore_line_break,
-                img=img,
-                export_figure=args.figure,
-                export_figure_letter=args.figure_letter,
-                figure_width=args.figure_width,
-                figure_dir=args.figure_dir,
-                encoding=args.encoding,
-            )
+            if args.combine:
+                md, _ = convert_markdown(
+                    result,
+                    out_path,
+                    ignore_line_break=args.ignore_line_break,
+                    img=img,
+                    export_figure=args.figure,
+                    export_figure_letter=args.figure_letter,
+                    figure_width=args.figure_width,
+                    figure_dir=args.figure_dir,
+                )
+            else:
+                md = result.to_markdown(
+                    out_path,
+                    ignore_line_break=args.ignore_line_break,
+                    img=img,
+                    export_figure=args.figure,
+                    export_figure_letter=args.figure_letter,
+                    figure_width=args.figure_width,
+                    figure_dir=args.figure_dir,
+                    encoding=args.encoding,
+                )
 
             results.append(
                 {
@@ -182,9 +222,6 @@ def process_single_file(args, analyzer, path, format):
                     "data": md,
                 }
             )
-
-            if not args.combine:
-                save_markdown(out_path, args.encoding, md)
 
     out = merge_all_pages(results)
     if args.combine:
