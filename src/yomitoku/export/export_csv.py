@@ -57,11 +57,10 @@ def save_figure(
         cv2.imwrite(figure_path, figure_img)
 
 
-def export_csv(
+def convert_csv(
     inputs,
-    out_path: str,
-    ignore_line_break: bool = False,
-    encoding: str = "utf-8",
+    out_path,
+    ignore_line_break,
     img=None,
     export_figure: bool = True,
     figure_dir="figures",
@@ -90,6 +89,8 @@ def export_csv(
             }
         )
 
+    elements = sorted(elements, key=lambda x: x["order"])
+
     if export_figure:
         save_figure(
             inputs.figures,
@@ -98,11 +99,36 @@ def export_csv(
             figure_dir=figure_dir,
         )
 
-    elements = sorted(elements, key=lambda x: x["order"])
     return elements
 
 
-def save_csv(out_path, encoding, elements):
+def export_csv(
+    inputs,
+    out_path: str,
+    ignore_line_break: bool = False,
+    encoding: str = "utf-8",
+    img=None,
+    export_figure: bool = True,
+    figure_dir="figures",
+):
+    elements = convert_csv(
+        inputs,
+        out_path,
+        ignore_line_break,
+        img,
+        export_figure,
+        figure_dir,
+    )
+
+    save_csv(elements, out_path, encoding)
+    return elements
+
+
+def save_csv(
+    elements,
+    out_path,
+    encoding,
+):
     with open(out_path, "w", newline="", encoding=encoding, errors="ignore") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         for element in elements:

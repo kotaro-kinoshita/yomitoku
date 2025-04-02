@@ -36,15 +36,7 @@ def save_figure(
         cv2.imwrite(figure_path, figure_img)
 
 
-def export_json(
-    inputs,
-    out_path,
-    ignore_line_break=False,
-    encoding: str = "utf-8",
-    img=None,
-    export_figure=False,
-    figure_dir="figures",
-):
+def convert_json(inputs, out_path, ignore_line_break, img, export_figure, figure_dir):
     from yomitoku.document_analyzer import DocumentAnalyzerSchema
 
     if isinstance(inputs, DocumentAnalyzerSchema):
@@ -55,18 +47,45 @@ def export_json(
         for paragraph in inputs.paragraphs:
             paragraph_to_json(paragraph, ignore_line_break)
 
-        if export_figure:
-            save_figure(
-                inputs.figures,
-                img,
-                out_path,
-                figure_dir=figure_dir,
-            )
+    if isinstance(inputs, DocumentAnalyzerSchema) and export_figure:
+        save_figure(
+            inputs.figures,
+            img,
+            out_path,
+            figure_dir=figure_dir,
+        )
 
-    return inputs.model_dump()
+    return inputs
 
 
-def save_json(out_path, encoding, data):
+def export_json(
+    inputs,
+    out_path,
+    ignore_line_break=False,
+    encoding: str = "utf-8",
+    img=None,
+    export_figure=False,
+    figure_dir="figures",
+):
+    inputs = convert_json(
+        inputs,
+        out_path,
+        ignore_line_break,
+        img,
+        export_figure,
+        figure_dir,
+    )
+
+    save_json(
+        inputs.model_dump(),
+        out_path,
+        encoding,
+    )
+
+    return inputs
+
+
+def save_json(data, out_path, encoding):
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         json.dump(
             data,
