@@ -111,16 +111,15 @@ def figure_to_md(
     return elements
 
 
-def export_markdown(
+def convert_markdown(
     inputs,
-    out_path: str,
+    out_path,
+    ignore_line_break=False,
     img=None,
-    ignore_line_break: bool = False,
     export_figure_letter=False,
     export_figure=True,
     figure_width=200,
     figure_dir="figures",
-    encoding: str = "utf-8",
 ):
     elements = []
     for table in inputs.tables:
@@ -144,10 +143,39 @@ def export_markdown(
 
     elements = sorted(elements, key=lambda x: x["order"])
     markdown = "\n".join([element["md"] for element in elements])
+    return markdown, elements
 
+
+def export_markdown(
+    inputs,
+    out_path: str,
+    ignore_line_break: bool = False,
+    img=None,
+    export_figure_letter=False,
+    export_figure=True,
+    figure_width=200,
+    figure_dir="figures",
+    encoding: str = "utf-8",
+):
+    markdown, elements = convert_markdown(
+        inputs,
+        out_path,
+        ignore_line_break,
+        img,
+        export_figure_letter,
+        export_figure,
+        figure_width,
+        figure_dir,
+    )
+
+    save_markdown(markdown, out_path, encoding)
     return markdown
 
 
-def save_markdown(out_path, encoding, markdown):
+def save_markdown(
+    markdown,
+    out_path,
+    encoding,
+):
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(markdown)
