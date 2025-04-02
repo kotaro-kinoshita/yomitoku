@@ -146,16 +146,15 @@ def figure_to_html(
     return elements
 
 
-def export_html(
+def convert_html(
     inputs,
-    out_path: str,
-    ignore_line_break: bool = False,
-    export_figure: bool = True,
-    export_figure_letter: bool = False,
+    out_path,
+    ignore_line_break,
+    export_figure,
+    export_figure_letter,
     img=None,
     figure_width=200,
     figure_dir="figures",
-    encoding: str = "utf-8",
 ):
     html_string = ""
     elements = []
@@ -181,13 +180,43 @@ def export_html(
     elements = sorted(elements, key=lambda x: x["order"])
 
     html_string = "".join([element["html"] for element in elements])
-    # html_string = add_html_tag(html_string)
-
     parsed_html = html.fromstring(html_string)
     formatted_html = etree.tostring(parsed_html, pretty_print=True, encoding="unicode")
+
+    return formatted_html, elements
+
+
+def export_html(
+    inputs,
+    out_path: str,
+    ignore_line_break: bool = False,
+    export_figure: bool = True,
+    export_figure_letter: bool = False,
+    img=None,
+    figure_width=200,
+    figure_dir="figures",
+    encoding: str = "utf-8",
+):
+    formatted_html, elements = convert_html(
+        inputs,
+        out_path,
+        ignore_line_break,
+        export_figure,
+        export_figure_letter,
+        img,
+        figure_width,
+        figure_dir,
+    )
+
+    save_html(formatted_html, out_path, encoding)
+
     return formatted_html
 
 
-def save_html(out_path, encoding, html):
+def save_html(
+    html,
+    out_path,
+    encoding,
+):
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(html)
