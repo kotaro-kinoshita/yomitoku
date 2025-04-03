@@ -13,7 +13,8 @@
 |糖 質|8.8g|
 |食物繊維|4.8g|
 |食塩相当量|11.9g|
-|カリウム<br>カルシウム|523mg<br>83mg|
+|カリウム|523mg|
+|カルシウム|83mg|
 
 <img src="figures/in_gallery6_p1_figure_0.png" width="200px"><br>
 195
