@@ -76,7 +76,7 @@ def process_single_file(args, analyzer, path, format):
     if path.suffix[1:].lower() in ["pdf"]:
         imgs = load_pdf(path)
     else:
-        imgs = [load_image(path)]
+        imgs = load_image(path)
 
     results = []
     for page, img in enumerate(imgs):
