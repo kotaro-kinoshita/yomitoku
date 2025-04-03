@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import cv2
+from PIL import Image
 import numpy as np
 import torch
 import pypdfium2
@@ -13,6 +14,20 @@ from ..constants import (
 from ..utils.logger import set_logger
 
 logger = set_logger(__name__)
+
+
+def validate_image(img: np.ndarray):
+    h, w = img.shape[:2]
+    if h < MIN_IMAGE_SIZE or w < MIN_IMAGE_SIZE:
+        raise ValueError("Image size is too small.")
+
+    if min(h, w) < WARNING_IMAGE_SIZE:
+        logger.warning(
+            """
+            The image size is small, which may result in reduced OCR accuracy. 
+            The process will continue, but it is recommended to input images with a minimum size of 720 pixels on the shorter side.
+            """
+        )
 
 
 def load_image(image_path: str) -> np.ndarray:
@@ -40,24 +55,27 @@ def load_image(image_path: str) -> np.ndarray:
             "PDF file is not supported by load_image(). Use load_pdf() instead."
         )
 
-    img = cv2.imread(image_path, cv2.IMREAD_COLOR)
-
-    if img is None:
+    try:
+        img = Image.open(image_path)
+    except Exception:
         raise ValueError("Invalid image data.")
 
-    h, w = img.shape[:2]
-    if h < MIN_IMAGE_SIZE or w < MIN_IMAGE_SIZE:
-        raise ValueError("Image size is too small.")
+    pages = []
+    if ext in ["tif", "tiff"]:
+        try:
+            while True:
+                img_arr = np.array(img.copy().convert("RGB"))
+                validate_image(img_arr)
+                pages.append(img_arr[:, :, ::-1])
+                img.seek(img.tell() + 1)
+        except EOFError:
+            pass
+    else:
+        img_arr = np.array(img.convert("RGB"))
+        validate_image(img_arr)
+        pages.append(img_arr[:, :, ::-1])
 
-    if min(h, w) < WARNING_IMAGE_SIZE:
-        logger.warning(
-            """
-            The image size is small, which may result in reduced OCR accuracy. 
-            The process will continue, but it is recommended to input images with a minimum size of 720 pixels on the shorter side.
-            """
-        )
-
-    return img
+    return pages
 
 
 def load_pdf(pdf_path: str, dpi=200) -> list[np.ndarray]:
