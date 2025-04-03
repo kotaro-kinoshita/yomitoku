@@ -6,7 +6,10 @@ import os
 from pydantic import conlist
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
-from .configs import TextDetectorDBNetConfig
+from .configs import (
+    TextDetectorDBNetConfig,
+    TextDetectorDBNetV2Config,
+)
 from .data.functions import (
     array_to_tensor,
     resize_shortest_edge,
@@ -25,6 +28,7 @@ class TextDetectorModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("dbnet", TextDetectorDBNetConfig, DBNet)
+        self.register("dbnetv2", TextDetectorDBNetV2Config, DBNet)
 
 
 class TextDetectorSchema(BaseSchema):
@@ -43,7 +47,7 @@ class TextDetector(BaseModule):
 
     def __init__(
         self,
-        model_name="dbnet",
+        model_name="dbnetv2",
         path_cfg=None,
         device="cuda",
         visualize=False,

@@ -12,7 +12,7 @@ from pydantic import conlist
 from .constants import ROOT_DIR
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
-from .configs import LayoutParserRTDETRv2Config
+from .configs import LayoutParserRTDETRv2Config, LayoutParserRTDETRv2V2Config
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import filter_by_flag, is_contained
@@ -35,6 +35,7 @@ class LayoutParserModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("rtdetrv2", LayoutParserRTDETRv2Config, RTDETRv2)
+        self.register("rtdetrv2v2", LayoutParserRTDETRv2V2Config, RTDETRv2)
 
 
 def filter_contained_rectangles_within_category(category_elements):
@@ -91,7 +92,7 @@ class LayoutParser(BaseModule):
 
     def __init__(
         self,
-        model_name="rtdetrv2",
+        model_name="rtdetrv2v2",
         path_cfg=None,
         device="cuda",
         visualize=False,
