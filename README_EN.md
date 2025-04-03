@@ -80,7 +80,6 @@ yomitoku --help
 **NOTE**
 
 - It is recommended to run on a GPU. The system is not optimized for inference on CPUs, which may result in significantly longer processing times.
-- Only printed text recognition is supported. While it may occasionally read handwritten text, official support is not provided.
 - YomiToku is optimized for document OCR and is not designed for scene OCR (e.g., text printed on non-paper surfaces like signs).
 - The resolution of input images is critical for improving the accuracy of AI-OCR recognition. Low-resolution images may lead to reduced recognition accuracy. It is recommended to use images with a minimum short side resolution of 720px for inference.
 
