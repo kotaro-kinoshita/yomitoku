@@ -18,7 +18,3 @@ YomiToku connects to Hugging Face Hub to automatically download model files duri
 ### Q. Is commercial use allowed?
 
 A. This package is licensed under CC BY-NC 4.0. It is available for free for personal and research purposes. For commercial use, a paid commercial license is required. Please contact the developers for further details.
-
-### Q. Can handwritten text be recognized?
-
-A. Only printed text recognition is supported. While handwritten text may occasionally be recognized, it is not officially supported.

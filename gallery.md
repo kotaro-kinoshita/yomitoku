@@ -6,6 +6,7 @@
 | <img src="static/in/gallery5.jpg" width="400px"> ※4 | <img src="static/out/in_gallery5_p1_ocr.jpg" width="400px"> ※4 | <img src="static/out/in_gallery5_p1_layout.jpg" width="400px"> ※4 | [results4](static/out/in_gallery5_p1.md) |
 |  <img src="static/in/gallery4.jpg" width="400px">   |  <img src="static/out/in_gallery4_p1_ocr.jpg" width="400px">   |  <img src="static/out/in_gallery4_p1_layout.jpg" width="400px">   |   [results5](static/out/in_gallery4_p1.md) |
 |  <img src="static/in/gallery6.jpg" width="400px">   |  <img src="static/out/in_gallery6_p1_ocr.jpg" width="400px">   |  <img src="static/out/in_gallery6_p1_layout.jpg" width="400px">   | [results6](static/out/in_gallery6_p1.md) |
+|  <img src="static/in/gallery7.jpeg" width="400px">   |  <img src="static/out/in_gallery7_p1_ocr.jpg" width="400px">   |  <img src="static/out/in_gallery7_p1_layout.jpg" width="400px">   | [results7](static/out/in_gallery7_p1.md) |
 
 - ※1 出典:[「広報誌 令和 6 年 11 月号」](https://www.soumu.go.jp/menu_news/kouhoushi/koho/2411.html)：（総務省） を加工して作成
 - ※2 出典:[「令和 7 年度歳出予算概算要求書（東日本大震災復興特別会計）」](https://www.soumu.go.jp/main_content/000967305.pdf)：（総務省） を加工して作成

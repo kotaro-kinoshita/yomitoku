@@ -7,7 +7,11 @@ import unicodedata
 from pydantic import conlist
 
 from .base import BaseModelCatalog, BaseModule, BaseSchema
-from .configs import TextRecognizerPARSeqConfig, TextRecognizerPARSeqSmallConfig
+from .configs import (
+    TextRecognizerPARSeqConfig,
+    TextRecognizerPARSeqSmallConfig,
+    TextRecognizerPARSeqV2Config,
+)
 from .data.dataset import ParseqDataset
 from .models import PARSeq
 from .postprocessor import ParseqTokenizer as Tokenizer
@@ -23,6 +27,7 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("parseq", TextRecognizerPARSeqConfig, PARSeq)
+        self.register("parseqv2", TextRecognizerPARSeqV2Config, PARSeq)
         self.register("parseq-small", TextRecognizerPARSeqSmallConfig, PARSeq)
 
 
@@ -44,7 +49,7 @@ class TextRecognizer(BaseModule):
 
     def __init__(
         self,
-        model_name="parseq",
+        model_name="parseqv2",
         path_cfg=None,
         device="cuda",
         visualize=False,
