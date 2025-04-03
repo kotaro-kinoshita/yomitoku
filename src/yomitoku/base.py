@@ -81,7 +81,9 @@ class BaseModule:
         default_cfg, Net = self.model_catalog.get(name)
         self._cfg = load_config(default_cfg, path_cfg)
         if from_pretrained:
-            self.model = Net.from_pretrained(self._cfg.hf_hub_repo, cfg=self._cfg)
+            self.model = Net.from_pretrained(
+                self._cfg.hf_hub_repo, cfg=self._cfg, token=None
+            )
         else:
             self.model = Net(cfg=self._cfg)
 
