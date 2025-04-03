@@ -36,14 +36,16 @@ def test_load_image():
         "tests/data/test.bmp",
         "tests/data/test_gray.jpg",
         "tests/data/rgba.png",
+        "tests/data/sampldoc.tif",
     ]
 
     for target in targets:
         image = load_image(target)
-        assert image.shape[2] == 3
-        assert image.shape[0] > 32
-        assert image.shape[1] > 32
-        assert image.dtype == "uint8"
+        assert len(image) >= 1
+        assert image[0].shape[2] == 3
+        assert image[0].shape[0] > 32
+        assert image[0].shape[1] > 32
+        assert image[0].dtype == "uint8"
 
 
 def test_load_pdf():
