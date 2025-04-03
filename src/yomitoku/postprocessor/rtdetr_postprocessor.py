@@ -50,8 +50,10 @@ class RTDETRPostProcessor(nn.Module):
         return f"use_focal_loss={self.use_focal_loss}, num_classes={self.num_classes}, num_top_queries={self.num_top_queries}"
 
     def clamp(self, boxes, h, w):
-        boxes[:, 0] = torch.clamp(boxes[:, 0], min=torch.Tensor([0]), max=w)
-        boxes[:, 1] = torch.clamp(boxes[:, 1], min=torch.Tensor([0]), max=h)
+        boxes[:, 0] = torch.clamp(boxes[:, 0], min=torch.Tensor([0]), max=None)
+        boxes[:, 1] = torch.clamp(boxes[:, 1], min=torch.Tensor([0]), max=None)
+        boxes[:, 2] = torch.clamp(boxes[:, 2], min=torch.Tensor([0]), max=w)
+        boxes[:, 3] = torch.clamp(boxes[:, 3], min=torch.Tensor([0]), max=h)
         return boxes
 
     # def forward(self, outputs, orig_target_sizes):
@@ -62,7 +64,7 @@ class RTDETRPostProcessor(nn.Module):
         bbox_pred = torchvision.ops.box_convert(boxes, in_fmt="cxcywh", out_fmt="xyxy")
         bbox_pred *= orig_target_sizes.repeat(1, 2).unsqueeze(1)
 
-        h, w = orig_target_sizes.unbind(1)
+        w, h = orig_target_sizes.unbind(1)
 
         if self.use_focal_loss:
             scores = F.sigmoid(logits)
