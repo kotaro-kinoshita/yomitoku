@@ -69,6 +69,7 @@ nav:
   - Installation: installation.md
   - CLI Usage: cli.md
   - Module Usage: module.md
+  - MCP: mcp.md
 
 repo_url: https://github.com/kotaro-kinoshita/yomitoku-dev
 
