@@ -25,7 +25,7 @@ Next, add the following configuration to the `mcpServers` section of the Claude 
         "--directory",
         "(Absolute path of the directory where Yomitoku was cloned)",
         "run",
-        "demo/run_mcp_yomitoku.py"
+        "yomitoku_mcp"
       ],
       "env": {
         "RESOURCE_DIR": "(Absolute path of the directory containing files for OCR)"

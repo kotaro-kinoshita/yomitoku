@@ -26,7 +26,7 @@ uv sync --extra mcp
         "--directory",
         "(YomitokuをCloneしたディレクトリの絶対パス)",
         "run",
-        "demo/run_mcp_yomitoku.py"
+        "yomitoku_mcp"
       ],
       "env": {
         "RESOURCE_DIR": "(OCR対象のファイルがあるディレクトリの絶対パス)"
