@@ -71,6 +71,11 @@ explicit = true
 [project.scripts]
 yomitoku = "yomitoku.cli.main:main"
 
+[project.optional-dependencies]
+mcp = [
+    "mcp[cli]>=1.6.0",
+]
+
 [tool.tox]
 legacy_tox_ini = """
 [tox]
