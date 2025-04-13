@@ -87,5 +87,12 @@ async def get_file_list() -> list[str]:
     return os.listdir(RESOURCE_DIR)
 
 
-if __name__ == "__main__":
+def run_mcp_server():
+    """
+    Run the MCP server.
+    """
     mcp.run(transport="stdio")
+
+
+if __name__ == "__main__":
+    run_mcp_server()
