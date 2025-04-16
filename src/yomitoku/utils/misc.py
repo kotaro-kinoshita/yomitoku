@@ -1,5 +1,6 @@
 import cv2
 
+
 def load_charset(charset_path):
     with open(charset_path, "r", encoding="utf-8") as f:
         charset = f.read()
@@ -15,9 +16,10 @@ def save_image(img, path):
     success, buffer = cv2.imencode(".jpg", img)
     if not success:
         raise ValueError("Failed to encode image")
-    
+
     with open(path, "wb") as f:
         f.write(buffer.tobytes())
+
 
 def calc_overlap_ratio(rect_a, rect_b):
     intersection = calc_intersection(rect_a, rect_b)

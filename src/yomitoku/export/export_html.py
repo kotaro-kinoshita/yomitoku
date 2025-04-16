@@ -123,7 +123,7 @@ def figure_to_html(
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
         save_image(figure_img, figure_path)
-        
+
         elements.append(
             {
                 "order": figure.order,
