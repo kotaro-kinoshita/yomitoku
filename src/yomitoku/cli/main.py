@@ -14,6 +14,8 @@ from ..utils.logger import set_logger
 from ..export import save_csv, save_html, save_json, save_markdown
 from ..export import convert_json, convert_csv, convert_html, convert_markdown
 
+from ..utils.misc import safe_path
+
 logger = set_logger(__name__, "INFO")
 
 
@@ -94,6 +96,7 @@ def process_single_file(args, analyzer, path, format):
                 args.outdir, f"{dirname}_{filename}_p{page+1}_ocr.jpg"
             )
 
+            out_path = safe_path(out_path)
             cv2.imwrite(out_path, ocr)
             logger.info(f"Output file: {out_path}")
 
@@ -102,6 +105,7 @@ def process_single_file(args, analyzer, path, format):
                 args.outdir, f"{dirname}_{filename}_p{page+1}_layout.jpg"
             )
 
+            out_path = safe_path(out_path)
             cv2.imwrite(out_path, layout)
             logger.info(f"Output file: {out_path}")
 

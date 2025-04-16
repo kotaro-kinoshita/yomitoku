@@ -5,6 +5,8 @@ from html import escape
 import cv2
 from lxml import etree, html
 
+from ..utils.misc import safe_path
+
 
 def convert_text_to_html(text):
     """
@@ -117,11 +119,13 @@ def figure_to_html(
         figure_img = img[y1:y2, x1:x2, :]
         save_dir = os.path.dirname(out_path)
         save_dir = os.path.join(save_dir, figure_dir)
+        save_dir = safe_path(save_dir)
         os.makedirs(save_dir, exist_ok=True)
 
         filename = os.path.splitext(os.path.basename(out_path))[0]
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
+        figure_path = safe_path(figure_path)
         cv2.imwrite(figure_path, figure_img)
 
         elements.append(
@@ -218,5 +222,6 @@ def save_html(
     out_path,
     encoding,
 ):
+    out_path = safe_path(out_path)
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(html)

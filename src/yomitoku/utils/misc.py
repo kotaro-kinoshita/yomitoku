@@ -1,3 +1,6 @@
+import os
+
+
 def load_charset(charset_path):
     with open(charset_path, "r", encoding="utf-8") as f:
         charset = f.read()
@@ -7,6 +10,38 @@ def load_charset(charset_path):
 def filter_by_flag(elements, flags):
     assert len(elements) == len(flags)
     return [element for element, flag in zip(elements, flags) if flag]
+
+
+def get_os_encoding():
+    """osごとに対応するencodingを取得する
+
+    Returns:
+        string: encoding
+    """
+
+    return "cp932" if os.name == "nt" else "utf-8"
+
+
+def safe_path(path):
+    """osごとに対応するencodingを取得し、pathをsafeにする
+
+    Args:
+        path (string): 対象のファイルパス
+
+    Returns:
+        string: safeなファイルパス
+    """
+
+    encoding = get_os_encoding()
+    safe_parts = []
+    for part in path.split(os.sep):
+        try:
+            part_bytes = part.encode(encoding)
+            safe_part = part_bytes.decode(encoding)
+        except UnicodeEncodeError:
+            safe_part = part.encode(encoding, errors="replace").decode(encoding)
+        safe_parts.append(safe_part)
+    return os.sep.join(safe_parts)
 
 
 def calc_overlap_ratio(rect_a, rect_b):
