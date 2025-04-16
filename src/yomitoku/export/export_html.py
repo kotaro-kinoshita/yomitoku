@@ -180,8 +180,13 @@ def convert_html(
     elements = sorted(elements, key=lambda x: x["order"])
 
     html_string = "".join([element["html"] for element in elements])
-    parsed_html = html.fromstring(html_string)
-    formatted_html = etree.tostring(parsed_html, pretty_print=True, encoding="unicode")
+    if not len(html_string) == 0:
+        parsed_html = html.fromstring(html_string)
+        formatted_html = etree.tostring(
+            parsed_html, pretty_print=True, encoding="unicode"
+        )
+    else:
+        formatted_html = ""
 
     return formatted_html, elements
 
