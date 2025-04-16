@@ -1,9 +1,9 @@
 import os
 import re
 from html import escape
-
-import cv2
 from lxml import etree, html
+
+from ..utils.misc import save_image
 
 
 def convert_text_to_html(text):
@@ -122,7 +122,7 @@ def figure_to_html(
         filename = os.path.splitext(os.path.basename(out_path))[0]
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
-        cv2.imwrite(figure_path, figure_img)
+        save_image(figure_img, figure_path)
 
         elements.append(
             {

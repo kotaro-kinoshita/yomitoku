@@ -1,7 +1,7 @@
 import csv
 import os
 
-import cv2
+from ..utils.misc import save_image
 
 
 def table_to_csv(table, ignore_line_break):
@@ -54,7 +54,7 @@ def save_figure(
         filename = os.path.splitext(os.path.basename(out_path))[0]
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
-        cv2.imwrite(figure_path, figure_img)
+        save_image(figure_img, figure_path)
 
 
 def convert_csv(
