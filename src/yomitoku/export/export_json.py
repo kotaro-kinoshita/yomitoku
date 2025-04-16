@@ -1,7 +1,7 @@
 import json
 import os
 
-import cv2
+from ..utils.misc import save_image
 
 
 def paragraph_to_json(paragraph, ignore_line_break):
@@ -33,7 +33,7 @@ def save_figure(
         filename = os.path.splitext(os.path.basename(out_path))[0]
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
-        cv2.imwrite(figure_path, figure_img)
+        save_image(figure_img, figure_path)
 
 
 def convert_json(inputs, out_path, ignore_line_break, img, export_figure, figure_dir):

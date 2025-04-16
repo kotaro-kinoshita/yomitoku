@@ -3,7 +3,6 @@ import os
 import time
 from pathlib import Path
 
-import cv2
 import torch
 
 from ..constants import SUPPORT_OUTPUT_FORMAT
@@ -13,6 +12,8 @@ from ..utils.logger import set_logger
 
 from ..export import save_csv, save_html, save_json, save_markdown
 from ..export import convert_json, convert_csv, convert_html, convert_markdown
+
+from ..utils.misc import save_image
 
 logger = set_logger(__name__, "INFO")
 
@@ -94,7 +95,7 @@ def process_single_file(args, analyzer, path, format):
                 args.outdir, f"{dirname}_{filename}_p{page+1}_ocr.jpg"
             )
 
-            cv2.imwrite(out_path, ocr)
+            save_image(ocr, out_path)
             logger.info(f"Output file: {out_path}")
 
         if layout is not None:
@@ -102,7 +103,7 @@ def process_single_file(args, analyzer, path, format):
                 args.outdir, f"{dirname}_{filename}_p{page+1}_layout.jpg"
             )
 
-            cv2.imwrite(out_path, layout)
+            save_image(layout, out_path)
             logger.info(f"Output file: {out_path}")
 
         out_path = os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.{format}")

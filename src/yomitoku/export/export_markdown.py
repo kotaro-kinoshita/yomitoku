@@ -1,7 +1,7 @@
 import os
 import re
 
-import cv2
+from ..utils.misc import save_image
 
 
 def escape_markdown_special_chars(text):
@@ -89,7 +89,7 @@ def figure_to_md(
         filename = os.path.splitext(os.path.basename(out_path))[0]
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
-        cv2.imwrite(figure_path, figure_img)
+        save_image(figure_img, figure_path)
 
         elements.append(
             {
