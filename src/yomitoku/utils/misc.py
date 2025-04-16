@@ -1,5 +1,4 @@
-import os
-
+import cv2
 
 def load_charset(charset_path):
     with open(charset_path, "r", encoding="utf-8") as f:
@@ -12,37 +11,13 @@ def filter_by_flag(elements, flags):
     return [element for element, flag in zip(elements, flags) if flag]
 
 
-def get_os_encoding():
-    """osごとに対応するencodingを取得する
-
-    Returns:
-        string: encoding
-    """
-
-    return "cp932" if os.name == "nt" else "utf-8"
-
-
-def safe_path(path):
-    """osごとに対応するencodingを取得し、pathをsafeにする
-
-    Args:
-        path (string): 対象のファイルパス
-
-    Returns:
-        string: safeなファイルパス
-    """
-
-    encoding = get_os_encoding()
-    safe_parts = []
-    for part in path.split(os.sep):
-        try:
-            part_bytes = part.encode(encoding)
-            safe_part = part_bytes.decode(encoding)
-        except UnicodeEncodeError:
-            safe_part = part.encode(encoding, errors="replace").decode(encoding)
-        safe_parts.append(safe_part)
-    return os.sep.join(safe_parts)
-
+def save_image(img, path):
+    success, buffer = cv2.imencode(".jpg", img)
+    if not success:
+        raise ValueError("Failed to encode image")
+    
+    with open(path, "wb") as f:
+        f.write(buffer.tobytes())
 
 def calc_overlap_ratio(rect_a, rect_b):
     intersection = calc_intersection(rect_a, rect_b)

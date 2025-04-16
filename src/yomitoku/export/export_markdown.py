@@ -1,8 +1,7 @@
 import os
 import re
-import cv2
 
-from ..utils.misc import safe_path
+from ..utils.misc import save_image
 
 
 def escape_markdown_special_chars(text):
@@ -85,14 +84,12 @@ def figure_to_md(
         figure_img = img[y1:y2, x1:x2, :]
         save_dir = os.path.dirname(out_path)
         save_dir = os.path.join(save_dir, figure_dir)
-        save_dir = safe_path(save_dir)
         os.makedirs(save_dir, exist_ok=True)
 
         filename = os.path.splitext(os.path.basename(out_path))[0]
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
-        figure_path = safe_path(figure_path)
-        cv2.imwrite(figure_path, figure_img)
+        save_image(figure_img, figure_path)
 
         elements.append(
             {
@@ -180,6 +177,5 @@ def save_markdown(
     out_path,
     encoding,
 ):
-    out_path = safe_path(out_path)
     with open(out_path, "w", encoding=encoding, errors="ignore") as f:
         f.write(markdown)
