@@ -3,7 +3,6 @@ import os
 import time
 from pathlib import Path
 
-import cv2
 import torch
 
 from ..constants import SUPPORT_OUTPUT_FORMAT
