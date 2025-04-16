@@ -1,12 +1,14 @@
-from pathlib import Path
+import json
+import io
+import csv
 import os
+from pathlib import Path
 
 from mcp.server.fastmcp import Context, FastMCP
 
 from yomitoku import DocumentAnalyzer
 from yomitoku.data.functions import load_image, load_pdf
-from yomitoku.export import convert_markdown
-
+from yomitoku.export import convert_json, convert_markdown, convert_csv, convert_html
 
 try:
     RESOURCE_DIR = os.environ["RESOURCE_DIR"]
@@ -38,16 +40,22 @@ mcp = FastMCP("yomitoku")
 
 
 @mcp.tool()
-async def process_ocr(filename: str, ctx: Context) -> str:
+async def process_ocr(ctx: Context, filename: str, output_format: str) -> str:
     """
-    Process OCR on the given file and convert the results to markdown.
+    Perform OCR on the specified file in the resource direcory and convert
+    the results to the desired format.
 
     Args:
-        filename (str): The name of the file to process.
         ctx (Context): The context in which the OCR processing is executed.
+        filename (str): The name of the file to process in the resource directory.
+        output_format (str): The desired format for the output. The available options are:
+            - json: Outputs the text as structured data along with positional information.
+            - markdown: Outputs texts and tables in Markdown format.
+            - html: Outputs texts and tables in HTML format.
+            - csv: Outputs texts and tables in CSV format.
 
     Returns:
-        str: The OCR results converted to markdown format.
+        str: The OCR results converted to the specified format.
     """
     analyzer = await load_analyzer(ctx)
 
@@ -59,21 +67,80 @@ async def process_ocr(filename: str, ctx: Context) -> str:
     else:
         imgs = load_image(file_path)
 
-    markdowns = []
+    results = []
     for page, img in enumerate(imgs):
         analyzer.img = img
         result, _, _ = await analyzer.run(img)
-        md, _ = convert_markdown(
-            result,
-            out_path=None,
-            img=img,
-            ignore_line_break=True,
-            export_figure=False,
-        )
-        markdowns.append(md)
+        results.append(result)
         await ctx.report_progress(page + 1, len(imgs))
 
-    return "\n".join(markdowns)
+    if output_format == "json":
+        return json.dumps(
+            [
+                convert_json(
+                    result,
+                    out_path=None,
+                    ignore_line_break=True,
+                    img=img,
+                    export_figure=False,
+                    figure_dir=None,
+                ).model_dump()
+                for img, result in zip(imgs, results)
+            ],
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ": "),
+        )
+    elif output_format == "markdown":
+        return "\n".join(
+            [
+                convert_markdown(
+                    result,
+                    out_path=None,
+                    ignore_line_break=True,
+                    img=img,
+                    export_figure=False,
+                )[0]
+                for img, result in zip(imgs, results)
+            ]
+        )
+    elif output_format == "html":
+        return "\n".join(
+            [
+                convert_html(
+                    result,
+                    out_path=None,
+                    ignore_line_break=True,
+                    img=img,
+                    export_figure=False,
+                    export_figure_letter="",
+                )[0]
+                for img, result in zip(imgs, results)
+            ]
+        )
+    elif output_format == "csv":
+        output = io.StringIO()
+        writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
+        for img, result in zip(imgs, results):
+            elements = convert_csv(
+                result,
+                out_path=None,
+                ignore_line_break=True,
+                img=img,
+                export_figure=False,
+            )
+            for element in elements:
+                if element["type"] == "table":
+                    writer.writerows(element["element"])
+                else:
+                    writer.writerow([element["element"]])
+                writer.writerow([""])
+        return output.getvalue()
+    else:
+        raise ValueError(
+            f"Unsupported output format: {output_format}."
+            " Supported formats are json, markdown, html or csv."
+        )
 
 
 @mcp.resource("file://list")
