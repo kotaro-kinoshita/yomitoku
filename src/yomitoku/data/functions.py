@@ -264,10 +264,12 @@ def rotate_text_image(img, thresh_aspect=2):
     Returns:
         np.ndarray: rotated image
     """
+    direction = "horizontal"
     h, w = img.shape[:2]
     if h > thresh_aspect * w:
         img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    return img
+        direction = "vertical"
+    return img, direction
 
 
 def resize_with_padding(img, target_size, background_color=(0, 0, 0)):

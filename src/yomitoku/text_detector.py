@@ -67,6 +67,7 @@ class TextDetector(BaseModule):
         self.model.eval()
         self.post_processor = DBnetPostProcessor(**self._cfg.post_process)
         self.infer_onnx = infer_onnx
+        self.batch_size = self._cfg.batch_size
 
         if infer_onnx:
             name = self._cfg.hf_hub_repo.split("/")[-1]
@@ -117,41 +118,82 @@ class TextDetector(BaseModule):
         tensor = array_to_tensor(normalized)
         return tensor
 
-    def postprocess(self, preds, image_size):
-        return self.post_processor(preds, image_size)
+    def postprocess(self, preds, batch_ori_h, batch_ori_w):
+        return self.post_processor(preds, batch_ori_h, batch_ori_w)
 
-    def __call__(self, img):
+    def __call__(self, imgs):
         """apply the detection model to the input image.
 
         Args:
             img (np.ndarray): target image(BGR)
         """
 
-        ori_h, ori_w = img.shape[:2]
-        tensor = self.preprocess(img)
+        batch_ori_h = []
+        batch_ori_w = []
+        tensors = []
+
+        for img in imgs:
+            ori_h, ori_w = img.shape[:2]
+            batch_ori_h.append(ori_h)
+            batch_ori_w.append(ori_w)
+            tensor = self.preprocess(img)
+            tensors.append(tensor)
+        tensors = torch.cat(tensors, dim=0)
 
         if self.infer_onnx:
-            input = tensor.numpy()
-            results = self.sess.run(["output"], {"input": input})
-            preds = {"binary": torch.tensor(results[0])}
+            batch_tensors = torch.split(tensors, self.batch_size)
+
+            preds = None
+            for batch_tensor in batch_tensors:
+                input = batch_tensor.numpy()
+                results = self.sess.run(["output"], {"input": input})
+
+                if preds is None:
+                    preds = {"binary": torch.tensor(results[0])}
+                else:
+                    preds["binary"] = torch.cat(
+                        [preds["binary"], torch.tensor(results[0])], dim=0
+                    )
         else:
             with torch.inference_mode():
-                tensor = tensor.to(self.device)
-                preds = self.model(tensor)
+                tensors = tensors.to(self.device)
+                batch_tensors = torch.split(tensors, self.batch_size)
 
-        quads, scores = self.postprocess(preds, (ori_h, ori_w))
-        outputs = {"points": quads, "scores": scores}
+                preds = None
+                for batch_tensor in batch_tensors:
+                    pred = self.model(batch_tensor)
 
-        results = TextDetectorSchema(**outputs)
+                    if preds is None:
+                        preds = pred
+                    else:
+                        preds["binary"] = torch.cat(
+                            [preds["binary"], pred["binary"]], dim=0
+                        )
 
-        vis = None
-        if self.visualize:
-            vis = det_visualizer(
-                img,
-                quads,
-                preds=preds,
-                vis_heatmap=self._cfg.visualize.heatmap,
-                line_color=tuple(self._cfg.visualize.color[::-1]),
-            )
+        batch_quads, batch_scores = self.postprocess(preds, batch_ori_h, batch_ori_w)
 
-        return results, vis
+        results = []
+        visualize_imgs = []
+
+        for quads, scores, img, pred in zip(
+            batch_quads, batch_scores, imgs, preds["binary"]
+        ):
+            output = {
+                "points": quads,
+                "scores": scores,
+            }
+
+            results.append(TextDetectorSchema(**output))
+
+            if self.visualize:
+                vis = det_visualizer(
+                    img,
+                    quads,
+                    pred=pred,
+                    vis_heatmap=self._cfg.visualize.heatmap,
+                    line_color=tuple(self._cfg.visualize.color[::-1]),
+                )
+
+            visualize_imgs.append(vis)
+
+        return results, visualize_imgs

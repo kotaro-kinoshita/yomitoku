@@ -1,6 +1,5 @@
 from typing import List
 
-import numpy as np
 import torch
 import os
 import unicodedata
@@ -93,18 +92,22 @@ class TextRecognizer(BaseModule):
         if self.model is not None:
             self.model.to(self.device)
 
-    def preprocess(self, img, polygons):
-        dataset = ParseqDataset(self._cfg, img, polygons)
-        dataloader = self._make_mini_batch(dataset)
+    def preprocess(self, imgs, polygons):
+        dataset = ParseqDataset(self._cfg, imgs, polygons)
+        dataloader, indies, directions = self._make_mini_batch(dataset)
 
-        return dataloader
+        return dataloader, indies, directions
 
     def _make_mini_batch(self, dataset):
         mini_batches = []
         mini_batch = []
+        indies = []
+        directions = []
         for data in dataset:
-            data = torch.unsqueeze(data, 0)
-            mini_batch.append(data)
+            tensor = torch.unsqueeze(data["tensor"], 0)
+            mini_batch.append(tensor)
+            indies.append(data["img_idx"])
+            directions.append(data["direction"])
 
             if len(mini_batch) == self._cfg.data.batch_size:
                 mini_batches.append(torch.cat(mini_batch, 0))
@@ -113,7 +116,7 @@ class TextRecognizer(BaseModule):
             if len(mini_batch) > 0:
                 mini_batches.append(torch.cat(mini_batch, 0))
 
-        return mini_batches
+        return mini_batches, indies, directions
 
     def convert_onnx(self, path_onnx):
         img_size = self._cfg.data.img_size
@@ -139,18 +142,9 @@ class TextRecognizer(BaseModule):
         pred, score = self.tokenizer.decode(p)
         pred = [unicodedata.normalize("NFKC", x) for x in pred]
 
-        directions = []
-        for point in points:
-            point = np.array(point)
-            w = np.linalg.norm(point[0] - point[1])
-            h = np.linalg.norm(point[1] - point[2])
+        return pred, score
 
-            direction = "vertical" if h > w * 2 else "horizontal"
-            directions.append(direction)
-
-        return pred, score, directions
-
-    def __call__(self, img, points, vis=None):
+    def __call__(self, imgs, batch_points, vis_imgs=None):
         """
         Apply the recognition model to the input image.
 
@@ -160,10 +154,9 @@ class TextRecognizer(BaseModule):
             vis (np.ndarray, optional): rendering image. Defaults to None.
         """
 
-        dataloader = self.preprocess(img, points)
+        dataloader, indies, directions = self.preprocess(imgs, batch_points)
         preds = []
         scores = []
-        directions = []
         for data in dataloader:
             if self.infer_onnx:
                 input = data.numpy()
@@ -174,28 +167,49 @@ class TextRecognizer(BaseModule):
                     data = data.to(self.device)
                     p = self.model(data).softmax(-1)
 
-            pred, score, direction = self.postprocess(p, points)
+            pred, score = self.postprocess(p, batch_points)
             preds.extend(pred)
             scores.extend(score)
-            directions.extend(direction)
 
-        outputs = {
-            "contents": preds,
-            "scores": scores,
-            "points": points,
-            "directions": directions,
-        }
-        results = TextRecognizerSchema(**outputs)
+        points = [quad for points in batch_points for quad in points]
 
-        if self.visualize:
-            if vis is None:
-                vis = img.copy()
-            vis = rec_visualizer(
-                vis,
-                results,
-                font_size=self._cfg.visualize.font_size,
-                font_color=tuple(self._cfg.visualize.color[::-1]),
-                font_path=self._cfg.visualize.font,
-            )
+        outputs = {}
+        for pred, score, point, direction, index in zip(
+            preds,
+            scores,
+            points,
+            directions,
+            indies,
+        ):
+            if index not in outputs:
+                outputs[index] = {
+                    "contents": [],
+                    "scores": [],
+                    "points": [],
+                    "directions": [],
+                }
 
-        return results, vis
+            outputs[index]["contents"].append(pred)
+            outputs[index]["scores"].append(score)
+            outputs[index]["points"].append(point)
+            outputs[index]["directions"].append(direction)
+
+        results = []
+        visualize_imgs = []
+        for output, img, vis in zip(outputs.values(), imgs, vis_imgs):
+            result = TextRecognizerSchema(**output)
+            results.append(result)
+
+            if self.visualize:
+                if vis is None:
+                    vis = img.copy()
+                vis = rec_visualizer(
+                    vis,
+                    result,
+                    font_size=self._cfg.visualize.font_size,
+                    font_color=tuple(self._cfg.visualize.color[::-1]),
+                    font_path=self._cfg.visualize.font,
+                )
+
+                visualize_imgs.append(vis)
+        return results, visualize_imgs

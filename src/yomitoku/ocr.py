@@ -69,16 +69,22 @@ class OCR:
         self.detector = TextDetector(**text_detector_kwargs)
         self.recognizer = TextRecognizer(**text_recognizer_kwargs)
 
-    def __call__(self, img):
+    def __call__(self, imgs):
         """_summary_
 
         Args:
             img (np.ndarray): cv2 image(BGR)
         """
 
-        det_outputs, vis = self.detector(img)
-        rec_outputs, vis = self.recognizer(img, det_outputs.points, vis=vis)
+        det_outputs, vis_imgs = self.detector(imgs)
 
-        outputs = {"words": ocr_aggregate(det_outputs, rec_outputs)}
-        results = OCRSchema(**outputs)
-        return results, vis
+        points = [det_output.points for det_output in det_outputs]
+        rec_outputs, vis_imgs = self.recognizer(imgs, points, vis_imgs=vis_imgs)
+
+        results = []
+        for det_output, rec_output in zip(det_outputs, rec_outputs):
+            output = {"words": ocr_aggregate(det_output, rec_output)}
+            result = OCRSchema(**output)
+            results.append(result)
+
+        return results, vis_imgs

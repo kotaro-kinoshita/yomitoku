@@ -66,11 +66,11 @@ def reading_order_visualizer(
     return out
 
 
-def det_visualizer(img, quads, preds=None, vis_heatmap=False, line_color=(0, 255, 0)):
+def det_visualizer(img, quads, pred, vis_heatmap=False, line_color=(0, 255, 0)):
     out = img.copy()
     h, w = out.shape[:2]
     if vis_heatmap:
-        preds = preds["binary"][0]
+        preds = pred
         binary = preds.detach().cpu().numpy()
         binary = binary.squeeze(0)
         binary = (binary * 255).astype(np.uint8)

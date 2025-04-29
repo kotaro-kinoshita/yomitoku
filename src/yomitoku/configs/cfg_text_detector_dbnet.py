@@ -47,3 +47,4 @@ class TextDetectorDBNetConfig:
     data: Data = field(default_factory=Data)
     post_process: PostProcess = field(default_factory=PostProcess)
     visualize: Visualize = field(default_factory=Visualize)
+    batch_size: int = 10
