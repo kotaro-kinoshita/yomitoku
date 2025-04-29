@@ -13,18 +13,25 @@ class DBnetPostProcessor:
         self.max_candidates = max_candidates
         self.unclip_ratio = unclip_ratio
 
-    def __call__(self, preds, image_size):
+    def __call__(self, preds, batch_ori_h, batch_ori_w):
         """
         pred:
             binary: text region segmentation map, with shape (N, H, W)
             thresh: [if exists] thresh hold prediction with shape (N, H, W)
             thresh_binary: [if exists] binarized with threshhold, (N, H, W)
         """
-        pred = preds["binary"][0]
-        segmentation = self.binarize(pred)[0]
-        height, width = image_size
-        quads, scores = self.boxes_from_bitmap(pred, segmentation, width, height)
-        return quads, scores
+
+        batch_quads, batch_scores = [], []
+        for pred, height, width in zip(preds["binary"], batch_ori_h, batch_ori_w):
+            segmentation = self.binarize(pred)[0]
+            quads, scores = self.boxes_from_bitmap(pred, segmentation, width, height)
+            batch_quads.append(quads)
+            batch_scores.append(scores)
+
+        return (
+            batch_quads,
+            batch_scores,
+        )
 
     def binarize(self, pred):
         return pred > self.thresh
