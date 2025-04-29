@@ -8,6 +8,8 @@ from .functions import (
     validate_quads,
 )
 
+from concurrent.futures import ThreadPoolExecutor
+
 
 class ParseqDataset(Dataset):
     def __init__(self, cfg, imgs, batch_quads):
@@ -22,27 +24,32 @@ class ParseqDataset(Dataset):
         self.tensors = []
         for index, (img, quads) in enumerate(zip(imgs, batch_quads)):
             validate_quads(img, quads)
-
-            for quad in quads:
-                roi_img = extract_roi_with_perspective(img, quad)
-
-                if roi_img is None:
-                    continue
-
-                roi_img, direction = rotate_text_image(roi_img, thresh_aspect=2)
-                resized = resize_with_padding(roi_img, self.cfg.data.img_size)
-                tensor = self.transform(resized)
-
-                data = {
-                    "direction": direction,
-                    "tensor": tensor,
-                    "img_idx": index,
-                }
-
-                self.tensors.append(data)
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                self.img = img
+                data = list(executor.map(self.preprocess, quads))
+                for tensor in data:
+                    if tensor is not None:
+                        tensor["img_idx"] = index
+                        self.tensors.append(tensor)
 
     def __len__(self):
         return len(self.tensors)
+
+    def preprocess(self, quad):
+        roi_img = extract_roi_with_perspective(self.img, quad)
+
+        if roi_img is None:
+            return None
+
+        roi_img, direction = rotate_text_image(roi_img, thresh_aspect=2)
+        resized = resize_with_padding(roi_img, self.cfg.data.img_size)
+        tensor = self.transform(resized)
+
+        data = {
+            "direction": direction,
+            "tensor": tensor,
+        }
+        return data
 
     def __getitem__(self, index):
         # polygon = self.quads[index]

@@ -191,7 +191,7 @@ def array_to_tensor(img: np.ndarray) -> torch.Tensor:
     return tensor
 
 
-def validate_quads(img: np.ndarray, quads: list[list[list[int]]]):
+def validate_quads(img: np.ndarray, quad: list[list[list[int]]]):
     """
     Validate the vertices of the quadrilateral.
 
@@ -204,23 +204,23 @@ def validate_quads(img: np.ndarray, quads: list[list[list[int]]]):
     """
 
     h, w = img.shape[:2]
-    for quad in quads:
-        if len(quad) != 4:
-            raise ValueError("The number of vertices must be 4.")
+    if len(quad) != 4:
+        # raise ValueError("The number of vertices must be 4.")
+        return None
 
-        for point in quad:
-            if len(point) != 2:
-                raise ValueError("The number of coordinates must be 2.")
+    for point in quad:
+        if len(point) != 2:
+            return None
 
-        quad = np.array(quad, dtype=int)
-        x1 = np.min(quad[:, 0])
-        x2 = np.max(quad[:, 0])
-        y1 = np.min(quad[:, 1])
-        y2 = np.max(quad[:, 1])
-        h, w = img.shape[:2]
+    quad = np.array(quad, dtype=int)
+    x1 = np.min(quad[:, 0])
+    x2 = np.max(quad[:, 0])
+    y1 = np.min(quad[:, 1])
+    y2 = np.max(quad[:, 1])
+    h, w = img.shape[:2]
 
-        if x1 < 0 or x2 > w or y1 < 0 or y2 > h:
-            raise ValueError(f"The vertices are out of the image. {quad.tolist()}")
+    if x1 < 0 or x2 > w or y1 < 0 or y2 > h:
+        return None
 
     return True
 
@@ -237,19 +237,18 @@ def extract_roi_with_perspective(img, quad):
         np.ndarray: extracted image
     """
     dst = img.copy()
-    quad = np.array(quad, dtype=np.float32)
+    quad = np.array(quad, dtype=np.int64)
+
     width = np.linalg.norm(quad[0] - quad[1])
     height = np.linalg.norm(quad[1] - quad[2])
 
     width = int(width)
     height = int(height)
-
     pts1 = np.float32(quad)
     pts2 = np.float32([[0, 0], [width, 0], [width, height], [0, height]])
 
     M = cv2.getPerspectiveTransform(pts1, pts2)
     dst = cv2.warpPerspective(dst, M, (width, height))
-
     return dst
 
 

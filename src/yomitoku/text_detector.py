@@ -185,6 +185,7 @@ class TextDetector(BaseModule):
 
             results.append(TextDetectorSchema(**output))
 
+            vis = None
             if self.visualize:
                 vis = det_visualizer(
                     img,
