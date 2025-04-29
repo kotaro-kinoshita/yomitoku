@@ -4,9 +4,12 @@ from yomitoku import OCR
 from yomitoku.data.functions import load_pdf
 
 if __name__ == "__main__":
-    ocr = OCR(visualize=True, device="cpu")
+    ocr = OCR(visualize=True, device="cuda")
     # PDFファイルを読み込み
     imgs = load_pdf("demo/sample.pdf")
+    import time
+
+    start = time.time()
     for i, img in enumerate(imgs):
         results, ocr_vis = ocr(img)
 
