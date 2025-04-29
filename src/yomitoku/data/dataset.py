@@ -8,9 +8,11 @@ from .functions import (
     validate_quads,
 )
 
+from concurrent.futures import ThreadPoolExecutor
+
 
 class ParseqDataset(Dataset):
-    def __init__(self, cfg, img, quads):
+    def __init__(self, cfg, img, quads, num_workers=8):
         self.img = img[:, :, ::-1]
         self.quads = quads
         self.cfg = cfg
@@ -22,19 +24,27 @@ class ParseqDataset(Dataset):
             ]
         )
 
-        validate_quads(self.img, self.quads)
+        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+            data = list(executor.map(self.preprocess, self.quads))
 
-    def __len__(self):
-        return len(self.quads)
+        self.data = [tensor for tensor in data if tensor is not None]
 
-    def __getitem__(self, index):
-        polygon = self.quads[index]
-        roi_img = extract_roi_with_perspective(self.img, polygon)
+    def preprocess(self, quad):
+        if validate_quads(self.img, quad) is None:
+            return None
+
+        roi_img = extract_roi_with_perspective(self.img, quad)
+
         if roi_img is None:
-            return
+            return None
 
         roi_img = rotate_text_image(roi_img, thresh_aspect=2)
         resized = resize_with_padding(roi_img, self.cfg.data.img_size)
-        tensor = self.transform(resized)
 
-        return tensor
+        return resized
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        return self.transform(self.data[index])
