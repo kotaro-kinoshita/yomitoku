@@ -4,10 +4,15 @@ from yomitoku import OCR
 from yomitoku.data.functions import load_pdf
 
 if __name__ == "__main__":
-    ocr = OCR(visualize=True, device="cuda")
+    ocr = OCR(visualize=False, device="cuda")
     # PDFファイルを読み込み
     imgs = load_pdf("demo/sample.pdf")
+
+    import time
+
+    start = time.time()
     results, ocr_vis = ocr(imgs)
+    print("Elapsed time:", time.time() - start)
 
     for i, (result, vis) in enumerate(zip(results, ocr_vis)):
         # JSON形式で解析結果をエクスポート

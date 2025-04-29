@@ -140,47 +140,29 @@ def test_resize_with_padding():
 
 def test_validate_quads():
     img = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
-    quads = [
-        [[0, 0], [0, 10], [10, 10]],
-    ]
+    quad = [[0, 0], [0, 10], [10, 10]]
 
-    with pytest.raises(ValueError):
-        validate_quads(img, quads)
+    assert validate_quads(img, quad) is None
 
-    quads = [
-        [[0], [0, 10], [10, 10], [10, 0]],
-    ]
+    quad = [[0], [0, 10], [10, 10], [10, 0]]
 
-    with pytest.raises(ValueError):
-        validate_quads(img, quads)
+    assert validate_quads(img, quad) is None
 
-    quads = [
-        [[0, 0], [0, 150], [10, 150], [10, 0]],
-    ]
+    quad = [[0, 0], [0, 150], [10, 150], [10, 0]]
 
-    with pytest.raises(ValueError):
-        validate_quads(img, quads)
+    assert validate_quads(img, quad) is None
 
-    quads = [
-        [[150, 0], [150, 10], [10, 10], [10, 0]],
-    ]
+    quad = [[150, 0], [150, 10], [10, 10], [10, 0]]
 
-    with pytest.raises(ValueError):
-        validate_quads(img, quads)
+    assert validate_quads(img, quad) is None
 
-    quads = [
-        [[-1, 0], [-1, 10], [10, 10], [10, 0]],
-    ]
+    quad = [[-1, 0], [-1, 10], [10, 10], [10, 0]]
 
-    with pytest.raises(ValueError):
-        validate_quads(img, quads)
+    assert validate_quads(img, quad) is None
 
-    quads = [
-        [[0, -1], [0, 10], [10, 10], [10, -1]],
-    ]
+    quad = [[0, -1], [0, 10], [10, 10], [10, -1]]
 
-    with pytest.raises(ValueError):
-        validate_quads(img, quads)
+    assert validate_quads(img, quad) is None
 
     quads = [
         [[0, 0], [0, 10], [10, 10], [10, 0]],
@@ -188,4 +170,5 @@ def test_validate_quads():
         [[10, 0], [10, 30], [80, 30], [80, 0]],
     ]
 
-    assert validate_quads(img, quads)
+    for quad in quads:
+        assert validate_quads(img, quad)
