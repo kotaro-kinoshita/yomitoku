@@ -20,7 +20,7 @@ from .utils.visualizer import det_visualizer, reading_order_visualizer
 
 class ParagraphSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4)
-    contents: Union[str, None]
+    contents: Union[str, None, bytes]
     direction: Union[str, None]
     order: Union[int, None]
     role: Union[str, None]

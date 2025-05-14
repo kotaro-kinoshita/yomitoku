@@ -4,15 +4,21 @@ import os
 from ..utils.misc import save_image
 
 
-def paragraph_to_json(paragraph, ignore_line_break):
+def paragraph_to_json(paragraph, ignore_line_break, encoding):
     if ignore_line_break:
         paragraph.contents = paragraph.contents.replace("\n", "")
 
+    if encoding in ["shift-jis", "cp932"]:
+        paragraph.contents = escape_yen(paragraph.contents)
 
-def table_to_json(table, ignore_line_break):
+
+def table_to_json(table, ignore_line_break, encoding):
     for cell in table.cells:
         if ignore_line_break:
             cell.contents = cell.contents.replace("\n", "")
+
+        if encoding in ["shift-jis", "cp932"]:
+            cell.contents = escape_yen(cell.contents)
 
 
 def save_figure(
@@ -36,16 +42,29 @@ def save_figure(
         save_image(figure_img, figure_path)
 
 
-def convert_json(inputs, out_path, ignore_line_break, img, export_figure, figure_dir):
+def convert_json(
+    inputs,
+    out_path,
+    ignore_line_break,
+    img,
+    export_figure,
+    figure_dir,
+    encoding="utf-8",
+):
     from yomitoku.document_analyzer import DocumentAnalyzerSchema
 
     if isinstance(inputs, DocumentAnalyzerSchema):
         for table in inputs.tables:
-            table_to_json(table, ignore_line_break)
+            table_to_json(table, ignore_line_break, encoding)
 
     if isinstance(inputs, DocumentAnalyzerSchema):
         for paragraph in inputs.paragraphs:
-            paragraph_to_json(paragraph, ignore_line_break)
+            paragraph_to_json(paragraph, ignore_line_break, encoding)
+
+    if isinstance(inputs, DocumentAnalyzerSchema):
+        for word in inputs.words:
+            if encoding in ["shift-jis", "cp932"]:
+                word.content = escape_yen(word.content)
 
     if isinstance(inputs, DocumentAnalyzerSchema) and export_figure:
         save_figure(
@@ -56,6 +75,13 @@ def convert_json(inputs, out_path, ignore_line_break, img, export_figure, figure
         )
 
     return inputs
+
+
+def escape_yen(text):
+    """
+    Escape the yen symbol (¥) to the unicode representation (\u00a5)
+    """
+    return text.replace("¥", "\\u00a5").encode("shift-jis").decode("shift-jis")
 
 
 def export_json(
@@ -74,6 +100,7 @@ def export_json(
         img,
         export_figure,
         figure_dir,
+        encoding=encoding,
     )
 
     save_json(

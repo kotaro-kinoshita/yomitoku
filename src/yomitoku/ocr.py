@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pydantic import conlist
 
@@ -14,7 +14,7 @@ class WordPrediction(BaseSchema):
         min_length=4,
         max_length=4,
     )
-    content: str
+    content: Union[str, None, bytes]
     direction: str
     rec_score: float
     det_score: float
