@@ -119,3 +119,44 @@ def quad_to_xyxy(quad):
     y2 = max([y for _, y in quad])
 
     return x1, y1, x2, y2
+
+
+def convert_table_array(table):
+    n_rows = table.n_row
+    n_cols = table.n_col
+
+    table_array = [["" for _ in range(n_cols)] for _ in range(n_rows)]
+
+    for cell in table.cells:
+        row = cell.row - 1
+        col = cell.col - 1
+        row_span = cell.row_span
+        col_span = cell.col_span
+        contents = cell.contents
+
+        for i in range(row, row + row_span):
+            for j in range(col, col + col_span):
+                table_array[i][j] = contents
+
+    return table_array
+
+
+def convert_table_array_to_dict(table_array, header_row=1):
+    n_cols = len(table_array[0])
+    n_rows = len(table_array)
+
+    header_cols = []
+    for i in range(n_cols):
+        header = []
+        for j in range(header_row):
+            header.append(table_array[j][i])
+        header_cols.append("_".join(header))
+
+    table_dict = []
+    for i in range(header_row, n_rows):
+        row_dict = {}
+        for j in range(n_cols):
+            row_dict[header_cols[j]] = table_array[i][j]
+        table_dict.append(row_dict)
+
+    return table_dict
