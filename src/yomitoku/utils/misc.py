@@ -150,7 +150,11 @@ def convert_table_array_to_dict(table_array, header_row=1):
         header = []
         for j in range(header_row):
             header.append(table_array[j][i])
-        header_cols.append("_".join(header))
+
+        if len(header) > 0:
+            header_cols.append("_".join(header))
+        else:
+            header_cols.append(f"col_{i}")
 
     table_dict = []
     for i in range(header_row, n_rows):
