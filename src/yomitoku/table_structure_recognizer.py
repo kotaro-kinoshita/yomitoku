@@ -32,7 +32,7 @@ class TableCellSchema(BaseSchema):
     col_span: int
     row_span: int
     box: conlist(int, min_length=4, max_length=4)
-    contents: Union[str, None]
+    contents: Union[str, None, bytes]
 
 
 class TableLineSchema(BaseSchema):

@@ -92,7 +92,7 @@ def process_single_file(args, analyzer, path, format):
 
         if ocr is not None:
             out_path = os.path.join(
-                args.outdir, f"{dirname}_{filename}_p{page+1}_ocr.jpg"
+                args.outdir, f"{dirname}_{filename}_p{page + 1}_ocr.jpg"
             )
 
             save_image(ocr, out_path)
@@ -100,13 +100,15 @@ def process_single_file(args, analyzer, path, format):
 
         if layout is not None:
             out_path = os.path.join(
-                args.outdir, f"{dirname}_{filename}_p{page+1}_layout.jpg"
+                args.outdir, f"{dirname}_{filename}_p{page + 1}_layout.jpg"
             )
 
             save_image(layout, out_path)
             logger.info(f"Output file: {out_path}")
 
-        out_path = os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.{format}")
+        out_path = os.path.join(
+            args.outdir, f"{dirname}_{filename}_p{page + 1}.{format}"
+        )
 
         if format == "json":
             if args.combine:
@@ -117,6 +119,7 @@ def process_single_file(args, analyzer, path, format):
                     img,
                     args.figure,
                     args.figure_dir,
+                    encoding=args.encoding,
                 )
             else:
                 json = result.to_json(
@@ -408,7 +411,7 @@ def main():
                 logger.info(f"Processing file: {file_path}")
                 process_single_file(args, analyzer, file_path, format)
                 end = time.time()
-                logger.info(f"Total Processing time: {end-start:.2f} sec")
+                logger.info(f"Total Processing time: {end - start:.2f} sec")
             except Exception:
                 continue
     else:
@@ -416,7 +419,7 @@ def main():
         logger.info(f"Processing file: {path}")
         process_single_file(args, analyzer, path, format)
         end = time.time()
-        logger.info(f"Total Processing time: {end-start:.2f} sec")
+        logger.info(f"Total Processing time: {end - start:.2f} sec")
 
 
 if __name__ == "__main__":
