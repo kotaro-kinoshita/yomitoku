@@ -108,3 +108,17 @@ If the PDF contains multiple pages, you can export them as a single file.
 ```
 yomitoku ${path_data} -f md --combine
 ```
+
+## Specifying Reading Order
+
+By default, *Auto* mode automatically detects whether a document is written horizontally or vertically and estimates the appropriate reading order. However, you can explicitly specify a custom reading order. For horizontal documents, the default is `top2left`, and for vertical documents, it is `top2bottom`.
+
+```
+yomitoku ${path_data} --reading_order left2right
+```
+
+* `top2bottom`: Prioritizes reading from top to bottom. Useful for multi-column documents such as word processor files with vertical flow.
+
+* `left2right`: Prioritizes reading from left to right. Suitable for layouts like receipts or health insurance cards, where key-value text pairs are arranged in columns.
+
+* `right2left`: Prioritizes reading from right to left. Effective for vertically written documents.

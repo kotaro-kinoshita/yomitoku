@@ -17,7 +17,6 @@ def _priority_dfs(nodes, direction):
 
     pending_nodes = sorted(nodes, key=lambda x: x.prop["distance"])
     visited = [False] * len(nodes)
-
     start = pending_nodes.pop(0)
     stack = [start]
 
@@ -53,11 +52,11 @@ def _priority_dfs(nodes, direction):
                         children.append(node)
                         stack.remove(node)
 
-                if direction == "horizontal":
+                if direction in "top2bottom":
                     children = sorted(
                         children, key=lambda x: x.prop["box"][0], reverse=True
                     )
-                else:
+                elif direction in ["right2left", "left2right"]:
                     children = sorted(
                         children, key=lambda x: x.prop["box"][1], reverse=True
                     )
@@ -121,7 +120,7 @@ def _exist_other_node_between_horizontal(node, other_node, nodes):
     return False
 
 
-def _create_graph_horizontal(nodes):
+def _create_graph_top2bottom(nodes):
     for i, node in enumerate(nodes):
         for j, other_node in enumerate(nodes):
             if i == j:
@@ -146,7 +145,7 @@ def _create_graph_horizontal(nodes):
         node.children = sorted(node.children, key=lambda x: x.prop["box"][0])
 
 
-def _create_graph_vertical(nodes):
+def _create_graph_right2left(nodes):
     max_x = max([node.prop["box"][2] for node in nodes])
 
     for i, node in enumerate(nodes):
@@ -172,15 +171,46 @@ def _create_graph_vertical(nodes):
         node.children = sorted(node.children, key=lambda x: x.prop["box"][1])
 
 
+def _create_graph_left2right(nodes, x_weight=1, y_weight=5):
+    for i, node in enumerate(nodes):
+        for j, other_node in enumerate(nodes):
+            if i == j:
+                continue
+
+            if is_intersected_horizontal(node.prop["box"], other_node.prop["box"]):
+                tx = node.prop["box"][2]
+                ox = other_node.prop["box"][2]
+
+                if _exist_other_node_between_horizontal(node, other_node, nodes):
+                    continue
+
+                if ox < tx:
+                    other_node.add_link(node)
+                else:
+                    node.add_link(other_node)
+
+            node_distance = (
+                node.prop["box"][0] * x_weight + node.prop["box"][1] * y_weight
+            )
+            node.prop["distance"] = node_distance
+
+    for node in nodes:
+        node.children = sorted(node.children, key=lambda x: x.prop["box"][1])
+
+
 def prediction_reading_order(elements, direction, img=None):
     if len(elements) < 2:
         return elements
 
     nodes = [Node(i, element.dict()) for i, element in enumerate(elements)]
-    if direction == "horizontal":
-        _create_graph_horizontal(nodes)
+    if direction == "top2bottom":
+        _create_graph_top2bottom(nodes)
+    elif direction == "right2left":
+        _create_graph_right2left(nodes)
+    elif direction == "left2right":
+        _create_graph_left2right(nodes)
     else:
-        _create_graph_vertical(nodes)
+        raise ValueError(f"Invalid direction: {direction}")
 
     # For debugging
     # if img is not None:
