@@ -109,10 +109,6 @@ If the PDF contains multiple pages, you can export them as a single file.
 yomitoku ${path_data} -f md --combine
 ```
 
-以下は、あなたの提供文の英訳です。YomiTokuのマニュアルやCLIドキュメント用として適した技術的な文調にしています。
-
----
-
 ## Specifying Reading Order
 
 By default, *Auto* mode automatically detects whether a document is written horizontally or vertically and estimates the appropriate reading order. However, you can explicitly specify a custom reading order. For horizontal documents, the default is `top2left`, and for vertical documents, it is `top2bottom`.
