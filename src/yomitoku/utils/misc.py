@@ -80,7 +80,7 @@ def calc_intersection(rect_a, rect_b):
     return [ix1, iy1, ix2, iy2]
 
 
-def is_intersected_horizontal(rect_a, rect_b):
+def is_intersected_horizontal(rect_a, rect_b, threshold=0.5):
     _, ay1, _, ay2 = map(int, rect_a)
     _, by1, _, by2 = map(int, rect_b)
 
@@ -88,9 +88,11 @@ def is_intersected_horizontal(rect_a, rect_b):
     iy1 = max(ay1, by1)
     iy2 = min(ay2, by2)
 
+    min_height = min(ay2 - ay1, by2 - by1)
+
     overlap_height = max(0, iy2 - iy1)
 
-    if overlap_height == 0:
+    if (overlap_height / min_height) < threshold:
         return False
 
     return True
