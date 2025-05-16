@@ -122,9 +122,3 @@ yomitoku ${path_data} --reading_order left2right
 * `left2right`: Prioritizes reading from left to right. Suitable for layouts like receipts or health insurance cards, where key-value text pairs are arranged in columns.
 
 * `right2left`: Prioritizes reading from right to left. Effective for vertically written documents.
-
----
-
-必要に応じて、CLIヘルプに合わせてオプション説明文をさらに簡潔にすることも可能です。
-
-
