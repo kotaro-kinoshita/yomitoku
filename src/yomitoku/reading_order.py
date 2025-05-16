@@ -17,7 +17,6 @@ def _priority_dfs(nodes, direction):
 
     pending_nodes = sorted(nodes, key=lambda x: x.prop["distance"])
     visited = [False] * len(nodes)
-
     start = pending_nodes.pop(0)
     stack = [start]
 
@@ -202,8 +201,6 @@ def _create_graph_left2right(nodes, x_weight=1, y_weight=5):
 def prediction_reading_order(elements, direction, img=None):
     if len(elements) < 2:
         return elements
-
-    direction = "left2right" if direction == "horizontal" else direction
 
     nodes = [Node(i, element.dict()) for i, element in enumerate(elements)]
     if direction == "top2bottom":
