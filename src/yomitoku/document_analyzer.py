@@ -86,8 +86,12 @@ def extract_paragraph_within_figure(paragraphs, figures):
                 check_list[i] = True
 
         figure["direction"] = judge_page_direction(contained_paragraphs)
+        reading_order = (
+            "left2right" if figure["direction"] == "horizontal" else "right2left"
+        )
+
         figure_paragraphs = prediction_reading_order(
-            contained_paragraphs, figure["direction"]
+            contained_paragraphs, reading_order
         )
         figure["paragraphs"] = sorted(figure_paragraphs, key=lambda x: x.order)
         figure = FigureSchema(**figure)
