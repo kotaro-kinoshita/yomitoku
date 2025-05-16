@@ -126,8 +126,8 @@ def extract_words_within_element(pred_words, element):
     cnt_vertical = word_direction.count("vertical")
 
     element_direction = "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
-
-    prediction_reading_order(contained_words, element_direction)
+    order = "left2right" if element_direction == "horizontal" else "right2left"
+    prediction_reading_order(contained_words, order)
     contained_words = sorted(contained_words, key=lambda x: x.order)
 
     contained_words = "\n".join([content.contents for content in contained_words])
@@ -328,6 +328,7 @@ class DocumentAnalyzer:
         device="cuda",
         visualize=False,
         ignore_meta=False,
+        reading_order="auto",
     ):
         default_configs = {
             "ocr": {
@@ -351,6 +352,8 @@ class DocumentAnalyzer:
                 },
             },
         }
+
+        self.reading_order = reading_order
 
         if isinstance(configs, dict):
             recursive_update(default_configs, configs)
@@ -452,9 +455,17 @@ class DocumentAnalyzer:
 
         elements = page_contents + layout_res.tables + figures
 
-        prediction_reading_order(headers, page_direction)
-        prediction_reading_order(footers, page_direction)
-        prediction_reading_order(elements, page_direction, self.img)
+        prediction_reading_order(headers, "left2right")
+        prediction_reading_order(footers, "left2right")
+
+        if self.reading_order == "auto":
+            reading_order = (
+                "right2left" if page_direction == "vertical" else "top2bottom"
+            )
+        else:
+            reading_order = self.reading_order
+
+        prediction_reading_order(elements, reading_order, self.img)
 
         for i, element in enumerate(elements):
             element.order += len(headers)
