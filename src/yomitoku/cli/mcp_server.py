@@ -1,14 +1,20 @@
-import json
-import io
 import csv
+import io
+import json
 import os
+from argparse import ArgumentParser
 from pathlib import Path
 
 from mcp.server.fastmcp import Context, FastMCP
 
 from yomitoku import DocumentAnalyzer
 from yomitoku.data.functions import load_image, load_pdf
-from yomitoku.export import convert_json, convert_markdown, convert_csv, convert_html
+from yomitoku.export import (
+    convert_csv,
+    convert_html,
+    convert_json,
+    convert_markdown,
+)
 
 try:
     RESOURCE_DIR = os.environ["RESOURCE_DIR"]
@@ -154,12 +160,40 @@ async def get_file_list() -> list[str]:
     return os.listdir(RESOURCE_DIR)
 
 
-def run_mcp_server():
+def run_mcp_server(transport="stdio", host="0.0.0.0", port=8000):
     """
     Run the MCP server.
     """
-    mcp.run(transport="stdio")
+
+    if transport == "stdio":
+        mcp.run()
+    elif transport == "sse":
+        mcp.run(transport=transport, host=host, port=port)
 
 
 if __name__ == "__main__":
-    run_mcp_server()
+    parser = ArgumentParser(description="Run the MCP server.")
+    parser.add_argument(
+        "--transport",
+        "-t",
+        type=str,
+        default="stdio",
+        choices=["stdio", "sse"],
+        help="Transport method for the MCP server.",
+    )
+    parser.add_argument(
+        "--port",
+        "-p",
+        type=int,
+        default=8000,
+        help="Port for the MCP server (only used with sse transport).",
+    )
+    parser.add_argument(
+        "--host",
+        "-H",
+        type=str,
+        default="0.0.0.0",
+        help="Host for the MCP server (only used with sse transport).",
+    )
+    args = parser.parse_args()
+    run_mcp_server(transport=args.transport, host=args.host, port=args.port)
