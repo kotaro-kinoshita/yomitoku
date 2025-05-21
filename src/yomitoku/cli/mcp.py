@@ -162,4 +162,4 @@ def run_mcp_server():
 
 
 if __name__ == "__main__":
-    run_mcp_server()
+    run_mcp_server(transport="sse", host="0.0.0.0", port=8080)
