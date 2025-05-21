@@ -160,11 +160,15 @@ async def get_file_list() -> list[str]:
     return os.listdir(RESOURCE_DIR)
 
 
-def run_mcp_server(transport="stdio"):
+def run_mcp_server(transport="stdio", host="0.0.0.0", port=8000):
     """
     Run the MCP server.
     """
-    mcp.run(transport=transport)
+
+    if transport == "stdio":
+        mcp.run()
+    elif transport == "sse":
+        mcp.run(transport=transport, host=host, port=port)
 
 
 if __name__ == "__main__":
@@ -177,5 +181,19 @@ if __name__ == "__main__":
         choices=["stdio", "sse"],
         help="Transport method for the MCP server.",
     )
+    parser.add_argument(
+        "--port",
+        "-p",
+        type=int,
+        default=8000,
+        help="Port for the MCP server (only used with sse transport).",
+    )
+    parser.add_argument(
+        "--host",
+        "-H",
+        type=str,
+        default="0.0.0.0",
+        help="Host for the MCP server (only used with sse transport).",
+    )
     args = parser.parse_args()
-    run_mcp_server(transport=args.transport)
+    run_mcp_server(transport=args.transport, host=args.host, port=args.port)
