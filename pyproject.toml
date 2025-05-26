@@ -70,7 +70,7 @@ explicit = true
 
 [project.scripts]
 yomitoku = "yomitoku.cli.main:main"
-yomitoku_mcp = "yomitoku.cli.mcp:run_mcp_server"
+yomitoku_mcp = "yomitoku.cli.mcp_server:main"
 
 [project.optional-dependencies]
 mcp = [
