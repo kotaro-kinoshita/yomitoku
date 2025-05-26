@@ -13,6 +13,7 @@
 uv sync --extra mcp
 ```
 
+
 ## Claude Desktopの設定
 
 次にClaude Desktopの設定ファイルの`mcpServers`に以下ように設定を追加します。(設定ファイルの開き方は[こちら](https://modelcontextprotocol.io/quickstart/user)を参照してください)
@@ -48,3 +49,16 @@ uv sync --extra mcp
 ```txt
 sample.pdfをOCRで解析して要約してください。
 ```
+
+## SSEサーバーの起動
+環境変数の`RESOURCE_DIR`にOCRの対象画像が含まれたフォルダのパスを設定してください。
+```
+export RESOURCE_DIR="path of dataset"
+```
+
+以下のコマンドでSSEサーバーを起動します。
+```
+uv run yomitoku_mcp -t sse
+```
+
+` http://127.0.0.1:8000/sse`がSSEサーバーのエンドポイントになります。

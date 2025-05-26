@@ -46,3 +46,19 @@ For example, if you use `yomitoku/demo/sample.pdf` as a sample, instruct as foll
 ```txt
 Analyze sample.pdf using OCR and translate it into English.
 ```
+
+## Starting the SSE Server
+
+Set the path to the folder containing the images to be processed by OCR in the resource directory.
+
+```
+export RESOURCE_DIR="path of dataset"
+```
+
+Start the SSE server using the following command:
+
+```
+uv run yomitoku_mcp -t sse
+```
+
+The SSE server endpoint will be available at `http://127.0.0.1:8000/sse`.
