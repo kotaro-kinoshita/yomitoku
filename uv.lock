@@ -73,6 +73,15 @@ wheels = [
 ]
 
 [[package]]
+name = "chardet"
+version = "5.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/0d/f7b6ab21ec75897ed80c17d79b15951a719226b9fababf1e40ea74d69079/chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7", size = 2069618 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/6f/f5fbc992a329ee4e0f288c1fe0e2ad9485ed064cac731ed2fe47dcc38cbf/chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970", size = 199385 },
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -360,6 +369,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/f2/97/ebf4da567aa6827c9
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760", size = 6050 },
 ]
+
+[[package]]
+name = "jaconv"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/e1/670cefc7f00b0e1890e114a37a98ea425f7e06131342aeb9636856ac663c/jaconv-0.4.0.tar.gz", hash = "sha256:32da74b247f276e09a52d6b35c153df2387965cb85a6f034cc8af21d446f8161", size = 17402 }
 
 [[package]]
 name = "jinja2"
@@ -1348,6 +1363,19 @@ wheels = [
 ]
 
 [[package]]
+name = "reportlab"
+version = "4.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "chardet" },
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7b/d8/c3366bf10a5a5fcc3467eefa9504f6aa24fcda5817b5b147eabd37a385e1/reportlab-4.4.1.tar.gz", hash = "sha256:5f9b9fc0b7a48e8912c25ccf69d26b82980ab0da718e4f583fa720e8f8f5073f", size = 3509107 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/2e/7994a139150abf11c8dd258feb091ad654823a83cfd9720bfdded27185c3/reportlab-4.4.1-py3-none-any.whl", hash = "sha256:9217a1c8c1917217f819718b24972a96ad0c485a1c494749562d097b58d974b7", size = 1953615 },
+]
+
+[[package]]
 name = "requests"
 version = "2.32.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1813,6 +1841,7 @@ version = "0.9.1"
 source = { editable = "." }
 dependencies = [
     { name = "huggingface-hub" },
+    { name = "jaconv" },
     { name = "lxml" },
     { name = "omegaconf" },
     { name = "onnx" },
@@ -1821,6 +1850,7 @@ dependencies = [
     { name = "pyclipper" },
     { name = "pydantic" },
     { name = "pypdfium2" },
+    { name = "reportlab" },
     { name = "shapely" },
     { name = "timm" },
     { name = "torch", version = "2.7.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "platform_system == 'Darwin'" },
@@ -1850,6 +1880,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.26.1" },
+    { name = "jaconv", specifier = ">=0.4.0" },
     { name = "lxml", specifier = ">=5.3.0" },
     { name = "mcp", extras = ["cli"], marker = "extra == 'mcp'", specifier = ">=1.6.0" },
     { name = "omegaconf", specifier = ">=2.3.0" },
@@ -1859,6 +1890,7 @@ requires-dist = [
     { name = "pyclipper", specifier = ">=1.3.0.post6" },
     { name = "pydantic", specifier = ">=2.9.2" },
     { name = "pypdfium2", specifier = ">=4.30.0" },
+    { name = "reportlab", specifier = ">=4.4.1" },
     { name = "shapely", specifier = ">=2.0.6" },
     { name = "timm", specifier = ">=1.0.11" },
     { name = "torch", marker = "platform_system != 'Darwin'", specifier = ">=2.5.0" },

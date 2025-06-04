@@ -119,3 +119,9 @@ yomitoku ${path_data} --reading_order left2right
 
 - `right2left:` 右から左方向に優先的に読み取り順を推定します。縦書きのドキュメントに対して有効です。
 
+## 検索可能なPDFを作成する
+画像内の文字情報を認識し、文字情報を透明テキストとして、PDFに埋め込むことで、サーチャブルPDFに変換します。
+
+```
+yomitoku ${path_data} --searchable_pdf
+```
