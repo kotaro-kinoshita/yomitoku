@@ -9,6 +9,7 @@ from ..constants import SUPPORT_OUTPUT_FORMAT
 from ..data.functions import load_image, load_pdf
 from ..document_analyzer import DocumentAnalyzer
 from ..utils.logger import set_logger
+from ..utils.searchable_pdf import create_searchable_pdf
 
 from ..export import save_csv, save_html, save_json, save_markdown
 from ..export import convert_json, convert_csv, convert_html, convert_markdown
@@ -80,11 +81,13 @@ def process_single_file(args, analyzer, path, format):
     else:
         imgs = load_image(path)
 
+    format_results = []
     results = []
     for page, img in enumerate(imgs):
         result, ocr, layout = analyzer(img)
         dirname = path.parent.name
         filename = path.stem
+        results.append(result)
 
         # cv2.imwrite(
         #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"), img
@@ -130,7 +133,7 @@ def process_single_file(args, analyzer, path, format):
                     figure_dir=args.figure_dir,
                 )
 
-            results.append(
+            format_results.append(
                 {
                     "format": format,
                     "data": json.model_dump(),
@@ -157,7 +160,7 @@ def process_single_file(args, analyzer, path, format):
                     figure_dir=args.figure_dir,
                 )
 
-            results.append(
+            format_results.append(
                 {
                     "format": format,
                     "data": csv,
@@ -188,7 +191,7 @@ def process_single_file(args, analyzer, path, format):
                     encoding=args.encoding,
                 )
 
-            results.append(
+            format_results.append(
                 {
                     "format": format,
                     "data": html,
@@ -219,14 +222,14 @@ def process_single_file(args, analyzer, path, format):
                     encoding=args.encoding,
                 )
 
-            results.append(
+            format_results.append(
                 {
                     "format": format,
                     "data": md,
                 }
             )
 
-    out = merge_all_pages(results)
+    out = merge_all_pages(format_results)
     if args.combine:
         out_path = os.path.join(args.outdir, f"{dirname}_{filename}.{format}")
         save_merged_file(
@@ -234,6 +237,15 @@ def process_single_file(args, analyzer, path, format):
             args,
             out,
         )
+
+    if args.searchable_pdf:
+        pdf_path = os.path.join(args.outdir, f"{filename}.pdf")
+        create_searchable_pdf(
+            imgs,
+            results,
+            output_path=pdf_path,
+        )
+        logger.info(f"Output SearchablePDF: {pdf_path}")
 
 
 def main():
@@ -348,6 +360,11 @@ def main():
         default="auto",
         type=str,
         choices=["auto", "left2right", "top2bottom", "right2left"],
+    )
+    parser.add_argument(
+        "--searchable_pdf",
+        action="store_true",
+        help="if set, create searchable PDF",
     )
 
     args = parser.parse_args()
