@@ -9,6 +9,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
 import numpy as np
+import jaconv
 
 from ..constants import ROOT_DIR
 
@@ -46,6 +47,21 @@ def _calc_font_size(content, bbox_height, bbox_width):
     return best_font_size
 
 
+def to_full_width(text):
+    fw_map = {
+        "\u00a5": "\uffe5",  # ¥ → ￥
+        "\u00b7": "\u30fb",  # · → ・
+        " ": "\u3000",  # 半角スペース→全角スペース
+    }
+
+    TO_FULLWIDTH = str.maketrans(fw_map)
+
+    jaconv_text = jaconv.h2z(text, kana=True, ascii=True, digit=True)
+    jaconv_text = jaconv_text.translate(TO_FULLWIDTH)
+
+    return jaconv_text
+
+
 def create_searchable_pdf(images, ocr_results, output_path):
     packet = BytesIO()
     c = canvas.Canvas(packet)
@@ -71,6 +87,9 @@ def create_searchable_pdf(images, ocr_results, output_path):
             bbox_height = y2 - y1
             bbox_width = x2 - x1
 
+            if direction == "vertical":
+                text = to_full_width(text)
+
             if direction == "horizontal":
                 font_size = _calc_font_size(text, bbox_height, bbox_width)
             else:
@@ -78,13 +97,13 @@ def create_searchable_pdf(images, ocr_results, output_path):
 
             c.setFont("MPLUS1p-Medium", font_size)
             c.setFillColorRGB(1, 1, 1, alpha=0)  # 透明
-
+            # c.setFillColorRGB(0, 0, 0)
             if direction == "vertical":
                 base_y = h - y2 + (bbox_height - font_size)
                 for j, ch in enumerate(text):
                     c.saveState()
-                    c.translate(x1 + font_size, base_y - j * font_size)  # 上→下
-                    c.rotate(90)
+                    c.translate(x1 + font_size * 0.5, base_y - (j - 1) * font_size)
+                    c.rotate(-90)
                     c.drawString(0, 0, ch)
                     c.restoreState()
             else:

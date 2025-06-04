@@ -371,6 +371,12 @@ wheels = [
 ]
 
 [[package]]
+name = "jaconv"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/e1/670cefc7f00b0e1890e114a37a98ea425f7e06131342aeb9636856ac663c/jaconv-0.4.0.tar.gz", hash = "sha256:32da74b247f276e09a52d6b35c153df2387965cb85a6f034cc8af21d446f8161", size = 17402 }
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -1835,6 +1841,7 @@ version = "0.9.1"
 source = { editable = "." }
 dependencies = [
     { name = "huggingface-hub" },
+    { name = "jaconv" },
     { name = "lxml" },
     { name = "omegaconf" },
     { name = "onnx" },
@@ -1873,6 +1880,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.26.1" },
+    { name = "jaconv", specifier = ">=0.4.0" },
     { name = "lxml", specifier = ">=5.3.0" },
     { name = "mcp", extras = ["cli"], marker = "extra == 'mcp'", specifier = ">=1.6.0" },
     { name = "omegaconf", specifier = ">=2.3.0" },
