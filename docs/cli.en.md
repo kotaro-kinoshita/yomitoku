@@ -122,3 +122,11 @@ yomitoku ${path_data} --reading_order left2right
 * `left2right`: Prioritizes reading from left to right. Suitable for layouts like receipts or health insurance cards, where key-value text pairs are arranged in columns.
 
 * `right2left`: Prioritizes reading from right to left. Effective for vertically written documents.
+
+## Create a searchable PDF
+
+Detect the text in the image and embed it into the PDF as invisible text, converting the file into a searchable PDF.
+
+```
+yomitoku ${path_data} --searchable_pdf
+```
