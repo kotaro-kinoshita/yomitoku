@@ -49,10 +49,15 @@ def merge_all_pages(results):
             else:
                 out += "\n" + data
 
+        elif format == "pdf":
+            if out is None:
+                out = [data]
+            else:
+                out.append(data)
     return out
 
 
-def save_merged_file(out_path, args, out):
+def save_merged_file(out_path, args, out, imgs):
     if args.format == "json":
         save_json(out, out_path, args.encoding)
     elif args.format == "csv":
@@ -61,6 +66,13 @@ def save_merged_file(out_path, args, out):
         save_html(out, out_path, args.encoding)
     elif args.format == "md":
         save_markdown(out, out_path, args.encoding)
+    elif args.format == "pdf":
+        create_searchable_pdf(
+            imgs,
+            out,
+            output_path=out_path,
+            font_path=args.font_path,
+        )
 
 
 def validate_encoding(encoding):
@@ -82,12 +94,10 @@ def process_single_file(args, analyzer, path, format):
         imgs = load_image(path)
 
     format_results = []
-    results = []
     for page, img in enumerate(imgs):
         result, ocr, layout = analyzer(img)
         dirname = path.parent.name
         filename = path.stem
-        results.append(result)
 
         # cv2.imwrite(
         #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"), img
@@ -228,6 +238,21 @@ def process_single_file(args, analyzer, path, format):
                     "data": md,
                 }
             )
+        elif format == "pdf":
+            if not args.combine:
+                create_searchable_pdf(
+                    [img],
+                    [result],
+                    output_path=out_path,
+                    font_path=args.font_path,
+                )
+
+            format_results.append(
+                {
+                    "format": format,
+                    "data": result,
+                }
+            )
 
     out = merge_all_pages(format_results)
     if args.combine:
@@ -236,16 +261,8 @@ def process_single_file(args, analyzer, path, format):
             out_path,
             args,
             out,
-        )
-
-    if args.searchable_pdf:
-        pdf_path = os.path.join(args.outdir, f"{filename}.pdf")
-        create_searchable_pdf(
             imgs,
-            results,
-            output_path=pdf_path,
         )
-        logger.info(f"Output SearchablePDF: {pdf_path}")
 
 
 def main():
@@ -362,11 +379,11 @@ def main():
         choices=["auto", "left2right", "top2bottom", "right2left"],
     )
     parser.add_argument(
-        "--searchable_pdf",
-        action="store_true",
-        help="if set, create searchable PDF",
+        "--font_path",
+        default=None,
+        type=str,
+        help="Path to the font file(.ttf) for PDF output",
     )
-
     args = parser.parse_args()
 
     path = Path(args.arg1)
@@ -378,6 +395,13 @@ def main():
         raise ValueError(
             f"Invalid output format: {args.format}. Supported formats are {SUPPORT_OUTPUT_FORMAT}"
         )
+
+    if (
+        args.font_path is not None
+        and not os.path.exists(args.font_path)
+        and format == "pdf"
+    ):
+        raise FileNotFoundError(f"Font file not found: {args.font_path}")
 
     validate_encoding(args.encoding)
 

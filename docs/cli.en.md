@@ -7,7 +7,7 @@ yomitoku ${path_data} -v -o results
 ```
 
 - `${path_data}`: Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed.
-- `-f`, `--format`: Specify the output file format. Supported formats are json, csv, html, and md.
+- `-f`, `--format`: Specify the output file format. Supported formats are json, csv, html, md , and pdf(searchable-pdf).
 - `-o`, `--outdir`: Specify the name of the output directory. If it does not exist, it will be created.
 - `-v`, `--vis`: If specified, outputs visualized images of the analysis results.
 
@@ -40,6 +40,8 @@ You can specify the output format of the analysis results using the --format or 
 ```
 yomitoku ${path_data} -f md
 ```
+
+- `pdf`: Detect the text in the image and embed it into the PDF as invisible text, converting the file into a searchable PDF.
 
 ## Specifying the Output Device
 
@@ -122,11 +124,3 @@ yomitoku ${path_data} --reading_order left2right
 * `left2right`: Prioritizes reading from left to right. Suitable for layouts like receipts or health insurance cards, where key-value text pairs are arranged in columns.
 
 * `right2left`: Prioritizes reading from right to left. Effective for vertically written documents.
-
-## Create a searchable PDF
-
-Detect the text in the image and embed it into the PDF as invisible text, converting the file into a searchable PDF.
-
-```
-yomitoku ${path_data} --searchable_pdf
-```
