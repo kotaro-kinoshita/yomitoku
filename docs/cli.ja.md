@@ -31,11 +31,13 @@ yomitoku ${path_data} --lite -v
 
 ## 出力フォーマットの指定
 
-`--format`, `-f` オプションを使用することで解析結果の出力形式のフォーマットを指定できます。出力フォーマットの種類は json, csv, html, md(markdown)をサポートしています。
+- `-f`, `--format` 出力形式のファイルフォーマットを指定します。(json, csv, html, md, pdf(searchable-pdf) をサポート)
 
 ```
 yomitoku ${path_data} -f md
 ```
+
+- pdf: 画像内の文字情報を認識し、文字情報を透明テキストとして、PDFに埋め込むことで、サーチャブルPDFに変換します。
 
 ## 出力デバイスの指定
 
@@ -118,10 +120,3 @@ yomitoku ${path_data} --reading_order left2right
 - `left2right`: 左から右方向に優先的に読み取り順を推定します。レシートや保険証などキーに対して、値を示すテキストが段組みになっているようなレイアウトに有効です。
 
 - `right2left:` 右から左方向に優先的に読み取り順を推定します。縦書きのドキュメントに対して有効です。
-
-## 検索可能なPDFを作成する
-画像内の文字情報を認識し、文字情報を透明テキストとして、PDFに埋め込むことで、サーチャブルPDFに変換します。
-
-```
-yomitoku ${path_data} --searchable_pdf
-```
