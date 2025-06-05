@@ -152,6 +152,31 @@ def test_run_tiff_csv(monkeypatch, tmp_path):
     assert os.path.exists(out_path)
 
 
+def test_run_tiff_pdf(monkeypatch, tmp_path):
+    path_img = "tests/data/test.tiff"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "main.py",
+            path_img,
+            "-o",
+            str(tmp_path),
+            "-f",
+            "pdf",
+            "--tsr_cfg",
+            "tests/yaml/table_structure_recognizer.yaml",
+            "--lite",
+            "--figure",
+        ],
+    )
+    main.main()
+    path = Path(path_img)
+    dirname = path.parent.name
+    filename = path.stem
+    out_path = os.path.join(str(tmp_path), f"{dirname}_{filename}_p1.pdf")
+    assert os.path.exists(out_path)
+
+
 def test_run_pdf_md(monkeypatch, tmp_path):
     path_img = "tests/data/test.pdf"
     monkeypatch.setattr(
