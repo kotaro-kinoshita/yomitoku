@@ -14,7 +14,6 @@ import jaconv
 from ..constants import ROOT_DIR
 
 FONT_PATH = ROOT_DIR + "/resource/MPLUS1p-Medium.ttf"
-pdfmetrics.registerFont(TTFont("MPLUS1p-Medium", FONT_PATH))
 
 
 def _poly2rect(points):
@@ -62,7 +61,12 @@ def to_full_width(text):
     return jaconv_text
 
 
-def create_searchable_pdf(images, ocr_results, output_path):
+def create_searchable_pdf(images, ocr_results, output_path, font_path=None):
+    if font_path is None:
+        font_path = FONT_PATH
+
+    pdfmetrics.registerFont(TTFont("MPLUS1p-Medium", font_path))
+
     packet = BytesIO()
     c = canvas.Canvas(packet)
 
@@ -97,7 +101,6 @@ def create_searchable_pdf(images, ocr_results, output_path):
 
             c.setFont("MPLUS1p-Medium", font_size)
             c.setFillColorRGB(1, 1, 1, alpha=0)  # 透明
-            # c.setFillColorRGB(0, 0, 0)
             if direction == "vertical":
                 base_y = h - y2 + (bbox_height - font_size)
                 for j, ch in enumerate(text):
