@@ -59,7 +59,7 @@ yomitoku ${path_data} -f md -o results -v --figure --lite
 ```
 
 - `${path_data}`: Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed.
-- `-f`, `--format`: Specify the output file format. Supported formats are json, csv, html, and md.
+- `-f`, `--format`: Specify the output file format. Supported formats are json, csv, html, md , and pdf(searchable-pdf).
 - `-o`, `--outdir`: Specify the name of the output directory. If it does not exist, it will be created.
 - `-v`, `--vis`: If specified, outputs visualized images of the analysis results.
 - `-l`, `--lite`: inference is performed using a lightweight model. This enables fast inference even on a CPU.
@@ -70,7 +70,6 @@ yomitoku ${path_data} -f md -o results -v --figure --lite
 - `--encoding` Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (utf-8, utf-8-sig, shift-jis, enc-jp, cp932)
 - `--combine` When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export.
 - `--ignore_meta` Excludes text information such as headers and footers from the output file.
-- `--searchable_pdf` Embeds the recognized text into the PDF and outputs a fully searchable PDF.
 
 For other options, please refer to the help documentation.
 
