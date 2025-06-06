@@ -72,8 +72,6 @@ def create_searchable_pdf(images, ocr_results, output_path, font_path=None):
 
     for i, (image, ocr_result) in enumerate(zip(images, ocr_results)):
         image = Image.fromarray(image[:, :, ::-1])  # Convert BGR to RGB
-        pdfmetrics.registerFont(TTFont("MPLUS1p-Medium", FONT_PATH))
-
         image_path = f"tmp_{i}.png"
         image.save(image_path)
         w, h = image.size
