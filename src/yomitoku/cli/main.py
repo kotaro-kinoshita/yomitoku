@@ -158,6 +158,7 @@ def process_single_file(args, analyzer, path, format):
                     args.ignore_line_break,
                     img,
                     args.figure,
+                    args.figure_letter,
                     args.figure_dir,
                 )
             else:
@@ -167,6 +168,7 @@ def process_single_file(args, analyzer, path, format):
                     encoding=args.encoding,
                     img=img,
                     export_figure=args.figure,
+                    export_figure_letter=args.figure_letter,
                     figure_dir=args.figure_dir,
                 )
 
