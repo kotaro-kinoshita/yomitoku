@@ -63,6 +63,7 @@ def convert_csv(
     ignore_line_break,
     img=None,
     export_figure: bool = True,
+    export_figure_letter: bool = False,
     figure_dir="figures",
 ):
     elements = []
@@ -89,6 +90,20 @@ def convert_csv(
             }
         )
 
+    if export_figure_letter:
+        for figure in inputs.figures:
+            paragraphs = sorted(figure.paragraphs, key=lambda x: x.order)
+            for paragraph in paragraphs:
+                contents = paragraph_to_csv(paragraph, ignore_line_break)
+                elements.append(
+                    {
+                        "type": "paragraph",
+                        "box": paragraph.box,
+                        "element": contents,
+                        "order": figure.order,
+                    }
+                )
+
     elements = sorted(elements, key=lambda x: x["order"])
 
     if export_figure:
@@ -109,6 +124,7 @@ def export_csv(
     encoding: str = "utf-8",
     img=None,
     export_figure: bool = True,
+    export_figure_letter: bool = False,
     figure_dir="figures",
 ):
     elements = convert_csv(
@@ -117,6 +133,7 @@ def export_csv(
         ignore_line_break,
         img,
         export_figure,
+        export_figure_letter,
         figure_dir,
     )
 
