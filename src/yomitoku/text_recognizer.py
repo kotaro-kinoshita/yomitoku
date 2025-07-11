@@ -94,10 +94,21 @@ class TextRecognizer(BaseModule):
             self.model.to(self.device)
 
     def preprocess(self, img, polygons):
+        if polygons is None:
+            h, w = img.shape[:2]
+            polygons = [
+                [
+                    [0, 0],
+                    [w, 0],
+                    [w, h],
+                    [0, h],
+                ]
+            ]
+
         dataset = ParseqDataset(self._cfg, img, polygons)
         dataloader = self._make_mini_batch(dataset)
 
-        return dataloader
+        return dataloader, polygons
 
     def _make_mini_batch(self, dataset):
         mini_batches = []
@@ -150,7 +161,7 @@ class TextRecognizer(BaseModule):
 
         return pred, score, directions
 
-    def __call__(self, img, points, vis=None):
+    def __call__(self, img, points=None, vis=None):
         """
         Apply the recognition model to the input image.
 
@@ -160,7 +171,7 @@ class TextRecognizer(BaseModule):
             vis (np.ndarray, optional): rendering image. Defaults to None.
         """
 
-        dataloader = self.preprocess(img, points)
+        dataloader, points = self.preprocess(img, points)
         preds = []
         scores = []
         directions = []
