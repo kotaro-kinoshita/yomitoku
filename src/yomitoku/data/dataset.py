@@ -35,6 +35,10 @@ class ParseqDataset(Dataset):
 
         roi_img = extract_roi_with_perspective(self.img, quad)
 
+        import cv2
+
+        cv2.imwrite("sample_text.jpg", roi_img)
+
         if roi_img is None:
             return None
 
