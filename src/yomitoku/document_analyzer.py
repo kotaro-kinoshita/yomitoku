@@ -333,6 +333,7 @@ class DocumentAnalyzer:
         visualize=False,
         ignore_meta=False,
         reading_order="auto",
+        split_text_across_cells=False,
     ):
         default_configs = {
             "ocr": {
@@ -379,6 +380,7 @@ class DocumentAnalyzer:
         self.visualize = visualize
 
         self.ignore_meta = ignore_meta
+        self.split_text_across_cells = split_text_across_cells
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
@@ -504,7 +506,8 @@ class DocumentAnalyzer:
             results_det, _ = results[0]
             results_layout, layout = results[1]
 
-            results_det = _split_text_across_cells(results_det, results_layout)
+            if self.split_text_across_cells:
+                results_det = _split_text_across_cells(results_det, results_layout)
 
             vis_det = None
             if self.visualize:
