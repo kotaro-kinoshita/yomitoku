@@ -4,11 +4,6 @@ import json
 
 import numpy as np
 
-from yomitoku.document_analyzer import (
-    DocumentAnalyzerSchema,
-    ParagraphSchema,
-    FigureSchema,
-)
 from yomitoku.export.export_csv import paragraph_to_csv, table_to_csv
 from yomitoku.export.export_html import (
     convert_text_to_html,
@@ -21,16 +16,22 @@ from yomitoku.export.export_markdown import (
     paragraph_to_md,
     table_to_md,
 )
-from yomitoku.layout_analyzer import LayoutAnalyzerSchema
-from yomitoku.layout_parser import Element, LayoutParserSchema
-from yomitoku.ocr import OCRSchema, WordPrediction
-from yomitoku.table_structure_recognizer import (
+
+from yomitoku.schemas import (
+    DocumentAnalyzerSchema,
+    LayoutAnalyzerSchema,
+    LayoutParserSchema,
+    OCRSchema,
+    ParagraphSchema,
+    FigureSchema,
     TableCellSchema,
     TableLineSchema,
     TableStructureRecognizerSchema,
+    TextDetectorSchema,
+    TextRecognizerSchema,
+    WordPrediction,
+    Element,
 )
-from yomitoku.text_detector import TextDetectorSchema
-from yomitoku.text_recognizer import TextRecognizerSchema
 
 
 def test_convert_text_to_html():
