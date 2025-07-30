@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write     # PR を作成するため
+  issues: write # ラベルを追加するため
 
 
 jobs:
