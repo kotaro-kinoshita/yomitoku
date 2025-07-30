@@ -1,0 +1,234 @@
+{
+  "$defs": {
+    "Element": {
+      "additionalProperties": false,
+      "properties": {
+        "box": {
+          "description": "Bounding box of the layout element in the format [x1, y1, x2, y2]",
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Box",
+          "type": "array"
+        },
+        "score": {
+          "description": "Confidence score of the layout element detection",
+          "title": "Score",
+          "type": "number"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Role of the element, e.g., ['section_headings', 'page_header', 'page_footer', 'list_item', 'caption', 'inline_formula', 'display_formula', 'index']",
+          "title": "Role"
+        }
+      },
+      "required": [
+        "box",
+        "score",
+        "role"
+      ],
+      "title": "Element",
+      "type": "object"
+    },
+    "TableCellSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "col": {
+          "description": "Column index of the cell",
+          "title": "Col",
+          "type": "integer"
+        },
+        "row": {
+          "description": "Row index of the cell",
+          "title": "Row",
+          "type": "integer"
+        },
+        "col_span": {
+          "description": "Number of columns spanned by the cell",
+          "title": "Col Span",
+          "type": "integer"
+        },
+        "row_span": {
+          "description": "Number of rows spanned by the cell",
+          "title": "Row Span",
+          "type": "integer"
+        },
+        "box": {
+          "description": "Bounding box of the cell in the format [x1, y1, x2, y2]",
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Box",
+          "type": "array"
+        },
+        "contents": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Text content of the cell",
+          "title": "Contents"
+        }
+      },
+      "required": [
+        "col",
+        "row",
+        "col_span",
+        "row_span",
+        "box",
+        "contents"
+      ],
+      "title": "TableCellSchema",
+      "type": "object"
+    },
+    "TableLineSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "box": {
+          "description": "Bounding box of the table line in the format [x1, y1, x2, y2]",
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Box",
+          "type": "array"
+        },
+        "score": {
+          "description": "Confidence score of the table line detection",
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "box",
+        "score"
+      ],
+      "title": "TableLineSchema",
+      "type": "object"
+    },
+    "TableStructureRecognizerSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "box": {
+          "description": "Bounding box of the table in the format [x1, y1, x2, y2]",
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Box",
+          "type": "array"
+        },
+        "n_row": {
+          "description": "Number of rows in the table",
+          "title": "N Row",
+          "type": "integer"
+        },
+        "n_col": {
+          "description": "Number of columns in the table",
+          "title": "N Col",
+          "type": "integer"
+        },
+        "rows": {
+          "description": "List of table lines representing rows",
+          "items": {
+            "$ref": "#/$defs/TableLineSchema"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "cols": {
+          "description": "List of table lines representing columns",
+          "items": {
+            "$ref": "#/$defs/TableLineSchema"
+          },
+          "title": "Cols",
+          "type": "array"
+        },
+        "spans": {
+          "description": "List of table lines representing spans",
+          "items": {
+            "$ref": "#/$defs/TableLineSchema"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "cells": {
+          "description": "List of table cells",
+          "items": {
+            "$ref": "#/$defs/TableCellSchema"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "order": {
+          "description": "Order of the table in the document",
+          "title": "Order",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "box",
+        "n_row",
+        "n_col",
+        "rows",
+        "cols",
+        "spans",
+        "cells",
+        "order"
+      ],
+      "title": "TableStructureRecognizerSchema",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "paragraphs": {
+      "description": "List of detected paragraphs",
+      "items": {
+        "$ref": "#/$defs/Element"
+      },
+      "title": "Paragraphs",
+      "type": "array"
+    },
+    "tables": {
+      "description": "List of detected tables",
+      "items": {
+        "$ref": "#/$defs/TableStructureRecognizerSchema"
+      },
+      "title": "Tables",
+      "type": "array"
+    },
+    "figures": {
+      "description": "List of detected figures",
+      "items": {
+        "$ref": "#/$defs/Element"
+      },
+      "title": "Figures",
+      "type": "array"
+    }
+  },
+  "required": [
+    "paragraphs",
+    "tables",
+    "figures"
+  ],
+  "title": "LayoutAnalyzerSchema",
+  "type": "object"
+}

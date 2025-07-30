@@ -4,9 +4,6 @@ from omegaconf import OmegaConf
 
 from yomitoku import DocumentAnalyzer
 from yomitoku.document_analyzer import (
-    ParagraphSchema,
-    FigureSchema,
-    DocumentAnalyzerSchema,
     extract_paragraph_within_figure,
     combine_flags,
     judge_page_direction,
@@ -21,16 +18,14 @@ from yomitoku.document_analyzer import (
     _split_text_across_cells,
 )
 
-
-from yomitoku.text_detector import TextDetectorSchema
-
-from yomitoku.table_structure_recognizer import (
+from yomitoku.schemas import (
+    DocumentAnalyzerSchema,
+    ParagraphSchema,
+    FigureSchema,
+    TextDetectorSchema,
     TableStructureRecognizerSchema,
     TableLineSchema,
     TableCellSchema,
-)
-
-from yomitoku.ocr import (
     WordPrediction,
 )
 
