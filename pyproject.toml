@@ -103,6 +103,7 @@ deps =
     mkdocs-material
     pygments 
     plantuml_markdown 
+    mkdocs-include-markdown-plugin
     mkdocs-static-i18n
     mkdocs-codeinclude-plugin
 commands = 
