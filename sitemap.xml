@@ -64,6 +64,13 @@
         <xhtml:link rel="alternate" hreflang="en" href="Noneen/ocr_schema/"/>
     </url>
     <url>
+        <loc>Nonerelease_note/</loc>
+        <lastmod>2025-07-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="ja" href="Nonerelease_note/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/release_note/"/>
+    </url>
+    <url>
         <loc>Noneen/cli/</loc>
         <lastmod>2025-07-30</lastmod>
         <changefreq>daily</changefreq>
@@ -125,5 +132,12 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Noneen/ocr_schema/"/>
         <xhtml:link rel="alternate" hreflang="ja" href="Noneocr_schema/"/>
+    </url>
+    <url>
+        <loc>Noneen/release_note/</loc>
+        <lastmod>2025-07-30</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneen/release_note/"/>
+        <xhtml:link rel="alternate" hreflang="ja" href="Nonerelease_note/"/>
     </url>
 </urlset>
