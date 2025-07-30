@@ -41,6 +41,7 @@ format = "{base}"
 
 [tool.uv]
 dev-dependencies = [
+    "json-schema-for-humans>=1.4.1",
     "mkdocs-codeinclude-plugin>=0.2.1",
     "mkdocs-material>=9.5.44",
     "mkdocs-static-i18n",
