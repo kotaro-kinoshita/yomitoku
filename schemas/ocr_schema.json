@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "WordPrediction": {
+      "additionalProperties": false,
+      "properties": {
+        "points": {
+          "description": "Bounding box of the word in the format [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]",
+          "items": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Points",
+          "type": "array"
+        },
+        "content": {
+          "description": "Text content of the word",
+          "title": "Content",
+          "type": "string"
+        },
+        "direction": {
+          "description": "Text direction, e.g., 'horizontal' or 'vertical'",
+          "title": "Direction",
+          "type": "string"
+        },
+        "rec_score": {
+          "description": "Confidence score of the word recognition",
+          "title": "Rec Score",
+          "type": "number"
+        },
+        "det_score": {
+          "description": "Confidence score of the word detection",
+          "title": "Det Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "points",
+        "content",
+        "direction",
+        "rec_score",
+        "det_score"
+      ],
+      "title": "WordPrediction",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "words": {
+      "description": "List of recognized words with their bounding boxes, content, direction, and scores",
+      "items": {
+        "$ref": "#/$defs/WordPrediction"
+      },
+      "title": "Words",
+      "type": "array"
+    }
+  },
+  "required": [
+    "words"
+  ],
+  "title": "OCRSchema",
+  "type": "object"
+}

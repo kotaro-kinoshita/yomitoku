@@ -1,5 +1,3 @@
-from typing import List, Union
-
 import cv2
 import os
 import onnx
@@ -7,48 +5,23 @@ import onnxruntime
 import torch
 import torchvision.transforms as T
 from PIL import Image
-from pydantic import conlist
 
 from .constants import ROOT_DIR
 
-from .base import BaseModelCatalog, BaseModule, BaseSchema
+from .base import BaseModelCatalog, BaseModule
 from .configs import TableStructureRecognizerRTDETRv2Config
 from .layout_parser import filter_contained_rectangles_within_category
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import calc_intersection, filter_by_flag, is_contained
 from .utils.visualizer import table_visualizer
+from .schemas import TableStructureRecognizerSchema
 
 
 class TableStructureRecognizerModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("rtdetrv2", TableStructureRecognizerRTDETRv2Config, RTDETRv2)
-
-
-class TableCellSchema(BaseSchema):
-    col: int
-    row: int
-    col_span: int
-    row_span: int
-    box: conlist(int, min_length=4, max_length=4)
-    contents: Union[str, None]
-
-
-class TableLineSchema(BaseSchema):
-    box: conlist(int, min_length=4, max_length=4)
-    score: float
-
-
-class TableStructureRecognizerSchema(BaseSchema):
-    box: conlist(int, min_length=4, max_length=4)
-    n_row: int
-    n_col: int
-    rows: List[TableLineSchema]
-    cols: List[TableLineSchema]
-    cells: List[TableCellSchema]
-    spans: List[TableLineSchema]
-    order: int
 
 
 def extract_cells(row_boxes, col_boxes):

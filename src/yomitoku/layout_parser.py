@@ -1,5 +1,3 @@
-from typing import List, Union
-
 import cv2
 import os
 import onnx
@@ -7,28 +5,17 @@ import onnxruntime
 import torch
 import torchvision.transforms as T
 from PIL import Image
-from pydantic import conlist
 
 from .constants import ROOT_DIR
 
-from .base import BaseModelCatalog, BaseModule, BaseSchema
+from .base import BaseModelCatalog, BaseModule
 from .configs import LayoutParserRTDETRv2Config, LayoutParserRTDETRv2V2Config
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import filter_by_flag, is_contained
 from .utils.visualizer import layout_visualizer
 
-
-class Element(BaseSchema):
-    box: conlist(int, min_length=4, max_length=4)
-    score: float
-    role: Union[str, None]
-
-
-class LayoutParserSchema(BaseSchema):
-    paragraphs: List[Element]
-    tables: List[Element]
-    figures: List[Element]
+from .schemas import LayoutParserSchema
 
 
 class LayoutParserModelCatalog(BaseModelCatalog):

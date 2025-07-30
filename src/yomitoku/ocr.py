@@ -1,27 +1,6 @@
-from typing import List
-
-from pydantic import conlist
-
 from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognizer import TextRecognizer
-
-from .base import BaseSchema
-
-
-class WordPrediction(BaseSchema):
-    points: conlist(
-        conlist(int, min_length=2, max_length=2),
-        min_length=4,
-        max_length=4,
-    )
-    content: str
-    direction: str
-    rec_score: float
-    det_score: float
-
-
-class OCRSchema(BaseSchema):
-    words: List[WordPrediction]
+from .schemas import OCRSchema
 
 
 def ocr_aggregate(det_outputs, rec_outputs):
