@@ -55,6 +55,9 @@
       labels:
         - "enhancement"
     default: patch
+  exclude-labels:
+    - "changelog"
+
   template: |
     ## 変更
   
