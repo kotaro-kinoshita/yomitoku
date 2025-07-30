@@ -37,6 +37,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           branch: chore/changelog-${{ github.run_id }}
+          base:   ${{ github.event.workflow_run.head_branch }}
           title: "docs: Update CHANGELOG"
           body: |
             Automated CHANGELOG update triggered by Release Drafter.
