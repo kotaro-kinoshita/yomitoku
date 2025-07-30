@@ -1,0 +1,36 @@
+---
+name: Change Log Generator
+
+on:
+  workflow_run:
+    workflows: ["Release Drafter"] 
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - run: gem install github_changelog_generator
+      - name: Generate CHANGELOG
+        env:
+          CHANGELOG_GITHUB_TOKEN: ${{ secrets.GH_CHANGELOG_TOKEN }}
+        # Use the environment variable to pass the token to the generator
+        run: |
+          github_changelog_generator \
+            --user ${{ github.repository_owner }} \
+            --project ${{ github.event.repository.name }} \
+            --no-issues
+      - name: Commit & push CHANGELOG
+        run: |
+          git config user.name  "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog"
+          git push
