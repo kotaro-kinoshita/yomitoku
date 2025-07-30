@@ -1,11 +1,8 @@
-from typing import List
-
 import numpy as np
 import torch
 import os
-from pydantic import conlist
 
-from .base import BaseModelCatalog, BaseModule, BaseSchema
+from .base import BaseModelCatalog, BaseModule
 from .configs import (
     TextDetectorDBNetConfig,
     TextDetectorDBNetV2Config,
@@ -19,6 +16,7 @@ from .models import DBNet
 from .postprocessor import DBnetPostProcessor
 from .utils.visualizer import det_visualizer
 from .constants import ROOT_DIR
+from .schemas import TextDetectorSchema
 
 import onnx
 import onnxruntime
@@ -29,17 +27,6 @@ class TextDetectorModelCatalog(BaseModelCatalog):
         super().__init__()
         self.register("dbnet", TextDetectorDBNetConfig, DBNet)
         self.register("dbnetv2", TextDetectorDBNetV2Config, DBNet)
-
-
-class TextDetectorSchema(BaseSchema):
-    points: List[
-        conlist(
-            conlist(int, min_length=2, max_length=2),
-            min_length=4,
-            max_length=4,
-        )
-    ]
-    scores: List[float]
 
 
 class TextDetector(BaseModule):

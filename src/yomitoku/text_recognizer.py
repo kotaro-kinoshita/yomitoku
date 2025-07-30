@@ -1,12 +1,9 @@
-from typing import List
-
 import numpy as np
 import torch
 import os
 import unicodedata
-from pydantic import conlist
 
-from .base import BaseModelCatalog, BaseModule, BaseSchema
+from .base import BaseModelCatalog, BaseModule
 from .configs import (
     TextRecognizerPARSeqConfig,
     TextRecognizerPARSeqSmallConfig,
@@ -19,6 +16,8 @@ from .utils.misc import load_charset
 from .utils.visualizer import rec_visualizer
 
 from .constants import ROOT_DIR
+from .schemas import TextRecognizerSchema
+
 import onnx
 import onnxruntime
 
@@ -29,19 +28,6 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
         self.register("parseq", TextRecognizerPARSeqConfig, PARSeq)
         self.register("parseqv2", TextRecognizerPARSeqV2Config, PARSeq)
         self.register("parseq-small", TextRecognizerPARSeqSmallConfig, PARSeq)
-
-
-class TextRecognizerSchema(BaseSchema):
-    contents: List[str]
-    directions: List[str]
-    scores: List[float]
-    points: List[
-        conlist(
-            conlist(int, min_length=2, max_length=2),
-            min_length=4,
-            max_length=4,
-        )
-    ]
 
 
 class TextRecognizer(BaseModule):

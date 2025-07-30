@@ -1,17 +1,7 @@
-from typing import List
+from .layout_parser import LayoutParser
+from .table_structure_recognizer import TableStructureRecognizer
 
-from .base import BaseSchema
-from .layout_parser import Element, LayoutParser
-from .table_structure_recognizer import (
-    TableStructureRecognizer,
-    TableStructureRecognizerSchema,
-)
-
-
-class LayoutAnalyzerSchema(BaseSchema):
-    paragraphs: List[Element]
-    tables: List[TableStructureRecognizerSchema]
-    figures: List[Element]
+from .schemas import LayoutAnalyzerSchema
 
 
 class LayoutAnalyzer:
