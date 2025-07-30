@@ -1,8 +1,8 @@
 name: ci
 on:
-  workflow_run:
-    workflows: ["Change Log Generator"] 
-    types: [completed]
+  push:
+    branches:
+      - main
 permissions:
   contents: write
 jobs:
