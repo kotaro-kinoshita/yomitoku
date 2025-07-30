@@ -43,6 +43,7 @@ format = "{base}"
 dev-dependencies = [
     "json-schema-for-humans>=1.4.1",
     "mkdocs-codeinclude-plugin>=0.2.1",
+    "mkdocs-include-markdown-plugin>=7.1.6",
     "mkdocs-material>=9.5.44",
     "mkdocs-static-i18n",
     "mkdocs>=1.6.1",
