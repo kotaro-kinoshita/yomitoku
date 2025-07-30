@@ -13,6 +13,13 @@ permissions:
 
 jobs:
   changelog:
+    if: |
+      github.event_name == 'push' ||
+      ! contains(
+        github.event.pull_request.labels.*.name,
+        'changelog'
+      )
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
