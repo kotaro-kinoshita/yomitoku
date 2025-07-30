@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write     # PR を作成するため
+
 
 jobs:
   changelog:
@@ -30,14 +32,19 @@ jobs:
             --user ${{ github.repository_owner }} \
             --project ${{ github.event.repository.name }} \
             --no-issues
-      - name: Rebase (catch up)
-        run: |
-          git fetch origin main
-          git rebase origin/main
-      - name: Commit & push CHANGELOG
-        run: |
-          git config user.name  "github-actions"
-          git config user.email "actions@users.noreply.github.com"
-          git add CHANGELOG.md
-          git commit -m "docs: update changelog"
-          git push origin HEAD:main
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/changelog-${{ github.run_id }}
+          title: "docs: Update CHANGELOG"
+          body: |
+            Automated CHANGELOG update triggered by Release Drafter.
+            - Workflow run: ${{ github.run_id }}
+          commit-message: "docs: update CHANGELOG"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          signoff: false 
+          delete-branch: true   
+          labels: |
+            changelog
+            automated
