@@ -73,7 +73,9 @@ nav:
       - Document Analyzer: document_analyzer_schema.md
       - OCR: ocr_schema.md
       - Layout Analyzer: layout_analyzer_schema.md
+  - Release Note: release_note.md
   - MCP: mcp.md
+
 
 
 repo_url: https://github.com/kotaro-kinoshita/yomitoku-dev
@@ -81,6 +83,7 @@ repo_url: https://github.com/kotaro-kinoshita/yomitoku-dev
 plugins:
   - search:
   - codeinclude:
+  - include-markdown:
   - i18n:
       languages:
         - locale: ja
