@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}  # ← 追加
+          fetch-depth: 0
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
@@ -27,6 +30,10 @@ jobs:
             --user ${{ github.repository_owner }} \
             --project ${{ github.event.repository.name }} \
             --no-issues
+      - name: Rebase (catch up)
+        run: |
+          git fetch origin main
+          git rebase origin/main
       - name: Commit & push CHANGELOG
         run: |
           git config user.name  "github-actions"
