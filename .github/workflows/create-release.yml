@@ -13,6 +13,12 @@ permissions:
 
 jobs:
   update_release_draft:
+    if: |
+      github.event_name == 'push' ||
+      ! contains(
+        github.event.pull_request.labels.*.name,
+        'changelog'
+      )
     permissions:
       contents: write
       pull-requests: write
