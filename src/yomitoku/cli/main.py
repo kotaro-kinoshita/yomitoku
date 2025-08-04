@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import time
 from pathlib import Path
 
@@ -96,7 +97,7 @@ def process_single_file(args, analyzer, path, format):
     format_results = []
     for page, img in enumerate(imgs):
         result, ocr, layout = analyzer(img)
-        dirname = path.parent.name
+        dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
 
         # cv2.imwrite(
@@ -469,6 +470,13 @@ def main():
         process_single_file(args, analyzer, path, format)
         end = time.time()
         logger.info(f"Total Processing time: {end - start:.2f} sec")
+
+
+def _sanitize_path_component(component):
+    if not component:
+        return component
+
+    return re.sub(r'^\.+', lambda m: '_' * len(m.group(0)), component)
 
 
 if __name__ == "__main__":
