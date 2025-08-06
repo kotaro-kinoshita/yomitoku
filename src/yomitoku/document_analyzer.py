@@ -14,38 +14,6 @@ from .utils.visualizer import det_visualizer, reading_order_visualizer
 from .schemas import ParagraphSchema, FigureSchema, DocumentAnalyzerSchema
 
 
-# class ParagraphSchema(BaseSchema):
-#    box: conlist(int, min_length=4, max_length=4)
-#    contents: Union[str, None]
-#    direction: Union[str, None]
-#    order: Union[int, None]
-#    role: Union[str, None]
-#
-#
-# class FigureSchema(BaseSchema):
-#    box: conlist(int, min_length=4, max_length=4)
-#    order: Union[int, None]
-#    paragraphs: List[ParagraphSchema]
-#    order: Union[int, None]
-#    direction: Union[str, None]
-#
-#
-# class DocumentAnalyzerSchema(BaseSchema):
-#    paragraphs: List[ParagraphSchema]
-#    tables: List[TableStructureRecognizerSchema]
-#    words: List[WordPrediction]
-#    figures: List[FigureSchema]
-#
-#    def to_html(self, out_path: str, **kwargs):
-#        return export_html(self, out_path, **kwargs)
-#
-#    def to_markdown(self, out_path: str, **kwargs):
-#        return export_markdown(self, out_path, **kwargs)
-#
-#    def to_csv(self, out_path: str, **kwargs):
-#        return export_csv(self, out_path, **kwargs)
-
-
 def combine_flags(flag1, flag2):
     return [f1 or f2 for f1, f2 in zip(flag1, flag2)]
 
@@ -360,7 +328,7 @@ class DocumentAnalyzer:
             recursive_update(default_configs, configs)
         else:
             raise ValueError(
-                "configs must be a dict. See the https://kotaro-kinoshita.github.io/yomitoku-dev/usage/"
+                "configs must be a dict. See the https://kotaro-kinoshita.github.io/yomitoku/module/#config"
             )
 
         self.text_detector = TextDetector(
