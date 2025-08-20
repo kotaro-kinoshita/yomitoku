@@ -10,17 +10,28 @@ logger = set_logger(__name__, "INFO")
 def _reading_order_visualizer(img, elements, line_color, tip_size):
     out = img.copy()
     for i, element in enumerate(elements):
-        if i == 0:
-            continue
-
-        prev_element = elements[i - 1]
         cur_x1, cur_y1, cur_x2, cur_y2 = element.box
-        prev_x1, prev_y1, prev_x2, prev_y2 = prev_element.box
 
         cur_center = (
             cur_x1 + (cur_x2 - cur_x1) / 2,
             cur_y1 + (cur_y2 - cur_y1) / 2,
         )
+
+        cv2.putText(
+            out,
+            str(i),
+            (int(cur_center[0]), int(cur_center[1])),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 200, 0),
+            2,
+        )
+
+        if i == 0:
+            continue
+
+        prev_element = elements[i - 1]
+        prev_x1, prev_y1, prev_x2, prev_y2 = prev_element.box
         prev_center = (
             prev_x1 + (prev_x2 - prev_x1) / 2,
             prev_y1 + (prev_y2 - prev_y1) / 2,
