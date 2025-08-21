@@ -476,7 +476,7 @@ def _sanitize_path_component(component):
     if not component:
         return component
 
-    return re.sub(r'^\.+', lambda m: '_' * len(m.group(0)), component)
+    return re.sub(r"^\.+", lambda m: "_" * len(m.group(0)), component)
 
 
 if __name__ == "__main__":
