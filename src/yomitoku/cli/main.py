@@ -90,7 +90,7 @@ def validate_encoding(encoding):
 
 def process_single_file(args, analyzer, path, format):
     if path.suffix[1:].lower() in ["pdf"]:
-        imgs = load_pdf(path)
+        imgs = load_pdf(path, dpi=args.dpi)
     else:
         imgs = load_image(path)
 
@@ -386,6 +386,12 @@ def main():
         default=None,
         type=str,
         help="Path to the font file(.ttf) for PDF output",
+    )
+    parser.add_argument(
+        "--dpi",
+        type=int,
+        default=200,
+        help="DPI for loading PDF files (default: 200)",
     )
     args = parser.parse_args()
 
