@@ -111,6 +111,15 @@ If the PDF contains multiple pages, you can export them as a single file.
 yomitoku ${path_data} -f md --combine
 ```
 
+
+## Setting the PDF Reading Resolution
+
+Specifies the resolution (DPI) when reading a PDF (default DPI = 200). Increasing the DPI value may improve recognition accuracy when dealing with fine text or small details within the PDF.
+
+```bash
+yomitoku ${path_data} --dpi 250
+```
+
 ## Specifying Reading Order
 
 By default, *Auto* mode automatically detects whether a document is written horizontally or vertically and estimates the appropriate reading order. However, you can explicitly specify a custom reading order. For horizontal documents, the default is `top2left`, and for vertical documents, it is `top2bottom`.

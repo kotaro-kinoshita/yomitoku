@@ -236,8 +236,16 @@ def extract_roi_with_perspective(img, quad):
     Returns:
         np.ndarray: extracted image
     """
-    dst = img.copy()
     quad = np.array(quad, dtype=np.int64)
+
+    roi_img = img[
+        int(min(quad[:, 1])) : int(max(quad[:, 1])),
+        int(min(quad[:, 0])) : int(max(quad[:, 0])),
+        :,
+    ]
+
+    quad[:, 0] -= int(min(quad[:, 0]))
+    quad[:, 1] -= int(min(quad[:, 1]))
 
     width = np.linalg.norm(quad[0] - quad[1])
     height = np.linalg.norm(quad[1] - quad[2])
@@ -248,7 +256,7 @@ def extract_roi_with_perspective(img, quad):
     pts2 = np.float32([[0, 0], [width, 0], [width, height], [0, height]])
 
     M = cv2.getPerspectiveTransform(pts1, pts2)
-    dst = cv2.warpPerspective(dst, M, (width, height))
+    dst = cv2.warpPerspective(roi_img, M, (width, height))
     return dst
 
 
