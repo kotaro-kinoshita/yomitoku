@@ -13,6 +13,9 @@ Document Analyzer は OCR およびレイアウト解析を実行し、それら
 - `visualize` を True にすると各処理結果を可視化した結果を第２、第 3 戻り値に OCR、レアウト解析の処理結果をそれぞれ格納し、返却します。False にした場合は None を返却します。描画処理のための計算が増加しますので、デバック用途でない場合は、False を推奨します。
 - `device` には処理に用いる計算機を指定します。Default は"cuda". GPU が利用できない場合は、自動で CPU モードに切り替えて処理を実行します。
 - `configs`を活用すると、パイプラインの処理のより詳細のパラメータを設定できます。
+- `reading_order_algorithm`: 読み取り順を決定するためのアルゴリズムを指定します。`'graph'`（デフォルト）は複雑なレイアウトに対応するグラフベースのアルゴリズム、`'simple'`はTTSなど、より自然な読み上げ順に適したシンプルな行ベースのアルゴリズムです。
+- `page_reading_orders`: ページ範囲ごとに異なる読み取り順設定を指定するためのリストです。CLIの`--page_reading_orders`と同様のJSONライクなPythonのリストを渡します。これが指定された場合、`reading_order`と`reading_order_algorithm`引数は無視されます。
+  - **例**: `page_reading_orders=[{'pages': (1, 10), 'reading_order': 'right2left'}, {'pages': (11, 20), 'reading_order': 'left2right'}]`
 
 `DocumentAnalyzer` の処理結果のエクスポートは以下に対応しています。
 
