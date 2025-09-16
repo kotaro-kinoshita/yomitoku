@@ -72,7 +72,7 @@ yomitoku ${path_data} -f md -o results -v --figure --lite
 - `--combine` PDFを入力に与えたときに、複数ページが含まれる場合に、それらの予測結果を一つのファイルに統合してエクスポートします。
 - `--ignore_meta` 文章のheater, fotterなどの文字情報を出力ファイルに含めません。
 - `--reading_order` 読み取り順を指定します。(`auto`, `left2right`, `top2bottom`, `right2left`)
-- `--page_reading_orders` ページ範囲ごとに読み取り順をJSON文字列で指定します。
+- `--page_config` ページ範囲ごとに読み取り順を指定します。複数回指定可能です。(例: `--page_config 1 10 right2left`)
 
 その他のオプションに関しては、ヘルプを参照
 

@@ -242,32 +242,29 @@ def test_validate_encoding():
 
 
 @pytest.mark.parametrize(
-    "invalid_config_str",
+    "page_config_args",
     [
-        '{"pages": [1, 10]}',  # Not a list
-        '[{"pages": [1, 10, 15]}]',  # pages is not a pair
-        '[{"pages": [1, "10"]}]',  # pages contains non-int
-        '[{"pages": [0, 10]}]',  # start page < 1
-        '[{"pages": [10, 1]}]',  # start > end
-        '[{"pages": [1, 10]}, {"pages": [5, 15]}]',  # overlap
-        '[{"reading_order": "left2right"}]',  # missing 'pages' key
+        ["--page_config", "1", "10"],  # Too few
+        ["--page_config", "1", "10", "left2right", "simple", "extra"],  # Too many
+        ["--page_config", "a", "10", "left2right"],  # Not int
+        ["--page_config", "1", "10", "invalid_order"],  # Invalid order
+        ["--page_config", "1", "10", "left2right", "invalid_algo"],  # Invalid algo
+        ["--page_config", "1", "10", "left2right", "--page_config", "5", "15", "top2bottom"], # Overlap
     ],
 )
-def test_cli_invalid_page_reading_orders(
-    monkeypatch, tmp_path, invalid_config_str
-):
+def test_cli_invalid_page_config(monkeypatch, tmp_path, page_config_args):
     with pytest.raises(SystemExit) as e:
         monkeypatch.setattr("sys.exit", lambda x: (_ for _ in ()).throw(SystemExit(x)))
+
+        base_argv = [
+            "main.py",
+            "tests/data/test.pdf",
+            "-o",
+            str(tmp_path),
+        ]
         monkeypatch.setattr(
             "sys.argv",
-            [
-                "main.py",
-                "tests/data/test.pdf",
-                "-o",
-                str(tmp_path),
-                "--page_reading_orders",
-                invalid_config_str,
-            ],
+            base_argv + page_config_args,
         )
         main.main()
     assert e.value.code == 1

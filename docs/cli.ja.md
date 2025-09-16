@@ -133,18 +133,19 @@ yomitoku ${path_data} --reading_order left2right
 
 ### ページ範囲ごとに読み取り順を指定する
 
-`--page_reading_orders` オプションを使用することで、ページ範囲ごとに異なる読み取り順や読み取り順アルゴリズムを指定できます。これは、1つのドキュメント内に縦書きと横書きのページが混在している場合に特に便利です。
+`--page_config` オプションを使用することで、ページ範囲ごとに異なる読み取り順やアルゴリズムを指定できます。このオプションは複数回指定可能です。
 
-設定はJSON形式の文字列として渡します。
+**フォーマット:**
+`--page_config <開始ページ> <終了ページ> <読み取り順> [アルゴリズム]`
 
-**例:** 1-10ページを縦書き（`right2left`）、11-20ページを横書き（`left2right`）として指定する場合
+- **`<読み取り順>`**: `left2right`, `top2bottom`, `right2left` のいずれかを指定します。
+- **`[アルゴリズム]`**: `graph` (デフォルト) または `simple` を指定します。この引数は任意です。
+
+**コマンド指定例:**
+1-10ページを縦書き（`right2left`）、11-20ページを横書き（`left2right`）かつシンプルな読み順アルゴリズムで指定する場合
 
 ```bash
-yomitoku ${path_to_pdf} --page_reading_orders '[{"pages": [1, 10], "reading_order": "right2left"}, {"pages": [11, 20], "reading_order": "left2right", "reading_order_algorithm": "simple"}]'
+yomitoku path/to/your/document.pdf \
+    --page_config 1 10 right2left \
+    --page_config 11 20 left2right simple
 ```
-
-**JSON設定のキー:**
-
-- `pages`: `[開始ページ, 終了ページ]` の形式でページ範囲を指定します。
-- `reading_order`: その範囲に適用する読み取り順（`left2right`, `top2bottom`, `right2left`）を指定します。
-- `reading_order_algorithm`: 読み取り順を決定するアルゴリズム（`graph`（デフォルト）または`simple`）を指定します。このキーは任意です。

@@ -77,35 +77,57 @@ def save_merged_file(out_path, args, out, imgs):
         )
 
 
-def validate_page_reading_orders(orders):
-    if not isinstance(orders, list):
-        raise ValueError("--page_reading_orders must be a JSON list of objects.")
+def parse_and_validate_page_configs(configs):
+    if configs is None:
+        return None
 
+    page_reading_orders = []
     validated_ranges = []
-    for item in orders:
-        if "pages" not in item:
-            raise ValueError("Each item in --page_reading_orders must have a 'pages' key.")
 
-        pages = item["pages"]
-        if not isinstance(pages, (list, tuple)) or len(pages) != 2:
-            raise ValueError("'pages' must be a list or tuple of two integers [start, end].")
+    for config in configs:
+        if not (3 <= len(config) <= 4):
+            raise ValueError(
+                f"Invalid --page_config: Expected 3 or 4 values, but got {len(config)} in {config}"
+            )
 
-        start_page, end_page = pages
-        if not all(isinstance(p, int) for p in pages):
-            raise ValueError("Page numbers in 'pages' must be integers.")
+        try:
+            start_page = int(config[0])
+            end_page = int(config[1])
+        except ValueError:
+            raise ValueError(f"Invalid page numbers in --page_config: {config[0]}, {config[1]}")
+
+        reading_order = config[2]
+        if reading_order not in ["auto", "left2right", "top2bottom", "right2left"]:
+            raise ValueError(f"Invalid reading_order '{reading_order}' in --page_config.")
+
+        reading_order_algorithm = "graph"
+        if len(config) == 4:
+            reading_order_algorithm = config[3]
+            if reading_order_algorithm not in ["graph", "simple"]:
+                raise ValueError(
+                    f"Invalid reading_order_algorithm '{reading_order_algorithm}' in --page_config."
+                )
 
         if start_page < 1:
             raise ValueError(f"Start page must be 1 or greater, but got {start_page}.")
-
         if start_page > end_page:
             raise ValueError(f"Start page {start_page} cannot be greater than end page {end_page}.")
-
-        # Check for overlaps
         for r_start, r_end in validated_ranges:
             if max(start_page, r_start) <= min(end_page, r_end):
-                raise ValueError(f"Overlapping page ranges found: [{start_page}, {end_page}] and [{r_start}, {r_end}].")
+                raise ValueError(
+                    f"Overlapping page ranges found: [{start_page}, {end_page}] and [{r_start}, {r_end}]."
+                )
         validated_ranges.append((start_page, end_page))
-    return True
+
+        page_reading_orders.append(
+            {
+                "pages": (start_page, end_page),
+                "reading_order": reading_order,
+                "reading_order_algorithm": reading_order_algorithm,
+            }
+        )
+
+    return page_reading_orders
 
 
 def validate_encoding(encoding):
@@ -426,11 +448,11 @@ def main():
         help="DPI for loading PDF files (default: 200)",
     )
     parser.add_argument(
-        "--page_reading_orders",
-        type=str,
-        default=None,
-        help="JSON string for page-specific reading orders. "
-        'Example: \'[{"pages": [1, 10], "reading_order": "right2left"}]\'',
+        "--page_config",
+        action="append",
+        nargs="+",
+        help="Specify page-specific configuration. Can be used multiple times. "
+        "Format: <start_page> <end_page> <reading_order> [reading_order_algorithm]",
     )
     args = parser.parse_args()
 
@@ -486,19 +508,11 @@ def main():
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
 
-    page_reading_orders = None
-    if args.page_reading_orders:
-        try:
-            page_reading_orders = json.loads(args.page_reading_orders)
-            validate_page_reading_orders(page_reading_orders)
-        except json.JSONDecodeError:
-            logger.error(
-                f"Invalid JSON format for --page_reading_orders: {args.page_reading_orders}"
-            )
-            exit(1)
-        except ValueError as e:
-            logger.error(f"Invalid configuration for --page_reading_orders: {e}")
-            exit(1)
+    try:
+        page_reading_orders = parse_and_validate_page_configs(args.page_config)
+    except ValueError as e:
+        logger.error(f"Invalid configuration for --page_config: {e}")
+        exit(1)
 
     analyzer = DocumentAnalyzer(
         configs=configs,
