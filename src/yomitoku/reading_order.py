@@ -138,7 +138,7 @@ def _create_graph_top2bottom(nodes):
                 else:
                     other_node.add_link(node)
 
-            node_distance = node.prop["box"][0] * 10000 + node.prop["box"][1]
+            node_distance = node.prop["box"][0] + node.prop["box"][1]
             node.prop["distance"] = node_distance
 
     for node in nodes:
@@ -171,7 +171,7 @@ def _create_graph_right2left(nodes):
         node.children = sorted(node.children, key=lambda x: x.prop["box"][1])
 
 
-def _create_graph_left2right(nodes, x_weight=1, y_weight=10000):
+def _create_graph_left2right(nodes, x_weight=1, y_weight=5):
     for i, node in enumerate(nodes):
         for j, other_node in enumerate(nodes):
             if i == j:
@@ -242,3 +242,55 @@ def visualize_graph(img, nodes):
             )
 
     cv2.imwrite("graph.jpg", out)
+
+
+def prediction_reading_order_simple(elements, direction="left2right"):
+    if len(elements) < 2:
+        return elements
+
+    # Create a list of tuples (element, original_index)
+    indexed_elements = list(enumerate(elements))
+
+    # Sort elements by vertical position first
+    indexed_elements.sort(key=lambda item: item[1].box[1])
+
+    lines = []
+    if len(indexed_elements) > 0:
+        current_line = [indexed_elements[0]]
+        for item in indexed_elements[1:]:
+            element = item[1]
+            # Check if the vertical center of the new element is close to the vertical center of the current line
+            line_y_center = sum(e.box[1] + e.box[3] for _, e in current_line) / (
+                2 * len(current_line)
+            )
+            element_y_center = (element.box[1] + element.box[3]) / 2
+            element_height = element.box[3] - element.box[1]
+
+            if abs(line_y_center - element_y_center) < element_height / 2:
+                current_line.append(item)
+            else:
+                lines.append(current_line)
+                current_line = [item]
+        lines.append(current_line)
+
+    # Sort lines by their average vertical position
+    lines.sort(key=lambda line: sum(e.box[1] for _, e in line) / len(line))
+
+    # Sort elements within each line
+    for line in lines:
+        if direction == "left2right":
+            line.sort(key=lambda item: item[1].box[0])
+        elif direction == "right2left":
+            line.sort(key=lambda item: item[1].box[0], reverse=True)
+        elif direction == "top2bottom":
+            # For vertical text, sort columns by x-coordinate
+            line.sort(key=lambda item: item[1].box[0])
+
+    # Assign order
+    order_counter = 0
+    for line in lines:
+        for original_index, element in line:
+            elements[original_index].order = order_counter
+            order_counter += 1
+
+    return elements

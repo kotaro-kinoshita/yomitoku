@@ -605,3 +605,58 @@ def test_split_text_across_cells():
     assert len(results.scores) == 2
     assert results.points[0] == [[0, 0], [50, 0], [50, 20], [0, 20]]
     assert results.points[1] == [[50, 0], [100, 0], [100, 20], [50, 20]]
+
+
+def test_document_analyzer_simple_reading_order():
+    # Test case for two-column layout.
+    # Elements are intentionally out of order.
+    # Column 1: "Line 1, Col 1", "Line 2, Col 1"
+    # Column 2: "Line 1, Col 2", "Line 2, Col 2"
+    paragraphs = [
+        ParagraphSchema(
+            box=[300, 0, 400, 50],
+            contents="Line 1, Col 2",
+            order=0,
+            direction="horizontal",
+            role=None,
+        ),
+        ParagraphSchema(
+            box=[0, 100, 100, 150],
+            contents="Line 2, Col 1",
+            order=0,
+            direction="horizontal",
+            role=None,
+        ),
+        ParagraphSchema(
+            box=[0, 0, 100, 50],
+            contents="Line 1, Col 1",
+            order=0,
+            direction="horizontal",
+            role=None,
+        ),
+        ParagraphSchema(
+            box=[300, 100, 400, 150],
+            contents="Line 2, Col 2",
+            order=0,
+            direction="horizontal",
+            role=None,
+        ),
+    ]
+
+    expected_contents_order = [
+        "Line 1, Col 1",
+        "Line 1, Col 2",
+        "Line 2, Col 1",
+        "Line 2, Col 2",
+    ]
+
+    from yomitoku.reading_order import prediction_reading_order_simple
+
+    ordered_elements = prediction_reading_order_simple(paragraphs, direction="left2right")
+
+    # Sort by the new order for comparison
+    ordered_elements.sort(key=lambda x: x.order)
+
+    result_contents_order = [e.contents for e in ordered_elements]
+
+    assert result_contents_order == expected_contents_order

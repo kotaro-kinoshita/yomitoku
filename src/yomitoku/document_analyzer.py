@@ -8,7 +8,10 @@ from yomitoku.text_recognizer import TextRecognizer
 
 from .layout_analyzer import LayoutAnalyzer
 from .ocr import OCRSchema, ocr_aggregate
-from .reading_order import prediction_reading_order
+from .reading_order import (
+    prediction_reading_order,
+    prediction_reading_order_simple,
+)
 from .utils.misc import calc_overlap_ratio, is_contained, quad_to_xyxy
 from .utils.visualizer import det_visualizer, reading_order_visualizer
 from .schemas import ParagraphSchema, FigureSchema, DocumentAnalyzerSchema
@@ -298,6 +301,7 @@ class DocumentAnalyzer:
         ignore_meta=False,
         reading_order="auto",
         split_text_across_cells=False,
+        reading_order_algorithm="graph",
     ):
         default_configs = {
             "ocr": {
@@ -323,6 +327,7 @@ class DocumentAnalyzer:
         }
 
         self.reading_order = reading_order
+        self.reading_order_algorithm = reading_order_algorithm
 
         if isinstance(configs, dict):
             recursive_update(default_configs, configs)
@@ -435,7 +440,10 @@ class DocumentAnalyzer:
         else:
             reading_order = self.reading_order
 
-        prediction_reading_order(elements, reading_order, self.img)
+        if self.reading_order_algorithm == "simple":
+            prediction_reading_order_simple(elements, reading_order)
+        else:
+            prediction_reading_order(elements, reading_order, self.img)
 
         for i, element in enumerate(elements):
             element.order += len(headers)
