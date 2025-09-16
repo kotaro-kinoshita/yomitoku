@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 import time
+import json
 from pathlib import Path
 
 import torch
@@ -96,7 +97,7 @@ def process_single_file(args, analyzer, path, format):
 
     format_results = []
     for page, img in enumerate(imgs):
-        result, ocr, layout = analyzer(img)
+        result, ocr, layout = analyzer(img, page_number=page + 1)
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
 
@@ -393,6 +394,13 @@ def main():
         default=200,
         help="DPI for loading PDF files (default: 200)",
     )
+    parser.add_argument(
+        "--page_reading_orders",
+        type=str,
+        default=None,
+        help="JSON string for page-specific reading orders. "
+        'Example: \'[{"pages": [1, 10], "reading_order": "right2left"}]\'',
+    )
     args = parser.parse_args()
 
     path = Path(args.arg1)
@@ -447,12 +455,34 @@ def main():
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
 
+    page_reading_orders = None
+    if args.page_reading_orders:
+        try:
+            page_reading_orders = json.loads(args.page_reading_orders)
+            # Basic validation
+            if not isinstance(page_reading_orders, list):
+                raise ValueError("--page_reading_orders must be a JSON list of objects.")
+            for item in page_reading_orders:
+                if "pages" not in item:
+                    raise ValueError(
+                        "Each item in --page_reading_orders must have a 'pages' key."
+                    )
+        except json.JSONDecodeError:
+            logger.error(
+                f"Invalid JSON format for --page_reading_orders: {args.page_reading_orders}"
+            )
+            exit(1)
+        except ValueError as e:
+            logger.error(e)
+            exit(1)
+
     analyzer = DocumentAnalyzer(
         configs=configs,
         visualize=args.vis,
         device=args.device,
         ignore_meta=args.ignore_meta,
         reading_order=args.reading_order,
+        page_reading_orders=page_reading_orders,
     )
 
     os.makedirs(args.outdir, exist_ok=True)

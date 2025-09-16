@@ -302,6 +302,7 @@ class DocumentAnalyzer:
         reading_order="auto",
         split_text_across_cells=False,
         reading_order_algorithm="graph",
+        page_reading_orders=None,
     ):
         default_configs = {
             "ocr": {
@@ -326,8 +327,16 @@ class DocumentAnalyzer:
             },
         }
 
-        self.reading_order = reading_order
-        self.reading_order_algorithm = reading_order_algorithm
+        self.page_reading_orders = page_reading_orders
+        if self.page_reading_orders is None:
+            # Backward compatibility: create a config for all pages from old params
+            self.page_reading_orders = [
+                {
+                    "pages": (1, float("inf")),
+                    "reading_order": reading_order,
+                    "reading_order_algorithm": reading_order_algorithm,
+                }
+            ]
 
         if isinstance(configs, dict):
             recursive_update(default_configs, configs)
@@ -351,7 +360,7 @@ class DocumentAnalyzer:
         self.ignore_meta = ignore_meta
         self.split_text_across_cells = split_text_across_cells
 
-    def aggregate(self, ocr_res, layout_res):
+    def aggregate(self, ocr_res, layout_res, page_number=1):
         paragraphs = []
         check_list = [False] * len(ocr_res.words)
         for table in layout_res.tables:
@@ -433,14 +442,22 @@ class DocumentAnalyzer:
         prediction_reading_order(headers, "left2right")
         prediction_reading_order(footers, "left2right")
 
-        if self.reading_order == "auto":
+        # Determine reading order based on page number
+        reading_order = "auto"
+        reading_order_algorithm = "graph"  # Default
+        for config in self.page_reading_orders:
+            start_page, end_page = config["pages"]
+            if start_page <= page_number <= end_page:
+                reading_order = config.get("reading_order", "auto")
+                reading_order_algorithm = config.get("reading_order_algorithm", "graph")
+                break
+
+        if reading_order == "auto":
             reading_order = (
                 "right2left" if page_direction == "vertical" else "top2bottom"
             )
-        else:
-            reading_order = self.reading_order
 
-        if self.reading_order_algorithm == "simple":
+        if reading_order_algorithm == "simple":
             prediction_reading_order_simple(elements, reading_order)
         else:
             prediction_reading_order(elements, reading_order, self.img)
@@ -464,7 +481,7 @@ class DocumentAnalyzer:
 
         return outputs
 
-    async def run(self, img):
+    async def run(self, img, page_number=1):
         with ThreadPoolExecutor(max_workers=2) as executor:
             loop = asyncio.get_running_loop()
             tasks = [
@@ -492,14 +509,14 @@ class DocumentAnalyzer:
 
             outputs = {"words": ocr_aggregate(results_det, results_rec)}
             results_ocr = OCRSchema(**outputs)
-            outputs = self.aggregate(results_ocr, results_layout)
+            outputs = self.aggregate(results_ocr, results_layout, page_number)
 
         results = DocumentAnalyzerSchema(**outputs)
         return results, ocr, layout
 
-    def __call__(self, img):
+    def __call__(self, img, page_number=1):
         self.img = img
-        results, ocr, layout = asyncio.run(self.run(img))
+        results, ocr, layout = asyncio.run(self.run(img, page_number))
 
         if self.visualize:
             layout = reading_order_visualizer(layout, results)

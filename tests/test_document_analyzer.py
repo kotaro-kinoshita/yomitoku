@@ -607,6 +607,65 @@ def test_split_text_across_cells():
     assert results.points[1] == [[50, 0], [100, 0], [100, 20], [50, 20]]
 
 
+def test_page_specific_reading_orders(monkeypatch):
+    # Mock the reading order functions to check if they are called correctly
+    calls = []
+
+    def mock_prediction_reading_order(elements, direction, img=None):
+        calls.append(("graph", direction))
+        return elements
+
+    def mock_prediction_reading_order_simple(elements, direction):
+        calls.append(("simple", direction))
+        return elements
+
+    monkeypatch.setattr(
+        "yomitoku.document_analyzer.prediction_reading_order",
+        mock_prediction_reading_order,
+    )
+    monkeypatch.setattr(
+        "yomitoku.document_analyzer.prediction_reading_order_simple",
+        mock_prediction_reading_order_simple,
+    )
+
+    page_orders_config = [
+        {
+            "pages": (1, 1),
+            "reading_order": "left2right",
+            "reading_order_algorithm": "simple",
+        },
+        {
+            "pages": (2, 5),
+            "reading_order": "top2bottom",
+            "reading_order_algorithm": "graph",
+        },
+        {"pages": (6, 10), "reading_order": "right2left"},  # Should default to graph
+    ]
+    analyzer = DocumentAnalyzer(page_reading_orders=page_orders_config)
+    analyzer.img = None  # Set img attribute to avoid AttributeError in test
+
+    mock_layout_res = DocumentAnalyzerSchema(
+        paragraphs=[], tables=[], figures=[], words=[]
+    )
+    mock_ocr_res = type("MockOcrRes", (), {"words": []})()
+
+    # Test Page 1
+    analyzer.aggregate(mock_ocr_res, mock_layout_res, page_number=1)
+    assert calls.pop() == ("simple", "left2right")
+
+    # Test Page 3
+    analyzer.aggregate(mock_ocr_res, mock_layout_res, page_number=3)
+    assert calls.pop() == ("graph", "top2bottom")
+
+    # Test Page 7
+    analyzer.aggregate(mock_ocr_res, mock_layout_res, page_number=7)
+    assert calls.pop() == ("graph", "right2left")
+
+    # Test Page 11 (no config, should use auto -> top2bottom for empty page)
+    analyzer.aggregate(mock_ocr_res, mock_layout_res, page_number=11)
+    assert calls.pop() == ("graph", "top2bottom")
+
+
 def test_document_analyzer_simple_reading_order():
     # Test case for two-column layout.
     # Elements are intentionally out of order.
