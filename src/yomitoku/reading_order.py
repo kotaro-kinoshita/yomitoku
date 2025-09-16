@@ -138,7 +138,7 @@ def _create_graph_top2bottom(nodes):
                 else:
                     other_node.add_link(node)
 
-            node_distance = node.prop["box"][0] + node.prop["box"][1]
+            node_distance = node.prop["box"][0] * 10000 + node.prop["box"][1]
             node.prop["distance"] = node_distance
 
     for node in nodes:
@@ -171,7 +171,7 @@ def _create_graph_right2left(nodes):
         node.children = sorted(node.children, key=lambda x: x.prop["box"][1])
 
 
-def _create_graph_left2right(nodes, x_weight=1, y_weight=5):
+def _create_graph_left2right(nodes, x_weight=1, y_weight=10000):
     for i, node in enumerate(nodes):
         for j, other_node in enumerate(nodes):
             if i == j:
