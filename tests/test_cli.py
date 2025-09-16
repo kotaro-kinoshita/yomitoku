@@ -239,3 +239,35 @@ def test_validate_encoding():
     assert validate_encoding("shift-jis")
     assert validate_encoding("euc-jp")
     assert validate_encoding("cp932")
+
+
+@pytest.mark.parametrize(
+    "invalid_config_str",
+    [
+        '{"pages": [1, 10]}',  # Not a list
+        '[{"pages": [1, 10, 15]}]',  # pages is not a pair
+        '[{"pages": [1, "10"]}]',  # pages contains non-int
+        '[{"pages": [0, 10]}]',  # start page < 1
+        '[{"pages": [10, 1]}]',  # start > end
+        '[{"pages": [1, 10]}, {"pages": [5, 15]}]',  # overlap
+        '[{"reading_order": "left2right"}]',  # missing 'pages' key
+    ],
+)
+def test_cli_invalid_page_reading_orders(
+    monkeypatch, tmp_path, invalid_config_str
+):
+    with pytest.raises(SystemExit) as e:
+        monkeypatch.setattr("sys.exit", lambda x: (_ for _ in ()).throw(SystemExit(x)))
+        monkeypatch.setattr(
+            "sys.argv",
+            [
+                "main.py",
+                "tests/data/test.pdf",
+                "-o",
+                str(tmp_path),
+                "--page_reading_orders",
+                invalid_config_str,
+            ],
+        )
+        main.main()
+    assert e.value.code == 1

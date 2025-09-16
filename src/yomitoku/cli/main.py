@@ -77,6 +77,37 @@ def save_merged_file(out_path, args, out, imgs):
         )
 
 
+def validate_page_reading_orders(orders):
+    if not isinstance(orders, list):
+        raise ValueError("--page_reading_orders must be a JSON list of objects.")
+
+    validated_ranges = []
+    for item in orders:
+        if "pages" not in item:
+            raise ValueError("Each item in --page_reading_orders must have a 'pages' key.")
+
+        pages = item["pages"]
+        if not isinstance(pages, (list, tuple)) or len(pages) != 2:
+            raise ValueError("'pages' must be a list or tuple of two integers [start, end].")
+
+        start_page, end_page = pages
+        if not all(isinstance(p, int) for p in pages):
+            raise ValueError("Page numbers in 'pages' must be integers.")
+
+        if start_page < 1:
+            raise ValueError(f"Start page must be 1 or greater, but got {start_page}.")
+
+        if start_page > end_page:
+            raise ValueError(f"Start page {start_page} cannot be greater than end page {end_page}.")
+
+        # Check for overlaps
+        for r_start, r_end in validated_ranges:
+            if max(start_page, r_start) <= min(end_page, r_end):
+                raise ValueError(f"Overlapping page ranges found: [{start_page}, {end_page}] and [{r_start}, {r_end}].")
+        validated_ranges.append((start_page, end_page))
+    return True
+
+
 def validate_encoding(encoding):
     if encoding not in [
         "utf-8",
@@ -459,21 +490,14 @@ def main():
     if args.page_reading_orders:
         try:
             page_reading_orders = json.loads(args.page_reading_orders)
-            # Basic validation
-            if not isinstance(page_reading_orders, list):
-                raise ValueError("--page_reading_orders must be a JSON list of objects.")
-            for item in page_reading_orders:
-                if "pages" not in item:
-                    raise ValueError(
-                        "Each item in --page_reading_orders must have a 'pages' key."
-                    )
+            validate_page_reading_orders(page_reading_orders)
         except json.JSONDecodeError:
             logger.error(
                 f"Invalid JSON format for --page_reading_orders: {args.page_reading_orders}"
             )
             exit(1)
         except ValueError as e:
-            logger.error(e)
+            logger.error(f"Invalid configuration for --page_reading_orders: {e}")
             exit(1)
 
     analyzer = DocumentAnalyzer(

@@ -6,6 +6,8 @@ import numpy as np
 from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognizer import TextRecognizer
 
+from yomitoku.utils.logger import set_logger
+
 from .layout_analyzer import LayoutAnalyzer
 from .ocr import OCRSchema, ocr_aggregate
 from .reading_order import (
@@ -15,6 +17,8 @@ from .reading_order import (
 from .utils.misc import calc_overlap_ratio, is_contained, quad_to_xyxy
 from .utils.visualizer import det_visualizer, reading_order_visualizer
 from .schemas import ParagraphSchema, FigureSchema, DocumentAnalyzerSchema
+
+logger = set_logger(__name__, "INFO")
 
 
 def combine_flags(flag1, flag2):
@@ -445,12 +449,20 @@ class DocumentAnalyzer:
         # Determine reading order based on page number
         reading_order = "auto"
         reading_order_algorithm = "graph"  # Default
-        for config in self.page_reading_orders:
-            start_page, end_page = config["pages"]
-            if start_page <= page_number <= end_page:
-                reading_order = config.get("reading_order", "auto")
-                reading_order_algorithm = config.get("reading_order_algorithm", "graph")
-                break
+        try:
+            for config in self.page_reading_orders:
+                start_page, end_page = config["pages"]
+                if start_page <= page_number <= end_page:
+                    reading_order = config.get("reading_order", "auto")
+                    reading_order_algorithm = config.get(
+                        "reading_order_algorithm", "graph"
+                    )
+                    break
+        except (TypeError, ValueError) as e:
+            logger.warning(
+                f"Malformed page_reading_orders configuration item detected. "
+                f"Falling back to default settings. Error: {e}"
+            )
 
         if reading_order == "auto":
             reading_order = (
