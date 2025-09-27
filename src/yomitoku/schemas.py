@@ -2,7 +2,7 @@ from typing import List, Union
 from pydantic import conlist, Field
 
 from .base import BaseSchema
-from .export import export_csv, export_html, export_markdown, export_json
+from .export import export_csv, export_html, export_markdown, export_json, export_to_dict
 
 
 class Element(BaseSchema):
@@ -216,6 +216,9 @@ class DocumentAnalyzerSchema(BaseSchema):
 
     def to_json(self, out_path: str, **kwargs):
         return export_json(self, out_path, **kwargs)
+
+    def to_dict(self, **kwargs):
+        return export_to_dict(self, out_path=None, **kwargs)
 
 
 class TextRecognizerSchema(BaseSchema):
