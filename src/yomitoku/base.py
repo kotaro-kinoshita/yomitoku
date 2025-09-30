@@ -17,7 +17,7 @@ def load_yaml_config(path_config: str):
     if not path_config.exists():
         raise FileNotFoundError(f"Config file not found: {path_config}")
 
-    with open(path_config, "r") as file:
+    with open(path_config, "r", encoding="utf-8") as file:
         yaml_config = OmegaConf.load(file)
     return yaml_config
 
