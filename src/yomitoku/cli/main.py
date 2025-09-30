@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 import torch
+from PIL import Image
 
 from ..constants import SUPPORT_OUTPUT_FORMAT
 from ..data.functions import load_image, load_pdf
@@ -68,8 +69,9 @@ def save_merged_file(out_path, args, out, imgs):
     elif args.format == "md":
         save_markdown(out, out_path, args.encoding)
     elif args.format == "pdf":
+        pil_images = [Image.fromarray(img[:, :, ::-1]) for img in imgs]
         create_searchable_pdf(
-            imgs,
+            pil_images,
             out,
             output_path=out_path,
             font_path=args.font_path,
@@ -243,8 +245,9 @@ def process_single_file(args, analyzer, path, format):
             )
         elif format == "pdf":
             if not args.combine:
+                pil_image = Image.fromarray(img[:, :, ::-1])
                 create_searchable_pdf(
-                    [img],
+                    [pil_image],
                     [result],
                     output_path=out_path,
                     font_path=args.font_path,
