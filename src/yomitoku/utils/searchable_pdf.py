@@ -62,13 +62,13 @@ def to_full_width(text):
     return jaconv_text
 
 
-from typing import List
+from typing import List, Optional
 
 def create_searchable_pdf(
     images: List[Image.Image],
     docs: List[DocumentAnalyzerSchema],
     output_path: str,
-    font_path: str = None,
+    font_path: Optional[str] = None,
 ):
     """
     Create a searchable PDF from an image and OCR results.
@@ -195,7 +195,7 @@ def create_searchable_pdf(
                     char_y = base_y - (j * char_height) - char_height / 2
 
                     c.saveState()
-                    c.translate(char_x + font_size / 2, char_y - font_size / 2)
+                    c.translate(char_x, char_y + font_size / 2)
                     c.rotate(-90)
                     c.drawString(0, 0, ch)
                     c.restoreState()
