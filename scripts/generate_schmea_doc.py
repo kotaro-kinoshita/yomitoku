@@ -12,7 +12,7 @@ targets = [
 for target in targets:
     schema = target["schema"].model_json_schema()
     outpath = f"schemas/{target['name']}.json"
-    with open(outpath, "w") as f:
+    with open(outpath, "w", encoding="utf-8") as f:
         json.dump(schema, f, indent=2, ensure_ascii=False)
 
     # Generate HTML documentation for the schemas
