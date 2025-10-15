@@ -105,7 +105,7 @@ def process_single_file(args, analyzer, path, format):
     else:
         imgs = load_image(path)
 
-    target_pages = range(len(imgs))
+    target_pages = range(1, len(imgs) + 1)
     if args.pages is not None:
         target_pages = parse_pages(args.pages)
 
