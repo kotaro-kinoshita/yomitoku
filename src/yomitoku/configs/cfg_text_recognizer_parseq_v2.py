@@ -8,7 +8,7 @@ from ..constants import ROOT_DIR
 class Data:
     num_workers: int = 4
     batch_size: int = 128
-    img_size: List[int] = field(default_factory=lambda: [32, 400])
+    img_size: List[int] = field(default_factory=lambda: [32, 800])
 
 
 @dataclass
@@ -40,7 +40,7 @@ class TextRecognizerPARSeqV2Config:
     hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-recognizer-parseq-middle-v2"
     charset: str = str(ROOT_DIR + "/resource/charset.txt")
     num_tokens: int = 7312
-    max_label_length: int = 50
+    max_label_length: int = 100
     decode_ar: int = 1
     refine_iters: int = 1
 
