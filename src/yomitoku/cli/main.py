@@ -88,14 +88,32 @@ def validate_encoding(encoding):
     return True
 
 
+def parse_pages(pages_str):
+    pages = set()
+    for part in pages_str.split(","):
+        if "-" in part:
+            start, end = map(int, part.split("-"))
+            pages.update(range(start, end + 1))
+        else:
+            pages.add(int(part))
+    return sorted(pages)
+
+
 def process_single_file(args, analyzer, path, format):
     if path.suffix[1:].lower() in ["pdf"]:
         imgs = load_pdf(path, dpi=args.dpi)
     else:
         imgs = load_image(path)
 
+    target_pages = range(len(imgs))
+    if args.pages is not None:
+        target_pages = parse_pages(args.pages)
+
     format_results = []
     for page, img in enumerate(imgs):
+        if (page + 1) not in target_pages:
+            continue
+
         result, ocr, layout = analyzer(img)
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
@@ -392,6 +410,12 @@ def main():
         type=int,
         default=200,
         help="DPI for loading PDF files (default: 200)",
+    )
+    parser.add_argument(
+        "--pages",
+        type=str,
+        default=None,
+        help="pages to process, e.g., 1,2,5-10 (default: all pages, starting from 1)",
     )
     args = parser.parse_args()
 
