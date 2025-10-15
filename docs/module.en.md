@@ -121,35 +121,15 @@ Storing the Path to a YAML File in the Config
 
 <!--/codeinclude-->
 
-## Using in an Offline Environment
 
-Yomitoku automatically downloads models from Hugging Face Hub during the first execution, requiring an internet connection at that time. However, by manually downloading the models in advance, it can be executed in an offline environment.
+## Using Yomitoku in Offline Environments
 
-1. Install [Git Large File Storage](https://docs.github.com/ja/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)
-2. In an environment with internet access, download the model repository. Copy the cloned repository to your target environment using your preferred tools.
+Yomitoku automatically downloads the model from Hugging Face Hub on its first run.
+An internet connection is required at that time, but by manually downloading the model beforehand, you can also run Yomitoku in environments without internet access.
 
-The following is the command to download the model repository from Hugging Face Hub.
-
-```sh
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta
-
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta
-
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-text-detector-dbnet-open-beta
-
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta
+```
+download_model
 ```
 
-3. Place the model repository directly under the root directory of the Yomitoku repository and reference the local model repository in the `hf_hub_repo` field of the YAML file. Below is an example of `text_detector.yaml`. Similarly, define YAML files for other modules as well.
+By placing the downloaded repository folder `KotaroKinoshita` in the current directory at runtime, the local repository model will be loaded and executed without any internet connection.
 
-```yaml
-hf_hub_repo: yomitoku-text-detector-dbnet-open-beta
-```
-
-4. Storing the Path to a YAML File in the Config
-
-<!--codeinclude-->
-
-[demo/setting_document_anaysis.py](../demo/setting_document_anaysis.py)
-
-<!--/codeinclude-->

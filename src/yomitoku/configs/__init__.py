@@ -9,6 +9,12 @@ from .cfg_text_recognizer_parseq import TextRecognizerPARSeqConfig
 from .cfg_text_recognizer_parseq_small import TextRecognizerPARSeqSmallConfig
 from .cfg_text_recognizer_parseq_v2 import TextRecognizerPARSeqV2Config
 
+DEFAULT_CONFIGS = [
+    TextRecognizerPARSeqV2Config,
+    TextDetectorDBNetV2Config,
+    LayoutParserRTDETRv2V2Config,
+    TableStructureRecognizerRTDETRv2Config,
+]
 
 __all__ = [
     "TextDetectorDBNetConfig",

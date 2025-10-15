@@ -127,32 +127,8 @@ yaml ファイルのパスを config に格納する
 
 Yomitoku は初回の実行時に HuggingFaceHub からモデルを自動でダウンロードします。その際にインターネット環境が必要ですが、事前に手動でダウンロードすることでインターネットに接続できない環境でも実行することが可能です。
 
-1. [Git Large File Storage](https://docs.github.com/ja/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)をインストール
-
-2. 事前にインターネットに接続できる環境でモデルリポジトリをダウンロードします。クローンしたリポジトリはご自身のツールで動作環境にコピーしてください。
-
-以下は huggingfacehub からモデルリポジトリをダウンロードするコマンド
-
-```sh
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-table-structure-recognizer-rtdtrv2-open-beta
-
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-layout-parser-rtdtrv2-open-beta
-
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-text-detector-dbnet-open-beta
-
-git clone https://huggingface.co/KotaroKinoshita/yomitoku-text-recognizer-parseq-open-beta
+```
+download_model
 ```
 
-3. yomitoku のリポジトリの直下にモデルリポジトリを配置し、yaml ファイルの`hf_hub_repo`でローカルのモデルレポジトリを参照します。以下は `text_detector.yaml` の例です。同様に他のモジュールに対しても yaml ファイルを定義します。
-
-```yaml
-hf_hub_repo: yomitoku-text-detector-dbnet-open-beta
-```
-
-4. yaml ファイルのパスを config に格納する
-
-<!--codeinclude-->
-
-[demo/setting_document_anaysis.py](../demo/setting_document_anaysis.py)
-
-<!--/codeinclude-->
+実行時にダウンロードされたリポジトリのフォルダ`KotaroKinoshita`をカレントディレクトリに配置することで、インターネットへの接続なしに、ローカルリポジトリのモデルが呼び出され実行されます。
