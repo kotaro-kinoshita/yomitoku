@@ -2,9 +2,9 @@
 name: Change Log Generator
 
 on:
-  workflow_run:
-    workflows: ["Release Drafter"] 
-    types: [completed]
+  pull_request:
+    types: [closed]      
+      - main    
 
 permissions:
   contents: write
@@ -14,13 +14,7 @@ permissions:
 
 jobs:
   changelog:
-    if: |
-      github.event_name == 'push' ||
-      ! contains(
-        github.event.pull_request.labels.*.name,
-        'changelog'
-      )
-
+    if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
