@@ -133,3 +133,13 @@ yomitoku ${path_data} --reading_order left2right
 * `left2right`: Prioritizes reading from left to right. Suitable for layouts like receipts or health insurance cards, where key-value text pairs are arranged in columns.
 
 * `right2left`: Prioritizes reading from right to left. Effective for vertically written documents.
+
+## Specifying Pages to Process
+
+You can choose to process only specific pages.
+Pages can be specified either as a comma-separated list or as a range using a hyphen.
+
+```
+yomitoku ${path_data} --pages 1,3-5,10
+```
+
