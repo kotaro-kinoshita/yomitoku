@@ -55,7 +55,7 @@ pip install yomitoku
 ## 🚀 Usage
 
 ```
-yomitoku ${path_data} -f md -o results -v --figure --lite
+yomitoku ${path_data} -f md -o results -v --figure
 ```
 
 - `${path_data}`: Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed.
