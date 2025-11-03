@@ -14,6 +14,9 @@ from ..constants import ROOT_DIR
 from ..schemas import DocumentAnalyzerSchema
 from .misc import is_contained
 
+from typing import List, Optional
+
+
 FONT_PATH = ROOT_DIR + "/resource/MPLUS1p-Medium.ttf"
 
 
@@ -62,8 +65,6 @@ def to_full_width(text):
     return jaconv_text
 
 
-from typing import List, Optional
-
 def create_searchable_pdf(
     images: List[Image.Image],
     docs: List[DocumentAnalyzerSchema],
@@ -89,7 +90,7 @@ def create_searchable_pdf(
 
     for i, (image, doc) in enumerate(zip(images, docs)):
         image_path = f"tmp_{i}.png"
-        image.save(image_path)
+        image.save(image_path, format="JPEG", quality=85)
         w, h = image.size
 
         c.setPageSize((w, h))
