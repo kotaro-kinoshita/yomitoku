@@ -25,13 +25,14 @@ dependencies = [
     "timm>=1.0.11",
     "torchvision>=0.20.0",
     "torch>=2.5.0",
-    "pypdfium2>=4.30.0",
+    "pypdfium2==4.30.0",
     "onnx>=1.17.0",
     "torch>=2.5.0",
     "torchvision>=0.20.0",
     "onnxruntime>=1.20.1",
     "reportlab>=4.4.1",
     "jaconv>=0.4.0",
+    "onnxscript>=0.5.4",
 ]
 
 [tool.uv-dynamic-versioning]
