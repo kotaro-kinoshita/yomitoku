@@ -92,9 +92,9 @@ class MSDeformableAttention(nn.Module):
         self.method = method
 
         self.head_dim = embed_dim // num_heads
-        assert (
-            self.head_dim * num_heads == self.embed_dim
-        ), "embed_dim must be divisible by num_heads"
+        assert self.head_dim * num_heads == self.embed_dim, (
+            "embed_dim must be divisible by num_heads"
+        )
 
         self.sampling_offsets = nn.Linear(embed_dim, self.total_points * 2)
         self.attention_weights = nn.Linear(embed_dim, self.total_points)

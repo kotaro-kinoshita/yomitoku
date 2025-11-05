@@ -8,6 +8,7 @@ from .configs import (
     TextRecognizerPARSeqConfig,
     TextRecognizerPARSeqSmallConfig,
     TextRecognizerPARSeqV2Config,
+    TextRecognizerPARSeqTinyConfig,
 )
 from .data.dataset import ParseqDataset
 from .models import PARSeq
@@ -28,6 +29,7 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
         self.register("parseq", TextRecognizerPARSeqConfig, PARSeq)
         self.register("parseqv2", TextRecognizerPARSeqV2Config, PARSeq)
         self.register("parseq-small", TextRecognizerPARSeqSmallConfig, PARSeq)
+        self.register("parseq-tiny", TextRecognizerPARSeqTinyConfig, PARSeq)
 
 
 class TextRecognizer(BaseModule):

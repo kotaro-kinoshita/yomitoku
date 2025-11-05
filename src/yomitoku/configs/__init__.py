@@ -7,6 +7,7 @@ from .cfg_text_detector_dbnet import TextDetectorDBNetConfig
 from .cfg_text_detector_dbnet_v2 import TextDetectorDBNetV2Config
 from .cfg_text_recognizer_parseq import TextRecognizerPARSeqConfig
 from .cfg_text_recognizer_parseq_small import TextRecognizerPARSeqSmallConfig
+from .cfg_text_recognizer_parseq_tiny import TextRecognizerPARSeqTinyConfig
 from .cfg_text_recognizer_parseq_v2 import TextRecognizerPARSeqV2Config
 
 DEFAULT_CONFIGS = [
@@ -20,6 +21,7 @@ __all__ = [
     "TextDetectorDBNetConfig",
     "TextRecognizerPARSeqConfig",
     "LayoutParserRTDETRv2Config",
+    "TextRecognizerPARSeqTinyConfig",
     "TableStructureRecognizerRTDETRv2Config",
     "TextRecognizerPARSeqSmallConfig",
     "LayoutParserRTDETRv2V2Config",
