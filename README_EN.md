@@ -40,8 +40,9 @@ For the results exported in Markdown, please refer to [static/out/in_demo_p1.md]
 Source of the image: Created by processing content from “Reiwa 6 Edition Information and Communications White Paper, Chapter 3, Section 2: Technologies Advancing with AI Evolution” (https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf)：(Ministry of Internal Affairs and Communications).
 
 ## 📣 Release
-
-- Released YomiToku v0.5.1 (beta) on November 26, 2024.
+* **November 5, 2025 – YomiToku v0.10.0**: Added support for a **GPU-free OCR model optimized for CPU inference**.
+* **April 4, 2025 – YomiToku v0.8.0**: Added support for **handwritten character recognition**.
+* **November 26, 2024 – YomiToku v0.5.1 (beta)**: Public release.
 
 ## 💡 Installation
 
@@ -54,8 +55,14 @@ pip install yomitoku
 
 ## 🚀 Usage
 
+Normal Mode
 ```
 yomitoku ${path_data} -f md -o results -v --figure
+```
+
+Efficient Mode
+```
+yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 ```
 
 - `${path_data}`: Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed.
