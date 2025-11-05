@@ -464,7 +464,7 @@ def main():
     }
 
     if args.lite:
-        configs["ocr"]["text_recognizer"]["model_name"] = "parseq-small"
+        configs["ocr"]["text_recognizer"]["model_name"] = "parseq-tiny"
 
         if args.device == "cpu" or not torch.cuda.is_available():
             configs["ocr"]["text_detector"]["infer_onnx"] = True
