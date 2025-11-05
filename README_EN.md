@@ -65,6 +65,9 @@ Efficient Mode
 yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 ```
 
+ChatGPT:
+The model used in `--lite` mode has a maximum string length limit of 50 characters per line. Therefore, it is not suitable for recognizing English text or other documents with long lines. For English documents or those with many characters per line, it is recommended to use the standard model.
+
 - `${path_data}`: Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed.
 - `-f`, `--format`: Specify the output file format. Supported formats are json, csv, html, md , and pdf(searchable-pdf).
 - `-o`, `--outdir`: Specify the name of the output directory. If it does not exist, it will be created.
