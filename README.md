@@ -41,7 +41,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 
 ## 📣 リリース情報
 
-- 2025 年 11 月  5 日 YomiToku v0.10.0 CPU推論向けに最適化したGPU Free OCRモデルのサポート
+- 2025 年 11 月  5 日 YomiToku v0.10.1 CPU推論向けに最適化したGPU Free OCRモデルのサポート
 - 2025 年  4 月  4 日 YomiToku v0.8.0 手書き文字認識のサポート
 - 2024 年 11 月 26 日 YomiToku v0.5.1 (beta) を公開
 

@@ -40,7 +40,7 @@ For the results exported in Markdown, please refer to [static/out/in_demo_p1.md]
 Source of the image: Created by processing content from “Reiwa 6 Edition Information and Communications White Paper, Chapter 3, Section 2: Technologies Advancing with AI Evolution” (https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf)：(Ministry of Internal Affairs and Communications).
 
 ## 📣 Release
-* **November 5, 2025 – YomiToku v0.10.0**: Added support for a **GPU-free OCR model optimized for CPU inference**.
+* **November 5, 2025 – YomiToku v0.10.1**: Added support for a **GPU-free OCR model optimized for CPU inference**.
 * **April 4, 2025 – YomiToku v0.8.0**: Added support for **handwritten character recognition**.
 * **November 26, 2024 – YomiToku v0.5.1 (beta)**: Public release.
 
