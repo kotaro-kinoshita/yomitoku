@@ -41,6 +41,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 
 ## 📣 リリース情報
 
+- 2025 年 11 月  5 日 YomiToku v0.10.0 CPU推論向けに最適化したGPU Free OCRモデルのサポート
 - 2025 年  4 月  4 日 YomiToku v0.8.0 手書き文字認識のサポート
 - 2024 年 11 月 26 日 YomiToku v0.5.1 (beta) を公開
 
@@ -54,9 +55,14 @@ pip install yomitoku
 - pytorch は 2.5 以上のバージョンに対応しています。その関係で CUDA11.8 以上のバージョンが必要になります。対応できない場合は、リポジトリ内の Dockerfile を利用してください。
 
 ## 🚀 実行方法
-
-```
+** 通常モデルでの推論 **
+```bash
 yomitoku ${path_data} -f md -o results -v --figure
+```
+
+** 高速モデルでの推論
+```bash
+yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 ```
 
 - `${path_data}` 解析対象の画像が含まれたディレクトリか画像ファイルのパスを直接して指定してください。ディレクトリを対象とした場合はディレクトリのサブディレクトリ内の画像も含めて処理を実行します。

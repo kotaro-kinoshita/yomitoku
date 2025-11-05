@@ -1,5 +1,5 @@
 import argparse
-
+import torch
 
 from yomitoku.layout_parser import LayoutParser
 from yomitoku.table_structure_recognizer import TableStructureRecognizer
@@ -41,12 +41,12 @@ def get_module(module_name, device):
 
 def main(args):
     module = get_module(args.module, args.device)
-    # module.model.load_state_dict(
-    #    torch.load(args.checkpoint, map_location="cpu")["model"]
-    # )
+    module.model.load_state_dict(
+        torch.load(args.checkpoint, map_location="cpu")["model"]
+    )
 
     module.model.save_pretrained(args.name)
-    module.model.push_to_hub(f"{args.owner}/{args.name}")
+    module.model.push_to_hub(f"{args.owner}/{args.name}", token=args.token)
 
 
 if __name__ == "__main__":
@@ -56,6 +56,7 @@ if __name__ == "__main__":
     parser.add_argument("--owner", type=str)
     parser.add_argument("--name", type=str)
     parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--token", type=str)
     args = parser.parse_args()
 
     main(args)
