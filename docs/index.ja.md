@@ -16,4 +16,24 @@ A. 可能です。Yomitoku は初回実行時に HuggingFaceHub にアクセス�
 
 ### Q. 商用利用は可能ですか？
 
-A. 本パッケージは [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) に従います。個人の利用や研究利用に関しては無償でご利用いただけます。商用利用に関しては、別途、有償の商用ライセンスを発行しますので、開発者まで問い合わせください。
+YomiToku を商用環境でご利用いただく場合、以下の方法で **製品版の商用ライセンス** を提供しています。  
+手書き認識の精度向上、画像の自動向き補正、レイアウト解析の強化など、**製品版のみで利用可能な追加機能** を多数搭載しています。
+
+#### オンプレミス環境・ローカル PC での商用利用
+オンプレミス環境やローカル PC での商用利用をご希望の場合は、専用の **オンプレ向け商用ライセンス** をご用意しています。  
+詳細は以下よりお問い合わせください。
+
+- https://www.mlism.com/
+
+#### クラウド上での商用利用（AWS Marketplace）
+YomiToku の商用版は **AWS Marketplace** でも提供しています。  
+すべての解析処理は **お客様の AWS 環境内で完結** し、外部ネットワークや第三者サーバーへの送信は一切発生しません。  
+機密文書・社内資料・個人情報を扱うワークロードでも安心してご利用いただけます。
+
+- **AWS Marketplace – YomiToku-Pro Document Analyzer**  
+  https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku
+- **利用手順（YomiToku-Client ドキュメント）**  
+  https://mlism-inc.github.io/yomitoku-client/
+
+
+

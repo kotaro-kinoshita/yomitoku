@@ -101,8 +101,31 @@ yomitoku --help
 
 ## LICENSE
 
-本リポジトリ内に格納されているソースコードおよび本プロジェクトに関連する HuggingFaceHub 上のモデルの重みファイルのライセンスは CC BY-NC-SA 4.0 に従います。
-非商用での個人利用、研究目的での利用はご自由にお使いください。
-商用目的での利用に関しては、別途、商用ライセンスを提供しますので、https://www.mlism.com/ にお問い合わせください。
+本リポジトリ内のソースコードおよび本プロジェクトに関連する HuggingFace Hub 上のモデルの重みファイルは、**CC BY-NC-SA 4.0** ライセンスの下で提供されています。  
+非商用での個人利用・研究目的での利用は自由に行っていただけます。
 
-YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
+YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0.  
+To view a copy of this license, visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+---
+
+## 商用利用について
+
+YomiToku を商用環境でご利用いただく場合、以下の方法で **製品版の商用ライセンス** を提供しています。  
+手書き認識の精度向上、画像の自動向き補正、レイアウト解析の強化など、**製品版のみで利用可能な追加機能** を多数搭載しています。
+
+### オンプレミス環境・ローカル PC での商用利用
+オンプレミス環境やローカル PC での商用利用をご希望の場合は、専用の **オンプレ向け商用ライセンス** をご用意しています。  
+詳細は以下よりお問い合わせください。
+
+- https://www.mlism.com/
+
+### クラウド上での商用利用（AWS Marketplace）
+YomiToku の商用版は **AWS Marketplace** でも提供しています。  
+すべての解析処理は **お客様の AWS 環境内で完結** し、外部ネットワークや第三者サーバーへの送信は一切発生しません。  
+機密文書・社内資料・個人情報を扱うワークロードでも安心してご利用いただけます。
+
+- **AWS Marketplace – YomiToku-Pro Document Analyzer**  
+  https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku
+- **利用手順（YomiToku-Client ドキュメント）**  
+  https://mlism-inc.github.io/yomitoku-client/
