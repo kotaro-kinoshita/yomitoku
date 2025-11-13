@@ -99,8 +99,30 @@ For more details, please refer to the [documentation](https://kotaro-kinoshita.g
 
 ## LICENSE
 
-The source code stored in this repository and the model weight files related to this project on Hugging Face Hub are licensed under CC BY-NC-SA 4.0.
-You are free to use them for non-commercial personal use or research purposes.
-For commercial use, a separate commercial license is available. Please contact the developers for more information.
+The source code contained in this repository, as well as the model weight files published on HuggingFace Hub related to this project, are provided under the **CC BY-NC-SA 4.0** license.  
+Personal, non-commercial, and research use is permitted.
 
-YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
+YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0.  
+To view a copy of this license, please visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+---
+
+## Commercial Use
+
+For commercial use of YomiToku, we provide a **licensed product edition** through the options below.  
+The commercial edition includes numerous enhancements such as improved handwriting recognition accuracy, automatic image orientation correction, and advanced layout analysis features that are **only available in the product version**.
+
+### On-Premises / Local PC Commercial Use
+For commercial use on on-premises servers or local PCs, we offer a dedicated **on-premises commercial license**.  
+For inquiries, please contact us via:
+
+- https://www.mlism.com/
+
+### Cloud-Based Commercial Use (AWS Marketplace)
+The commercial edition of YomiToku is also available on **AWS Marketplace**.  
+All processing is executed **entirely within your own AWS environment**, with no external network communication or transmission to third-party servers.  
+This makes it suitable for workloads involving confidential documents, internal corporate materials, or personal information.
+
+- **AWS Marketplace – YomiToku-Pro Document Analyzer**  
+  https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku
+- **Usage Guide (Yom**
