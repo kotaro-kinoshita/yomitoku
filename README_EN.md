@@ -97,13 +97,23 @@ yomitoku --help
 
 For more details, please refer to the [documentation](https://kotaro-kinoshita.github.io/yomitoku-dev/)
 
-## LICENSE
+以下は、あなたの LICENSE セクションの **正確で自然な英訳（GitHub向け最適化版）** です。
+ライセンス表記の国際標準表現と英語 OSS 文書の慣習も反映しています。
 
-The source code contained in this repository, as well as the model weight files published on HuggingFace Hub related to this project, are provided under the **CC BY-NC-SA 4.0** license.  
-Personal, non-commercial, and research use is permitted.
+---
 
-YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0.  
-To view a copy of this license, please visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
+## **LICENSE**
+
+The source code in this repository, as well as the model weight files hosted on HuggingFace Hub that are associated with this project, are provided under the **CC BY-NC-SA 4.0** license.
+Non-commercial personal use and academic/research use are permitted freely.
+
+**YomiToku © 2024 by Kotaro Kinoshita** is licensed under **CC BY-NC-SA 4.0**.
+To view a copy of this license, please visit:
+[https://creativecommons.org/licenses/by-nc-sa/4.0/](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+Determination of **commercial vs. non-commercial use** will follow the guideline below:
+
+* **[Guideline for Determining Commercial / Non-Commercial Use](license_guildline_jp.md)**
 
 ---
 
