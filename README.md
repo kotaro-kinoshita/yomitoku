@@ -107,6 +107,9 @@ yomitoku --help
 YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0.  
 To view a copy of this license, visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
+商用化/非商用の判断は以下のガイドラインに従い、判断いたします。
+- [ライセンスの商用/非商用の判断のためのガイドライン](docs/commercial_use_guideline.ja.md)
+
 ---
 
 ## 商用利用について
