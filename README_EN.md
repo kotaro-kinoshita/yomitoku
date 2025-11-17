@@ -113,7 +113,7 @@ To view a copy of this license, please visit:
 
 Determination of **commercial vs. non-commercial use** will follow the guideline below:
 
-* **[Guideline for Determining Commercial / Non-Commercial Use](license_guildline_jp.md)**
+* **[Guideline for Determining Commercial / Non-Commercial Use](docs/commercial_use_guideline.en.md)**
 
 ---
 
