@@ -20,7 +20,7 @@ YomiToku connects to Hugging Face Hub to automatically download model files duri
 Yes. For commercial use of YomiToku, we provide a **licensed product edition** through the options below.  
 The commercial edition includes numerous enhancements such as improved handwriting recognition accuracy, automatic image orientation correction, and advanced layout analysis features that are **available only in the product version**.
 
-* **[Guideline for Determining Commercial / Non-Commercial Use](license_guildline_jp.md)**
+* **[Guideline for Determining Commercial / Non-Commercial Use](commercial_use_guideline.en.md)**
 
 
 #### On-Premises / Local PC Commercial Use
