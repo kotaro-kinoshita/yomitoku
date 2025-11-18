@@ -1,11 +1,11 @@
 # MCP
 
-ここではYomitokuのMCPサーバーをClaude Desktopに連携して利用する方法を説明します。
+ここではYomiTokuのMCPサーバーをClaude Desktopに連携して利用する方法を説明します。
 
-## Yomitokuのインストール
+## YomiTokuのインストール
 
 まずは
-[Installation](installation.ja.md)の「uvでのインストール」に従ってYomitokuをインストールしてください。
+[Installation](installation.ja.md)の「uvでのインストール」に従ってYomiTokuをインストールしてください。
 
 ただし、`mcp`を依存関係に追加するためにインストール時には下記のように`--extra`に`mcp`を加えます。
 
@@ -25,7 +25,7 @@ uv sync --extra mcp
       "command": "uv",
       "args": [
         "--directory",
-        "(YomitokuをCloneしたディレクトリの絶対パス)",
+        "(YomiTokuをCloneしたディレクトリの絶対パス)",
         "run",
         "yomitoku_mcp"
       ],
@@ -38,7 +38,7 @@ uv sync --extra mcp
 ```
 
 
-例えば、`/Users/your-username/workspace`で`git clone https://github.com/kotaro-kinoshita/yomitoku.git`を実行した場合は、`(YomitokuをCloneしたディレクトリ)`は`/Users/your-username/workspace/yomitoku`となり、`yomitoku/demo`ディレクトリの`sample.pdf`を用いる場合は`(OCR対象のファイルがあるディレクトリ)`を`/Users/your-username/workspace/yomitoku/demo`と指定します。
+例えば、`/Users/your-username/workspace`で`git clone https://github.com/kotaro-kinoshita/yomitoku.git`を実行した場合は、`(YomiTokuをCloneしたディレクトリ)`は`/Users/your-username/workspace/yomitoku`となり、`yomitoku/demo`ディレクトリの`sample.pdf`を用いる場合は`(OCR対象のファイルがあるディレクトリ)`を`/Users/your-username/workspace/yomitoku/demo`と指定します。
 
 ## Claude Desktopでの利用
 
