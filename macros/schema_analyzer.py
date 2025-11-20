@@ -1,14 +1,15 @@
-"""Utility helpers for interpreting JSON Schema fragments during rendering.
+"""Analyzer utilities for interpreting JSON Schema fragments.
 
-SchemaRenderer leans on this module any time it needs to interpret or normalize
-JSON Schema content (e.g. following $ref pointers, extracting human readable
-badges, or inferring data types). Every helper aims to keep side-effects
-minimal so the renderer can call them freely without worrying about state.
+SchemaRenderer calls into this module once per node to normalize schemas
+($ref resolution), infer types, and collect displayable facts (constraints,
+badges, inline/summary decisions). The helpers avoid side-effects so renderer
+logic can reuse the computed analysis safely.
 """
 
 import html
 import json
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,19 @@ CONSTRAINT_LABELS: tuple[tuple[str, str], ...] = (
     ("minProperties", "Minimum properties"),
     ("maxProperties", "Maximum properties"),
 )
+
+
+# Immutable bundle returned by analyze(); keeps all analyzer-derived facts together.
+@dataclass(frozen=True)
+class SchemaNodeAnalysis:
+    """Aggregated metadata derived from a schema node."""
+
+    schema: dict[str, Any]  # Dereferenced/normalized schema dict
+    type_label: str | None  # Type badge text (inferred/explicit)
+    constraints: list[str]  # Human-readable constraint strings
+    summary_only: bool  # True when header alone is sufficient
+    additional_badge: str | None  # Badge HTML for additionalProperties
+    default_label: str | None = None  # Fallback label for array items
 
 
 def format_literal(value: Any) -> str:
@@ -48,6 +62,27 @@ class SchemaAnalyzer:
         # The root schema object is kept around so any nested $ref pointers can
         # look up definitions by JSON Pointer.
         self.root_schema = root_schema
+
+    def analyze(
+        self, schema_def: Any, *, compute_default_label: bool = False
+    ) -> SchemaNodeAnalysis:
+        """Produce a single analysis bundle for the provided schema node."""
+        # Normalize inputs (including resolving $ref) so downstream data is consistent.
+        schema = self.normalize_schema(schema_def)
+        # Collect all analyzer-driven facets once to avoid repeated lookups in the renderer.
+        type_label = self.determine_type_label(schema)
+        constraints = self.collect_constraints(schema)
+        summary_only = self.is_summary_only(schema)
+        additional_badge = self.additional_badge(schema.get("additionalProperties"))
+        default_label = self.default_item_label(schema) if compute_default_label else None
+        return SchemaNodeAnalysis(
+            schema=schema,
+            type_label=type_label,
+            constraints=constraints,
+            summary_only=summary_only,
+            additional_badge=additional_badge,
+            default_label=default_label,
+        )
 
     def dereference(self, node: dict[str, Any]) -> dict[str, Any]:
         """Resolve any $ref inside the provided node.
