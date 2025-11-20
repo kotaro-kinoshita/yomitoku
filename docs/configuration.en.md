@@ -1,4 +1,4 @@
-# Configuration
+# Module Configurations
 
 The configurable parameters for each module are explained.
 
@@ -75,7 +75,7 @@ visualize:
   font_size: int 
 ```
 
-## Layout_parser
+## Layout Parser
 
 ### threshold of prediction score
 
