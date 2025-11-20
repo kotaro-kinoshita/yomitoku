@@ -7,21 +7,37 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from macros.schema_analyzer import SCHEMA_DIR, SchemaAnalyzer
+from macros.schema_analyzer import SCHEMA_DIR, SchemaAnalyzer, SchemaNodeAnalysis
 from macros.schema_html_builder import SchemaHTMLBuilder
 
+
+# UI-facing metadata derived from analyzer output plus render context.
 @dataclass
 class NodeRenderMeta:
     """Aggregated metadata for rendering a schema node."""
 
-    schema: dict[str, Any]
-    title: str
-    type_label: str | None
-    description: str
-    summary_desc: str
-    badges: list[str]
-    anchor: str
-    allow_inline_title: bool
+    schema: dict[str, Any]  # Fully resolved schema dict for this node
+    title: str  # Display title resolved from schema/display_name/path
+    type_label: str | None  # Human-friendly type label badge
+    description: str  # Raw description text from schema
+    summary_desc: str  # Formatted summary description HTML (escaped)
+    badges: list[str]  # Render-ready badge HTML snippets
+    anchor: str  # Stable anchor id for permalinks/breadcrumbs
+    allow_inline_title: bool  # Whether title may render in inline summaries
+
+
+@dataclass
+class RenderNodeParams:
+    """Inputs required to render a node."""
+
+    node: dict[str, Any]  # Target schema node
+    display_name: str | None  # Preferred display name for the node
+    segments: Sequence[str]  # Anchor/breadcrumb path segments
+    required: bool  # Whether the node is required by its parent
+    inline: bool = False  # Render as inline card
+    open_card: bool = False  # Start expanded by default
+    force_summary_only: bool = False  # Force summary-only rendering
+    analysis: SchemaNodeAnalysis | None = None  # Optional precomputed analysis
 
 
 class SchemaRenderer:
@@ -47,11 +63,12 @@ class SchemaRenderer:
             # Root wrapper ensures CSS can style the entire schema tree at once.
             '<div class="schema-card-tree">',
             self._render_node(
-                schema,
-                display_name=title,
-                segments=["root"],
-                required=False,
-                root_schema=schema,
+                RenderNodeParams(
+                    node=schema,
+                    display_name=title,
+                    segments=["root"],
+                    required=False,
+                )
             ),
             "</div>",
         ]
@@ -61,182 +78,178 @@ class SchemaRenderer:
         """Set up analyzer and HTML builder for the active schema."""
         self.root_title = title
         self._analyzer = SchemaAnalyzer(schema)
-        self._html_builder = SchemaHTMLBuilder(self.root_title, self._analyzer)
+        self._html_builder = SchemaHTMLBuilder(self.root_title)
 
     def _render_node(
         self,
-        node: dict[str, Any],
-        *,
-        display_name: str | None,
-        segments: Sequence[str],
-        required: bool,
-        root_schema: dict[str, Any],
-        inline: bool = False,
-        open_card: bool = False,
-        force_summary_only: bool = False,
+        params: RenderNodeParams,
     ) -> str:
         """Render a single schema object (or reference) into a card."""
-        # Resolve $ref chains before doing any expensive rendering work.
-        schema = self._resolve_schema_node(node)
-        meta = self._build_node_meta(schema, display_name, segments, required)
+        analyzer = self._require_analyzer()
+        # Perform analysis once per node, but reuse when provided.
+        analysis = params.analysis or analyzer.analyze(params.node)
+        # Derive render-specific metadata (titles/anchors/badges) from analysis.
+        meta = self._build_node_meta(
+            analysis, params.display_name, params.segments, params.required
+        )
+        # Decide collapse/inline behavior up front so it is clear what drives layout.
+        summary_only_inline = self._summary_only_inline(
+            analysis, params.inline, params.force_summary_only
+        )
+        # Render children explicitly here so the recursive tree flow stays visible.
+        children_html = self._render_children(meta.schema, params.segments)
+        # Build body/summary HTML and assemble the card.
         body_html = self._build_node_body(
             meta,
-            segments,
-            root_schema,
-            inline,
-            force_summary_only,
+            analysis,
+            params.segments,
+            children_html,
+            summary_only_inline,
         )
-        summary_inner, summary_badge_only = self._build_node_summary(meta, inline)
-        permalink_html = self._require_html_builder().permalink_link(meta.anchor, meta.title)
+        summary_inner, summary_badge_only = self._build_node_summary(
+            meta, params.inline
+        )
+        permalink_html = self._require_html_builder().permalink_link(
+            meta.anchor, meta.title
+        )
         return self._render_card_output(
-            inline=inline,
+            inline=params.inline,
             anchor=meta.anchor,
             summary_inner=summary_inner,
             body_html=body_html,
             summary_badge_only=summary_badge_only,
-            open_card=open_card,
+            open_card=params.open_card,
             permalink_html=permalink_html,
         )
 
     def _render_children(
-        self, schema: dict[str, Any], segments: Sequence[str], root_schema: dict[str, Any]
+        self,
+        schema: dict[str, Any],
+        segments: Sequence[str],
     ) -> str:
         """Render child cards for properties, items, and combinators."""
+        requests: list[RenderNodeParams] = []
         base_segments = list(segments)
-        child_sections: list[str] = []
         # Maintain this order so properties show up before array items/combinators.
-        child_sections.extend(self._render_properties(schema, base_segments, root_schema))
-        child_sections.extend(self._render_items(schema, base_segments, root_schema))
-        child_sections.extend(
-            self._render_additional_properties(schema, base_segments, root_schema)
-        )
-        child_sections.extend(self._render_combinations(schema, base_segments, root_schema))
-        if not child_sections:
-            return ""
-        return self._require_html_builder().render_children_container(child_sections)
+        requests.extend(self._property_child_requests(schema, base_segments))
+        requests.extend(self._item_child_requests(schema, base_segments))
+        requests.extend(self._additional_property_requests(schema, base_segments))
+        requests.extend(self._combination_child_requests(schema, base_segments))
 
-    def _render_properties(
-        self, schema: dict[str, Any], segments: list[str], root_schema: dict[str, Any]
-    ) -> list[str]:
-        """Render the child cards for every property on an object schema."""
+        if not requests:
+            return ""
+        rendered = [self._render_node(params) for params in requests]
+        return self._require_html_builder().render_children_container(rendered)
+
+    def _property_child_requests(
+        self, schema: dict[str, Any], segments: list[str]
+    ) -> list[RenderNodeParams]:
+        """Describe child cards for every property on an object schema."""
         properties = schema.get("properties")
         if not isinstance(properties, dict):
             return []
         # JSON Schema lists required fields by name, so convert to a set for quick lookups.
         required_set = set(schema.get("required") or [])
-        children: list[str] = []
+        children: list[RenderNodeParams] = []
         for prop_name, prop_schema in properties.items():
             child_segments = list(segments) + [str(prop_name)]
             children.append(
-                self._render_node(
-                    prop_schema,
+                RenderNodeParams(
+                    node=prop_schema,
                     display_name=str(prop_name),
                     segments=child_segments,
                     required=str(prop_name) in required_set,
-                    root_schema=root_schema,
                 )
             )
         return children
 
-    def _render_items(
-        self, schema: dict[str, Any], segments: list[str], root_schema: dict[str, Any]
-    ) -> list[str]:
-        """Render the schema for array items (single schema or tuple definitions)."""
-        analyzer = self._require_analyzer()
+    def _item_child_requests(
+        self, schema: dict[str, Any], segments: list[str]
+    ) -> list[RenderNodeParams]:
+        """Describe child cards for array items (single schema or tuple definitions)."""
         items_schema = schema.get("items")
         if not items_schema:
             return []
         if isinstance(items_schema, list):
             # Tuple validation: every position has its own schema.
-            return self._render_tuple_items(items_schema, segments, root_schema)
-        normalized = analyzer.normalize_schema(items_schema)
-        label = analyzer.default_item_label(normalized)
+            return self._tuple_item_child_requests(items_schema, segments)
+        # For simple items, analyze once and reuse the computed label/flags.
+        analysis = self._require_analyzer().analyze(
+            items_schema, compute_default_label=True
+        )
+        label = analysis.default_label or "Item"
         child_segments = list(segments) + ["[item]"]
-        if not analyzer.is_summary_only(normalized):
-            child_segments.append(label)
+        inline = analysis.summary_only
+        open_card = label == "ArrayItem"
+        if open_card:
+            inline = False
         return [
-            self._render_item_node(
-                normalized,
-                segments=child_segments,
-                root_schema=root_schema,
-                label=label,
+            RenderNodeParams(
+                node=analysis.schema,
+                display_name=label,
+                segments=(child_segments + [label])
+                if not analysis.summary_only
+                else child_segments,
+                required=False,
+                inline=inline,
+                open_card=open_card,
+                force_summary_only=False,
+                analysis=analysis,
             )
         ]
 
-    def _render_tuple_items(
-        self,
-        tuple_items: Sequence[Any],
-        segments: list[str],
-        root_schema: dict[str, Any],
-    ) -> list[str]:
-        """Render tuple-style arrays where each position has a dedicated schema."""
-        analyzer = self._require_analyzer()
-        rendered: list[str] = []
+    def _tuple_item_child_requests(
+        self, tuple_items: Sequence[Any], segments: list[str]
+    ) -> list[RenderNodeParams]:
+        """Describe tuple-style array items where each position has a dedicated schema."""
+        requests: list[RenderNodeParams] = []
         for index, item_schema in enumerate(tuple_items, start=1):
-            normalized = analyzer.normalize_schema(item_schema)
-            label = f"{analyzer.default_item_label(normalized)} {index}"
+            # Each tuple position gets its own analysis to capture titles/summary flags.
+            analysis = self._require_analyzer().analyze(
+                item_schema, compute_default_label=True
+            )
+            default_label = analysis.default_label or "Item"
+            label = f"{default_label} {index}"
             child_segments = list(segments) + [f"[item{index}]"]
-            if not analyzer.is_summary_only(normalized):
-                child_segments.append(label)
-            rendered.append(
-                self._render_item_node(
-                    normalized,
-                    segments=child_segments,
-                    root_schema=root_schema,
-                    label=label,
+            inline = analysis.summary_only
+            requests.append(
+                RenderNodeParams(
+                    node=analysis.schema,
+                    display_name=label,
+                    segments=(child_segments + [label])
+                    if not analysis.summary_only
+                    else child_segments,
+                    required=False,
+                    inline=inline,
+                    open_card=False,
+                    force_summary_only=False,
+                    analysis=analysis,
                 )
             )
-        return rendered
+        return requests
 
-    def _render_item_node(
-        self,
-        schema: dict[str, Any],
-        *,
-        segments: Sequence[str],
-        root_schema: dict[str, Any],
-        label: str,
-    ) -> str:
-        """Render a single array item schema."""
-        analyzer = self._require_analyzer()
-        inline = analyzer.is_summary_only(schema)
-        open_card = False
-        if label == "ArrayItem":
-            # Force non-inline rendering so anonymous array definitions stay discoverable.
-            inline = False
-            open_card = True
-        return self._render_node(
-            schema,
-            display_name=label,
-            segments=list(segments),
-            required=False,
-            root_schema=root_schema,
-            inline=inline,
-            open_card=open_card,
-        )
-
-    def _render_additional_properties(
-        self, schema: dict[str, Any], segments: list[str], root_schema: dict[str, Any]
-    ) -> list[str]:
-        """Render schemas for additionalProperties if present."""
+    def _additional_property_requests(
+        self, schema: dict[str, Any], segments: list[str]
+    ) -> list[RenderNodeParams]:
+        """Describe schemas for additionalProperties if present."""
         additional_props = schema.get("additionalProperties")
         if isinstance(additional_props, dict):
             child_segments = list(segments) + ["[*]"]
             return [
-                self._render_node(
-                    additional_props,
+                RenderNodeParams(
+                    node=additional_props,
                     display_name="Additional property",
                     segments=child_segments,
                     required=False,
-                    root_schema=root_schema,
                 )
             ]
         return []
 
-    def _render_combinations(
-        self, schema: dict[str, Any], segments: list[str], root_schema: dict[str, Any]
-    ) -> list[str]:
-        """Render composition keywords like allOf/anyOf/oneOf/not."""
-        combinations: list[str] = []
+    def _combination_child_requests(
+        self, schema: dict[str, Any], segments: list[str]
+    ) -> list[RenderNodeParams]:
+        """Describe composition keyword children like allOf/anyOf/oneOf/not."""
+        combinations: list[RenderNodeParams] = []
         combo_defs = [
             ("allOf", "All of"),
             ("anyOf", "Any of"),
@@ -247,12 +260,11 @@ class SchemaRenderer:
             if isinstance(clauses, list):
                 for index, clause in enumerate(clauses, 1):
                     combinations.append(
-                        self._render_node(
-                            clause,
+                        RenderNodeParams(
+                            node=clause,
                             display_name=f"{label} {index}",
                             segments=list(segments) + [f"{key}[{index}]"],
                             required=False,
-                            root_schema=root_schema,
                             inline=True,
                             # Force inline layout so we do not get nested accordion toggles.
                             force_summary_only=True,
@@ -262,12 +274,11 @@ class SchemaRenderer:
         not_clause = schema.get("not")
         if isinstance(not_clause, dict):
             combinations.append(
-                self._render_node(
-                    not_clause,
+                RenderNodeParams(
+                    node=not_clause,
                     display_name="Not",
                     segments=list(segments) + ["not"],
                     required=False,
-                    root_schema=root_schema,
                     inline=True,
                     # NOT clauses rarely have bodies; force summary-only to stay compact.
                     force_summary_only=True,
@@ -275,31 +286,35 @@ class SchemaRenderer:
             )
         return combinations
 
-    def _resolve_schema_node(self, node: dict[str, Any]) -> dict[str, Any]:
-        """Dereference nodes and ensure we have a schema dict."""
-        return self._require_analyzer().dereference(node)
+    @staticmethod
+    def _summary_only_inline(
+        analysis: SchemaNodeAnalysis, inline: bool, force_summary_only: bool
+    ) -> bool:
+        """Compute whether a node should render as summary-only inline content."""
+        return inline and (force_summary_only or analysis.summary_only)
 
     def _build_node_meta(
         self,
-        schema: dict[str, Any],
+        analysis: SchemaNodeAnalysis,
         display_name: str | None,
         segments: Sequence[str],
         required: bool,
     ) -> NodeRenderMeta:
         """Collect metadata needed across summary/body rendering."""
-        analyzer = self._require_analyzer()
         html_builder = self._require_html_builder()
-        type_label = analyzer.determine_type_label(schema)
+        schema = analysis.schema
         title = self._resolve_title(schema, display_name, segments)
         anchor = html_builder.anchor(segments)
         description = schema.get("description", "").strip()
-        badges = html_builder.build_badges(schema, type_label, required)
+        badges = html_builder.build_badges(
+            analysis.type_label, required, analysis.additional_badge
+        )
         summary_desc = self._format_summary_description(description)
         allow_inline_title = bool(schema.get("title") or display_name)
         return NodeRenderMeta(
             schema=schema,
             title=title,
-            type_label=type_label,
+            type_label=analysis.type_label,
             description=description,
             summary_desc=summary_desc,
             badges=badges,
@@ -310,34 +325,30 @@ class SchemaRenderer:
     def _build_node_body(
         self,
         meta: NodeRenderMeta,
+        analysis: SchemaNodeAnalysis,
         segments: Sequence[str],
-        root_schema: dict[str, Any],
-        inline: bool,
-        force_summary_only: bool,
+        children_html: str,
+        summary_only_inline: bool,
     ) -> str:
         """Build the full body HTML for the current node."""
-        analyzer = self._require_analyzer()
         html_builder = self._require_html_builder()
-        summary_only_inline = inline and (
-            force_summary_only or analyzer.is_summary_only(meta.schema)
-        )
         # Constraints and description metadata feed into the body sections.
-        constraints = analyzer.collect_constraints(meta.schema)
         body_sections = html_builder.build_body_sections(
             segments,
             meta.type_label,
             meta.description,
-            constraints,
+            analysis.constraints,
             meta.schema,
         )
-        children_html = self._render_children(meta.schema, segments, root_schema)
         return html_builder.build_body_html(
             body_sections,
             children_html,
             summary_only_inline,
         )
 
-    def _build_node_summary(self, meta: NodeRenderMeta, inline: bool) -> tuple[str, bool]:
+    def _build_node_summary(
+        self, meta: NodeRenderMeta, inline: bool
+    ) -> tuple[str, bool]:
         """Build the summary HTML and track whether it only contains badges."""
         html_builder = self._require_html_builder()
         return html_builder.build_summary(
@@ -378,7 +389,9 @@ class SchemaRenderer:
         if inline:
             # Inline cards (used for scalar array items) render without collapsible details
             # to reduce visual noise inside lists.
-            return html_builder.render_inline_card(anchor, summary_inner, body_html, permalink_html)
+            return html_builder.render_inline_card(
+                anchor, summary_inner, body_html, permalink_html
+            )
         return html_builder.render_block_card(
             anchor,
             summary_inner,
@@ -406,7 +419,9 @@ class SchemaRenderer:
         if filename not in self._cache:
             schema_path = self.schema_dir / filename
             if not schema_path.exists():
-                raise FileNotFoundError(f"Schema '{filename}' not found in {self.schema_dir}")
+                raise FileNotFoundError(
+                    f"Schema '{filename}' not found in {self.schema_dir}"
+                )
             # Cache parsed JSON so repeated macro calls (or nested refs) avoid disk I/O.
             self._cache[filename] = json.loads(schema_path.read_text(encoding="utf-8"))
         return self._cache[filename]

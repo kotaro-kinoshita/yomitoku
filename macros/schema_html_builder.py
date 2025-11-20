@@ -5,7 +5,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from macros.schema_analyzer import SchemaAnalyzer, format_literal
+from macros.schema_analyzer import format_literal
 
 
 class SchemaHTMLBuilder:
@@ -16,9 +16,8 @@ class SchemaHTMLBuilder:
     to tweak HTML/CSS without touching traversal logic.
     """
 
-    def __init__(self, root_title: str, analyzer: SchemaAnalyzer) -> None:
+    def __init__(self, root_title: str) -> None:
         self.root_title = root_title
-        self.analyzer = analyzer
         # Pre-compute the parent slug since every anchor path begins with it.
         self._root_slug = self._slug(self.root_title or "root")
 
@@ -43,7 +42,7 @@ class SchemaHTMLBuilder:
         return "schema-" + "-".join(slug_parts or ["section"])
 
     def build_badges(
-        self, schema: dict[str, Any], type_label: str | None, required: bool
+        self, type_label: str | None, required: bool, additional_badge: str | None
     ) -> list[str]:
         """Compose the badge list that sits in the card header.
 
@@ -53,7 +52,6 @@ class SchemaHTMLBuilder:
         badges: list[str] = []
         if required:
             badges.append('<span class="schema-badge schema-badge--required">Required</span>')
-        additional_badge = self.analyzer.additional_badge(schema.get("additionalProperties"))
         if additional_badge:
             badges.append(additional_badge)
         if type_label:
