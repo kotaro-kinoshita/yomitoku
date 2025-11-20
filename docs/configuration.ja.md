@@ -1,4 +1,4 @@
-# Configuration
+# モジュール設定
 
 各モジュールに対して、設定可能なパラメータについて説明します。
 
@@ -77,7 +77,7 @@ visualize:
   font_size: int
 ```
 
-## Layout_parser
+## Layout Parser
 
 ### 予測スコアに対する閾値
 

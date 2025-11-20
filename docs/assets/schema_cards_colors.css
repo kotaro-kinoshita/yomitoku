@@ -1,0 +1,52 @@
+/* Schema card color palettes */
+
+/* Light mode (default scheme or no attribute) */
+:root,
+[data-md-color-scheme="default"] {
+  --schema-card-bg: #9594a2df;
+  --schema-card-border: #d0d7de;
+  --schema-card-summary-bg: #f6f8fa;
+  --schema-card-title: #1f2328;
+  --schema-card-text: #1f2328;
+  --schema-card-divider: #e4e7f0;
+  --schema-card-rail: #ccd3df;
+
+  --schema-badge-bg: #eef2ff;
+  --schema-badge-fg: #303654;
+  --schema-badge-required-bg: rgba(255, 138, 128, 0.18);
+  --schema-badge-required-fg: #b71c1c;
+  --schema-badge-required-border: rgba(183, 28, 28, 0.3);
+  --schema-badge-type-bg: rgba(109, 92, 255, 0.11);
+  --schema-badge-type-fg: #4756fa;
+  --schema-badge-type-border: rgba(63, 81, 181, 0.3);
+  --schema-badge-additional-bg: rgba(0, 150, 136, 0.18);
+  --schema-badge-additional-fg: #004d40;
+  --schema-badge-additional-border: rgba(0, 150, 136, 0.3);
+}
+
+/* Dark mode (Material "slate" scheme) */
+[data-md-color-scheme="slate"] {
+  --schema-card-bg: #1b1e24;
+  --schema-card-border: #3f4654;
+  --schema-card-summary-bg: #242830;
+  --schema-card-title: #f8faff;
+  --schema-card-text: #dfe4ff;
+  --schema-card-divider: #3a4150;
+  --schema-card-rail: #3a4150;
+
+  --schema-badge-bg: #2b3038;
+  --schema-badge-fg: #e3e8ff;
+  --schema-badge-border: #434a57;
+
+  --schema-badge-required-bg: rgba(129, 49, 49, 0.32);
+  --schema-badge-required-fg: #ff5c5c;
+  --schema-badge-required-border: rgba(200, 80, 80, 0.55);
+
+  --schema-badge-type-bg: rgba(46, 58, 118, 0.28);
+  --schema-badge-type-fg: #5272ff;
+  --schema-badge-type-border: rgba(110, 135, 255, 0.50);
+
+  --schema-badge-additional-bg: rgba(59, 113, 125, 0.28);
+  --schema-badge-additional-fg: #4fcaca;
+  --schema-badge-additional-border: rgba(95, 185, 205, 0.50);
+}

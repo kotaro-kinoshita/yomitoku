@@ -24,6 +24,10 @@ theme:
         icon: material/toggle-switch-off-outline
         name: Switch to system preference
 
+extra_css:
+  - assets/schema_cards_colors.css
+  - assets/schema_cards.css
+
 markdown_extensions:
   - abbr
   - attr_list
@@ -69,10 +73,8 @@ nav:
   - Installation: installation.md
   - CLI Usage: cli.md
   - Module Usage: module.md
-  - Schemas:
-      - Document Analyzer: document_analyzer_schema.md
-      - OCR: ocr_schema.md
-      - Layout Analyzer: layout_analyzer_schema.md
+  - Module Config: configuration.md
+  - Schemas: schemas.md
   - Release Note: release_note.md
   - MCP: mcp.md
   - Commercial Use: commercial_use_guideline.md
@@ -85,6 +87,8 @@ plugins:
   - search:
   - codeinclude:
   - include-markdown:
+  - macros:
+      module_name: macros
   - i18n:
       languages:
         - locale: ja
