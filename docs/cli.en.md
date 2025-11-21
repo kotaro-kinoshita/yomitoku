@@ -47,7 +47,7 @@ You can specify the output format of the analysis results using the --format or 
 yomitoku ${path_data} -f md
 ```
 
-- `pdf`: Detect the text in the image and embed it into the PDF as invisible text, converting the file into a searchable PDF.
+If a PDF file is specified, the system will recognize the text within the image using OCR and embed the text information as an invisible layer to convert it into a searchable PDF.
 
 ## Specifying the Output Device
 
