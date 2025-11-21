@@ -106,12 +106,18 @@ class SchemaRenderer:
             children_html,
             summary_only_inline,
         )
+        # Build the summary (title/description/badges) and permalink together so
+        # the final render step knows exactly what header content to wrap.
         summary_inner, summary_badge_only = self._build_node_summary(
             meta, params.inline
         )
+        # Generate an accessible permalink that lives outside <summary> so the
+        # accordion toggle remains usable while still providing deep links.
         permalink_html = self._require_html_builder().permalink_link(
             meta.anchor, meta.title
         )
+        # Delegate to the appropriate card renderer (inline vs collapsible block)
+        # now that all pieces—summary, body, anchor, flags—have been computed.
         return self._render_card_output(
             inline=params.inline,
             anchor=meta.anchor,
@@ -179,6 +185,7 @@ class SchemaRenderer:
         )
         label = analysis.default_label or "Item"
         child_segments = list(segments) + ["[item]"]
+        child_segments_with_label = child_segments + [label]
         inline = analysis.summary_only
         open_card = label == "ArrayItem"
         if open_card:
@@ -187,9 +194,7 @@ class SchemaRenderer:
             RenderNodeParams(
                 node=analysis.schema,
                 display_name=label,
-                segments=(child_segments + [label])
-                if not analysis.summary_only
-                else child_segments,
+                segments=child_segments_with_label,
                 required=False,
                 inline=inline,
                 open_card=open_card,
@@ -211,14 +216,13 @@ class SchemaRenderer:
             default_label = analysis.default_label or "Item"
             label = f"{default_label} {index}"
             child_segments = list(segments) + [f"[item{index}]"]
+            child_segments_with_label = child_segments + [label]
             inline = analysis.summary_only
             requests.append(
                 RenderNodeParams(
                     node=analysis.schema,
                     display_name=label,
-                    segments=(child_segments + [label])
-                    if not analysis.summary_only
-                    else child_segments,
+                    segments=child_segments_with_label,
                     required=False,
                     inline=inline,
                     open_card=False,

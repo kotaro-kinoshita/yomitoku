@@ -1,6 +1,6 @@
-# Module Configurations
+# Model Config
 
-The configurable parameters for each module are explained.
+The configurable parameters for each Model are explained.
 
 ## Text Detector
 

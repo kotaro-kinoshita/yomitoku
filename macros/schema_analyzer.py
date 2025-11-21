@@ -67,14 +67,22 @@ class SchemaAnalyzer:
         self, schema_def: Any, *, compute_default_label: bool = False
     ) -> SchemaNodeAnalysis:
         """Produce a single analysis bundle for the provided schema node."""
-        # Normalize inputs (including resolving $ref) so downstream data is consistent.
+        # Normalize inputs (including resolving $ref pointers and primitive type
+        # declarations) into a dict so every downstream step reads a fully
+        # materialized schema structure.
         schema = self.normalize_schema(schema_def)
-        # Collect all analyzer-driven facets once to avoid repeated lookups in the renderer.
+        # Derive the header badge text based on explicit types, unions, or
+        # inferred structure so the renderer can label the card succinctly.
         type_label = self.determine_type_label(schema)
+        # Aggregate human-readable constraint strings (enums, min/max, formats).
         constraints = self.collect_constraints(schema)
+        # Decide if the node can be represented by its summary alone (no body).
         summary_only = self.is_summary_only(schema)
+        # Add an additionalProperties badge when the schema forbids extras.
         additional_badge = self.additional_badge(schema.get("additionalProperties"))
+        # Provide a fallback label for array items when the caller requests it.
         default_label = self.default_item_label(schema) if compute_default_label else None
+        # Package all derived values together so rendering can be a single-step lookup.
         return SchemaNodeAnalysis(
             schema=schema,
             type_label=type_label,
