@@ -1,6 +1,5 @@
 # Installation
 
-
 This package requires Python 3.10 or later and PyTorch 2.5 or later for execution. PyTorch must be installed according to your CUDA version. In normal mode, the model is optimized for a GPU, and a GPU with at least 8GB of VRAM is recommended. While it can run on a CPU, expect long execution times. In efficient mode, it is designed to provide fast inference even on a CPU.
 
 ## from PYPI

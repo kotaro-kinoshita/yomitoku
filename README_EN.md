@@ -37,16 +37,17 @@ For the results exported in Markdown, please refer to [static/out/in_demo_p1.md]
 - `Blue Frame`: Paragraph and text group regions
 - `Red Arrow`: Results of reading order estimation
 
-Source of the image: Created by processing content from “Reiwa 6 Edition Information and Communications White Paper, Chapter 3, Section 2: Technologies Advancing with AI Evolution” (https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf)：(Ministry of Internal Affairs and Communications).
+Source of the image: Created by processing content from “Reiwa 6 Edition Information and Communications White Paper, Chapter 3, Section 2: Technologies Advancing with AI Evolution” (<https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf>)：(Ministry of Internal Affairs and Communications).
 
 ## 📣 Release
-* **November 5, 2025 – YomiToku v0.10.1**: Added support for a **GPU-free OCR model optimized for CPU inference**.
-* **April 4, 2025 – YomiToku v0.8.0**: Added support for **handwritten character recognition**.
-* **November 26, 2024 – YomiToku v0.5.1 (beta)**: Public release.
+
+- **November 5, 2025 – YomiToku v0.10.1**: Added support for a **GPU-free OCR model optimized for CPU inference**.
+- **April 4, 2025 – YomiToku v0.8.0**: Added support for **handwritten character recognition**.
+- **November 26, 2024 – YomiToku v0.5.1 (beta)**: Public release.
 
 ## 💡 Installation
 
-```
+```bash
 pip install yomitoku
 ```
 
@@ -55,39 +56,42 @@ pip install yomitoku
 
 ## 🚀 Usage
 
-Normal Mode
-```
+### Normal Mode
+
+```bash
 yomitoku ${path_data} -f md -o results -v --figure
 ```
 
-Efficient Mode
-```
+### Efficient Mode
+
+```bash
 yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 ```
 
-ChatGPT:
-The model used in `--lite` mode has a maximum string length limit of 50 characters per line. Therefore, it is not suitable for recognizing English text or other documents with long lines. For English documents or those with many characters per line, it is recommended to use the standard model.
+## Command Line Arguments List
 
-- `${path_data}`: Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed.
-- `-f`, `--format`: Specify the output file format. Supported formats are json, csv, html, md , and pdf(searchable-pdf).
-- `-o`, `--outdir`: Specify the name of the output directory. If it does not exist, it will be created.
-- `-v`, `--vis`: If specified, outputs visualized images of the analysis results.
-- `-l`, `--lite`: inference is performed using a lightweight model. This enables fast inference even on a CPU.
-- `-d`, `--device`: Specify the device for running the model. If a GPU is unavailable, inference will be executed on the CPU. (Default: cuda)
-- `--ignore_line_break`: Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.)
-- `--figure_letter`: Exports characters contained within detected figures and tables to the output file.
-- `--figure`: Exports detected figures and images to the output file
-- `--encoding` Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (utf-8, utf-8-sig, shift-jis, enc-jp, cp932)
-- `--combine` When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export.
-- `--ignore_meta` Excludes text information such as headers and footers from the output file.
+| Argument Name | Short Form | Description |
+| :--- | :--- | :--- |
+| `${path_data}` | - | Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed. |
+| `--format` | `-f` | Specify the output file format. Supported formats are `json`, `csv`, `html`, `md`, and `pdf (searchable-pdf)`. |
+| `--outdir` | `-o` | Specify the name of the output directory. If it does not exist, it will be created. |
+| `--vis` | `-v` | If specified, outputs visualized images of the analysis results. |
+| `--lite` | `-l` | Inference is performed using a lightweight model. This enables fast inference even on a CPU. |
+| `--device` | `-d` | Specify the device for running the model. If a GPU is unavailable, inference will be executed on the CPU. (Default: `cuda`) |
+| `--ignore_line_break` | - | Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.) |
+| `--figure_letter` | - | Exports characters contained within detected figures and tables to the output file. |
+| `--figure` | - | Exports detected figures and images to the output file. |
+| `--encoding` | - | Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (Supported encodings: `utf-8`, `utf-8-sig`, `shift-jis`, `enc-jp`, `cp932`) |
+| `--combine` | - | When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export. |
+| `--ignore_meta` | - | Excludes text information such as headers and footers from the output file. |
 
 For other options, please refer to the help documentation.
 
-```
+```bash
 yomitoku --help
 ```
 
-**NOTE**
+### NOTE
 
 - In normal mode, It is recommended to run on a GPU. The system is not optimized for inference on CPUs, which may result in significantly longer processing times.
 - In efficient mode, fast inference is possible even on a CPU.
@@ -114,7 +118,7 @@ To view a copy of this license, please visit:
 
 Determination of **commercial vs. non-commercial use** will follow the guideline below:
 
-* **[Guideline for Determining Commercial / Non-Commercial Use](docs/commercial_use_guideline.en.md)**
+- **[Guideline for Determining Commercial / Non-Commercial Use](docs/commercial_use_guideline.en.md)**
 
 ---
 
@@ -124,16 +128,18 @@ For commercial use of YomiToku, we provide a **licensed product edition** throug
 The commercial edition includes numerous enhancements such as improved handwriting recognition accuracy, automatic image orientation correction, and advanced layout analysis features that are **only available in the product version**.
 
 ### On-Premises / Local PC Commercial Use
+
 For commercial use on on-premises servers or local PCs, we offer a dedicated **on-premises commercial license**.  
 For inquiries, please contact us via:
 
-- https://www.mlism.com/
+- <https://www.mlism.com/>
 
 ### Cloud-Based Commercial Use (AWS Marketplace)
+
 The commercial edition of YomiToku is also available on **AWS Marketplace**.  
 All processing is executed **entirely within your own AWS environment**, with no external network communication or transmission to third-party servers.  
 This makes it suitable for workloads involving confidential documents, internal corporate materials, or personal information.
 
 - **AWS Marketplace – YomiToku-Pro Document Analyzer**  
-  https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku
+  <https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku>
 - **Usage Guide (Yom**

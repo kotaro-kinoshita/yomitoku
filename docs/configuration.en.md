@@ -47,7 +47,8 @@ visualize:
 
 ## Text Recognizer
 
-### maximum text length 
+### maximum text length
+
 ```yaml
 # The maximum string length that can be predicted. 
 max_label_length: int 

@@ -47,7 +47,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 
 ## 💡 インストールの方法
 
-```
+```bash
 pip install yomitoku
 ```
 
@@ -55,12 +55,15 @@ pip install yomitoku
 - PyTorch は 2.5 以上のバージョンに対応しています。その関係で CUDA11.8 以上のバージョンが必要になります。対応できない場合は、リポジトリ内の Dockerfile を利用してください。
 
 ## 🚀 実行方法
-**通常モデルでの推論**
+
+### 通常モデルでの推論
+
 ```bash
 yomitoku ${path_data} -f md -o results -v --figure
 ```
 
-**軽量モデルでの推論**
+### 軽量モデルでの推論
+
 `--lite`オプションを使用してください。
 
 ```bash
@@ -69,27 +72,30 @@ yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 
 軽量モデルは１行あたり読み取り可能な最大文字列長が50文字の制限があります。英文や１行あたりの文字数が多い文書は通常モデルを使用することを推奨します。
 
+## コマンドライン引数一覧
 
-- `${path_data}` 解析対象の画像が含まれたディレクトリか画像ファイルのパスを直接して指定してください。ディレクトリを対象とした場合はディレクトリのサブディレクトリ内の画像も含めて処理を実行します。
-- `-f`, `--format` 出力形式のファイルフォーマットを指定します。(json, csv, html, md, pdf(searchable-pdf) をサポート)
-- `-o`, `--outdir` 出力先のディレクトリ名を指定します。存在しない場合は新規で作成されます。
-- `-v`, `--vis` を指定すると解析結果を可視化した画像を出力します。
-- `-l`, `--lite` を指定すると軽量モデルで推論を実行します。通常より高速に推論できますが、若干、精度が低下する可能性があります。
-- `-d`, `--device` モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda)
-- `--ignore_line_break` 画像の改行位置を無視して、段落内の文章を連結して返します。（デフォルト：画像通りの改行位置位置で改行します。）
-- `--figure_letter` 検出した図表に含まれる文字も出力ファイルにエクスポートします。
-- `--figure` 検出した図、画像を出力ファイルにエクスポートします。
-- `--encoding` エクスポートする出力ファイルの文字エンコーディングを指定します。サポートされていない文字コードが含まれる場合は、その文字を無視します。(utf-8, utf-8-sig, shift-jis, enc-jp, cp932)
-- `--combine` PDFを入力に与えたときに、複数ページが含まれる場合に、それらの予測結果を一つのファイルに統合してエクスポートします。
-- `--ignore_meta` 文章のheater, fotterなどの文字情報を出力ファイルに含めません。
+| 引数名 | 短縮形 | 説明 |
+| :--- | :--- | :--- |
+| `${path_data}` | - | 解析対象の画像が含まれたディレクトリか画像ファイルのパスを直接指定します。ディレクトリを対象とした場合はサブディレクトリ内の画像も含めて処理を実行します。 |
+| `--format` | `-f` | 出力形式のファイルフォーマットを指定します。(json, csv, html, md, pdf(searchable-pdf) をサポート) |
+| `--outdir` | `-o` | 出力先のディレクトリ名を指定します。存在しない場合は新規で作成されます。 |
+| `--vis` | `-v` | 解析結果を可視化した画像を出力します。 |
+| `--lite` | `-l` | 軽量モデルで推論を実行します。通常より高速に推論できますが、若干、精度が低下する可能性があります。 |
+| `--device` | `-d` | モデルを実行するためのデバイスを指定します。gpu が利用できない場合は cpu で推論が実行されます。(デフォルト: cuda) |
+| `--ignore_line_break` | - | 画像の改行位置を無視して、段落内の文章を連結して返します。（デフォルト：画像通りの改行位置で改行します。） |
+| `--figure_letter` | - | 検出した図表に含まれる文字も出力ファイルにエクスポートします。 |
+| `--figure` | - | 検出した図、画像を出力ファイルにエクスポートします。 |
+| `--encoding` | - | エクスポートする出力ファイルの文字エンコーディングを指定します。サポートされていない文字コードが含まれる場合は、その文字を無視します。(utf-8, utf-8-sig, shift-jis, enc-jp, cp932) |
+| `--combine` | - | PDFを入力に与えたときに、複数ページが含まれる場合に、それらの予測結果を一つのファイルに統合してエクスポートします。 |
+| `--ignore_meta` | - | 文章のheater, fotterなどの文字情報を出力ファイルに含めません。 |
 
-その他のオプションに関しては、ヘルプを参照
+その他のオプションに関してはヘルプを参照してください。
 
-```
+```bash
 yomitoku --help
 ```
 
-**NOTE**
+### NOTE
 
 - 通常モデルでは GPU での実行を推奨します。CPU を用いての推論向けに最適化されておらず、処理時間が長くなります。
 - 軽量モデルでは CPU でも高速に推論できます。
@@ -106,9 +112,10 @@ yomitoku --help
 非商用での個人利用・研究目的での利用は自由に行っていただけます。
 
 YomiToku © 2024 by Kotaro Kinoshita is licensed under CC BY-NC-SA 4.0.  
-To view a copy of this license, visit: https://creativecommons.org/licenses/by-nc-sa/4.0/
+To view a copy of this license, visit: <https://creativecommons.org/licenses/by-nc-sa/4.0/>
 
 商用化/非商用の判断は以下のガイドラインに従い、判断いたします。
+
 - [ライセンスの商用/非商用の判断のためのガイドライン](docs/commercial_use_guideline.ja.md)
 
 ---
@@ -119,17 +126,19 @@ YomiToku を商用環境でご利用いただく場合、以下の方法で **�
 手書き認識の精度向上、画像の自動向き補正、レイアウト解析の強化など、**製品版のみで利用可能な追加機能** を多数搭載しています。
 
 ### オンプレミス環境・ローカル PC での商用利用
+
 オンプレミス環境やローカル PC での商用利用をご希望の場合は、専用の **オンプレ向け商用ライセンス** をご用意しています。  
 詳細は以下よりお問い合わせください。
 
-- https://www.mlism.com/
+- <https://www.mlism.com/>
 
 ### クラウド上での商用利用（AWS Marketplace）
+
 YomiToku の商用版は **AWS Marketplace** でも提供しています。  
 すべての解析処理は **お客様の AWS 環境内で完結** し、外部ネットワークや第三者サーバーへの送信は一切発生しません。  
 機密文書・社内資料・個人情報を扱うワークロードでも安心してご利用いただけます。
 
 - **AWS Marketplace – YomiToku-Pro Document Analyzer**  
-  https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku
+  <https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku>
 - **利用手順（YomiToku-Client ドキュメント）**  
-  https://mlism-inc.github.io/yomitoku-client/
+  <https://mlism-inc.github.io/yomitoku-client/>
