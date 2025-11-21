@@ -87,7 +87,7 @@ yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 | `--figure` | 検出した図、画像を出力ファイルにエクスポートします。 |
 | `--encoding` | エクスポートする出力ファイルの文字エンコーディングを指定します。サポートされていない文字コードが含まれる場合は、その文字を無視します。(utf-8, utf-8-sig, shift-jis, enc-jp, cp932) |
 | `--combine` | PDFを入力に与えたときに、複数ページが含まれる場合に、それらの予測結果を一つのファイルに統合してエクスポートします。 |
-| `--ignore_meta` | 文章のheater, fotterなどの文字情報を出力ファイルに含めません。 |
+| `--ignore_meta` | 文章のheader, footerなどの文字情報を出力ファイルに含めません。 |
 
 その他のオプションに関してはヘルプを参照してください。
 
