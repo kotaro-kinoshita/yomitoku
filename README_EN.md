@@ -70,20 +70,20 @@ yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 
 ## Command Line Arguments List
 
-| Argument Name | Short Form | Description |
-| :--- | :--- | :--- |
-| `${path_data}` | - | Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed. |
-| `--format` | `-f` | Specify the output file format. Supported formats are `json`, `csv`, `html`, `md`, and `pdf (searchable-pdf)`. |
-| `--outdir` | `-o` | Specify the name of the output directory. If it does not exist, it will be created. |
-| `--vis` | `-v` | If specified, outputs visualized images of the analysis results. |
-| `--lite` | `-l` | Inference is performed using a lightweight model. This enables fast inference even on a CPU. |
-| `--device` | `-d` | Specify the device for running the model. If a GPU is unavailable, inference will be executed on the CPU. (Default: `cuda`) |
-| `--ignore_line_break` | - | Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.) |
-| `--figure_letter` | - | Exports characters contained within detected figures and tables to the output file. |
-| `--figure` | - | Exports detected figures and images to the output file. |
-| `--encoding` | - | Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (Supported encodings: `utf-8`, `utf-8-sig`, `shift-jis`, `enc-jp`, `cp932`) |
-| `--combine` | - | When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export. |
-| `--ignore_meta` | - | Excludes text information such as headers and footers from the output file. |
+| Argument Name | Description |
+| :--- | :--- |
+| `${path_data}` | Specify the path to a directory containing images to be analyzed or directly provide the path to an image file. If a directory is specified, images in its subdirectories will also be processed. |
+| `--format`(`-f`) | Specify the output file format. Supported formats are `json`, `csv`, `html`, `md`, and `pdf (searchable-pdf)`. |
+| `--outdir`(`-o`) | Specify the name of the output directory. If it does not exist, it will be created. |
+| `--vis`(`-v`) | If specified, outputs visualized images of the analysis results. |
+| `--lite`(`-l`) | Inference is performed using a lightweight model. This enables fast inference even on a CPU. |
+| `--device`(`-d`) | Specify the device for running the model. If a GPU is unavailable, inference will be executed on the CPU. (Default: `cuda`) |
+| `--ignore_line_break` | Ignores line breaks in the image and concatenates sentences within a paragraph. (Default: respects line breaks as they appear in the image.) |
+| `--figure_letter` | Exports characters contained within detected figures and tables to the output file. |
+| `--figure` | Exports detected figures and images to the output file. |
+| `--encoding` | Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (Supported encodings: `utf-8`, `utf-8-sig`, `shift-jis`, `enc-jp`, `cp932`) |
+| `--combine` | When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export. |
+| `--ignore_meta` | Excludes text information such as headers and footers from the output file. |
 
 For other options, please refer to the help documentation.
 
