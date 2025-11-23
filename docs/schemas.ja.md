@@ -1,4 +1,6 @@
-# Module Schema
+# Module Output
+
+各モジュールの出力について説明します。
 
 ## Document Analyzer
 
@@ -7,8 +9,8 @@ Document Analyzer モジュールは以下の変数を `tuple` で出力しま�
 | 変数名 | 型 | 説明 |
 | :--- | :--- | :--- |
 | results | `DocumentAnalyzerSchema` | モジュールの出力結果 |
-| ocr_vis | `np.ndarray` \| `None` | OCR モジュールの可視化（`visualizer=True` の時のみ） |
-| layout_vis | `np.ndarray` \| `None` | Layout Analyzer モジュールの可視化（`visualizer=True` の時のみ） |
+| ocr_vis | `np.ndarray` \| `None` | AI-OCR の出力可視化画像（`visualizer=True` の時のみ） |
+| layout_vis | `np.ndarray` \| `None` | Layout Analyzer の出力可視化画像（`visualizer=True` の時のみ） |
 
 `results` 変数の準拠するスキーマ `DocumentAnalyzerSchema` の仕様は以下の通りです。
 
@@ -21,7 +23,7 @@ AI-OCR モジュールは以下の変数を `tuple` で出力します。
 | 変数名 | 型 | 説明 |
 | :--- | :--- | :--- |
 | results | `OCRSchema` | モジュールの出力結果 |
-| ocr_vis | `np.ndarray` \| `None` | AI-OCR モジュールの可視化（`visualizer=True`の時のみ） |
+| ocr_vis | `np.ndarray` \| `None` | AI-OCR の出力可視化画像（`visualizer=True`の時のみ） |
 
 `results` 変数の準拠するスキーマ `OCRSchema` の仕様は以下の通りです。
 
@@ -34,7 +36,7 @@ Layout Analyzer モジュールは以下の変数を `tuple` で出力します�
 | 変数名 | 型 | 説明 |
 | :--- | :--- | :--- |
 | results | `LayoutAnalyzerSchema` | モジュールの出力結果 |
-| layout_vis | `np.ndarray` \| `None` | Layout Analyzer モジュールの可視化（`visualizer=True`の時のみ） |
+| layout_vis | `np.ndarray` \| `None` | Layout Analyzer の出力可視化画像（`visualizer=True`の時のみ） |
 
 `results` 変数の準拠するスキーマ `LayoutAnalyzerSchema` の仕様は以下の通りです。
 

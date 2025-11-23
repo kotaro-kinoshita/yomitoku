@@ -1,5 +1,7 @@
 # Module Usage
 
+Python ライブラリとして YomiToku を利用する場合の利用方法について説明します。
+
 ## Document Analyzer の利用
 
 Document Analyzer は OCR およびレイアウト解析を実行し、それらの結果を統合した解析結果を返却します。段落、表の構造解析、抽出、図表の検知など様々なユースケースにご利用いただけます。

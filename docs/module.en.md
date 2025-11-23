@@ -1,5 +1,7 @@
 # Module Usage
 
+This page explains how to use YomiToku as a Python library.
+
 ## Using Document Analyzer
 
 The Document Analyzer performs OCR and layout analysis, integrating these results into a comprehensive analysis output. It can be used for various use cases, including paragraph and table structure analysis, extraction, and figure/table detection.

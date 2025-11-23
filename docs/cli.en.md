@@ -1,5 +1,7 @@
 # CLI Usage
 
+This page explains how to use YomiToku as a command-line interface (CLI).
+
 The model weight files are downloaded from Hugging Face Hub only during the first execution.
 
 ```bash
