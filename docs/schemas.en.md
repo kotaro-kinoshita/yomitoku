@@ -7,8 +7,8 @@ The Document Analyzer Module outputs the following variables as a `tuple`.
 | Variable Name | Type | Description |
 | :--- | :--- | :--- |
 | results | `DocumentAnalyzerSchema` | Module output results |
-| ocr_vis | `ndarray` \| `None` | Visualization of the OCR module (Only when `visualizer=True`) |
-| layout_vis | `ndarray` \| `None` | Visualization of the Layout Analyzer module (Only when `visualizer=True`) |
+| ocr_vis | `np.ndarray` \| `None` | Visualization of the OCR module (Only when `visualizer=True`) |
+| layout_vis | `np.ndarray` \| `None` | Visualization of the Layout Analyzer module (Only when `visualizer=True`) |
 
 The specification for the `DocumentAnalyzerSchema` that the `results` variable conforms to is as follows:
 
@@ -23,7 +23,7 @@ The AI-OCR module outputs the following variables as a `tuple`.
 | Variable Name | Type | Description |
 | :--- | :--- | :--- |
 | results | `OCRSchema` | Module output results |
-| ocr_vis | `ndarray` \| `None` | Visualization of the AI-OCR module (Only when `visualizer=True`) |
+| ocr_vis | `np.ndarray` \| `None` | Visualization of the AI-OCR module (Only when `visualizer=True`) |
 
 The specification for the `OCRSchema` that the `results` variable conforms to is as follows:
 
@@ -38,7 +38,7 @@ The Layout Analyzer module outputs the following variables as a `tuple`.
 | Variable Name | Type | Description |
 | :--- | :--- | :--- |
 | results | `LayoutAnalyzerSchema` | Module output results |
-| layout_vis | `ndarray` \| `None` | Visualization of the Layout Analyzer module (Only when `visualizer=True`) |
+| layout_vis | `np.ndarray` \| `None` | Visualization of the Layout Analyzer module (Only when `visualizer=True`) |
 
 The specification for the `LayoutAnalyzerSchema` that the `results` variable conforms to is as follows:
 
