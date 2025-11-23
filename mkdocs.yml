@@ -73,7 +73,7 @@ nav:
   - Installation: installation.md
   - CLI Usage: cli.md
   - Module Usage: module.md
-  - Module Schema: schemas.md
+  - Module Output: schemas.md
   - Model Config: configuration.md
   - Release Note: release_note.md
   - MCP: mcp.md
