@@ -1,6 +1,6 @@
-# Configuration
+# Model Config
 
-The configurable parameters for each module are explained.
+This page explains the configurable parameters for each model.
 
 ## Text Detector
 
@@ -47,7 +47,8 @@ visualize:
 
 ## Text Recognizer
 
-### maximum text length 
+### maximum text length
+
 ```yaml
 # The maximum string length that can be predicted. 
 max_label_length: int 
@@ -75,7 +76,7 @@ visualize:
   font_size: int 
 ```
 
-## Layout_parser
+## Layout Parser
 
 ### threshold of prediction score
 

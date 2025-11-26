@@ -1,39 +1,55 @@
-# Calling from within Python code
+# Module Usage
 
-## Document Analyzer の利用
+This page explains how to use YomiToku as a Python library.
+
+## Using Document Analyzer
 
 The Document Analyzer performs OCR and layout analysis, integrating these results into a comprehensive analysis output. It can be used for various use cases, including paragraph and table structure analysis, extraction, and figure/table detection.
 
+Following 4 models are utilized in the module:
+
+- Text Recognizer
+- Text Detector
+- Layout Parser
+- Table Structure Recognizer
+
 <!--codeinclude-->
-
 [demo/simple_document_analysis.py](../demo/simple_document_analysis.py)
-
 <!--/codeinclude-->
 
-- Setting `visualize` to True enables the visualization of each processing result. The second and third return values will contain the OCR and layout analysis results, respectively. If set to False, None will be returned. Since visualization adds computational overhead, it is recommended to set it to False unless needed for debugging purposes.
-- The `device` parameter specifies the computation device to be used. The default is "cuda". If a GPU is unavailable, it automatically switches to CPU mode for processing.
-- The `configs` parameter allows you to set more detailed parameters for the pipeline processing.
+| Option Name | Type | Description | Notes |
+| :--- | :--- | :--- | :--- |
+| `visualize` | `bool` | Specifies whether to visualize the processing results. | We recommend `False` if not for debugging. If `True`, the OCR results are returned as the 2nd return value and the layout analysis results as the 3rd return value. If `False`, `None` is returned. |
+| `device` | `str` | Specifies the device to be used for processing. | The default is `"cuda"`. If a GPU is unavailable, it automatically switches to `"cpu"`. |
+| `configs` | `dict` | Used to set more detailed parameters for module processing. | Refer to [Model Detailed Config](#model-config) for details. |
 
 The results of DocumentAnalyzer can be exported in the following formats:
 
-`to_json()`: JSON format (_.json)
-`to_html()`: HTML format (_.html)
-`to_csv()`: Comma-separated CSV format (_.csv)
-`to_markdown()`: Markdown format (_.md)
+| Method | Output Format |
+| :--- | :--- |
+| `to_json()` | JSON format (\*.json) |
+| `to_html()` | HTML format (\*.html) |
+| `to_csv()` | Comma-separated CSV format (\*.csv) |
+| `to_markdown()` | Markdown format (\*.md) |
 
 ## Using AI-OCR Only
 
-AI-OCR performs text detection and recognition on the detected text, returning the positions of the text within the image along with the
+AI-OCR performs text detection and then executes recognition processing on the detected text to return the position (location) of the characters within the image and the reading result.
+
+Following 2 models are utilized in the module:
+
+- Text Recognizer
+- Text Detector
 
 <!--codeinclude-->
-
 [demo/simple_ocr.py](../demo/simple_ocr.py)
-
 <!--/codeinclude-->
 
-- Setting `visualize` to True enables the visualization of each processing result. The second and third return values will contain the OCR and layout analysis results, respectively. If set to False, None will be returned. Since visualization adds computational overhead, it is recommended to set it to False unless needed for debugging purposes.
-- The `device` parameter specifies the computation device to be used. The default is "cuda". If a GPU is unavailable, it automatically switches to CPU mode for processing.
-- The `configs` parameter allows you to set more detailed parameters for the pipeline processing.
+| Option Name | Type | Description | Notes |
+| :--- | :--- | :--- | :--- |
+| `visualize` | `bool` | Specifies whether to visualize the processing results. | We recommend `False` if not for debugging. If `True`, the OCR results are returned as the 2nd return value. If `False`, `None` is returned. |
+| `device` | `str` | Specifies the device to be used for processing. | The default is `"cuda"`. If a GPU is unavailable, it automatically switches to `"cpu"`. |
+| `configs` | `dict` | Used to set more detailed parameters for module processing. | Refer to [Model Detailed Config](#model-config) for details. |
 
 The results of OCR processing support export in JSON format (`to_json()`) only.
 
@@ -41,39 +57,51 @@ The results of OCR processing support export in JSON format (`to_json()`) only.
 
 The `LayoutAnalyzer` performs text detection, followed by AI-based paragraph, figure/table detection, and table structure analysis. It analyzes the layout structure within the document.
 
+Following 2 models are utilized in the module:
+
+- Layout Parser
+- Table Structure Recognizer
+
 <!--codeinclude-->
-
 [demo/simple_layout.py](../demo/simple_layout.py)
-
 <!--/codeinclude-->
 
-- Setting `visualize` to True enables the visualization of each processing result. The second and third return values will contain the OCR and layout analysis results, respectively. If set to False, None will be returned. Since visualization adds computational overhead, it is recommended to set it to False unless needed for debugging purposes.
-- The `device` parameter specifies the computation device to be used. The default is `cuda`. If a GPU is unavailable, it automatically switches to CPU mode for processing.
-- The `configs` parameter allows you to set more detailed parameters for the pipeline processing.
+| Option Name | Type | Description | Notes |
+| :--- | :--- | :--- | :--- |
+| `visualize` | `bool` | Specifies whether to visualize the processing results. | We recommend `False` if not for debugging. If `True`, the layout analysis results as the 2nd return value. If `False`, `None` is returned. |
+| `device` | `str` | Specifies the device to be used for processing. | The default is `"cuda"`. If a GPU is unavailable, it automatically switches to `"cpu"`. |
+| `configs` | `dict` | Used to set more detailed parameters for module processing. | Refer to [Model Detailed Config](#model-config) for details. |
 
 The results of LayoutAnalyzer processing support export only in JSON format (to_json()).
 
-## Detailed Configuration of the Pipeline
+## Model Detailed Config {:#model-config}
 
 By providing a config, you can adjust the behavior in greater detail.
+The following parameters can be set for the model:
 
-- model_name: Specifies the architecture of the model to be used.
-- path_cfg: Provides the path to the config file containing hyperparameters.
-- device: Specifies the device to be used for inference. Options are `cuda`, `cpu`, or `mps`.
-- visualize: Indicates whether to perform visualization of the processing results (boolean).
-- from_pretrained: Specifies whether to use a pretrained model (boolean).
-- infer_onnx: Indicates whether to use onnxruntime for inference instead of PyTorch (boolean).
+| Option Name | Type | Description |
+| :--- | :--- | :--- |
+| `model_name` | `str` | Specifies the model name to be used. |
+| `path_cfg` | `str` | Inputs the path to the config file containing the hyperparameters. |
+| `device` | `str` | Specifies the device to be used for inference. (Allowed Values: `cuda` \| `cpu` \| `mps`) |
+| `visualize` | `bool` | Specifies whether to perform visualization. |
+| `from_pretrained` | `bool` | Specifies whether to use a Pretrained Model (a previously trained model). |
+| `infer_onnx` | `bool` | Specifies whether to use ONNX Runtime instead of PyTorch for inference. |
 
-**Supported Model Types (model_name)**
+### Supported Model Names (`model_name`)
 
-- TextRecognizer: `parseq`, `parseq-small`
-- TextDetector: `dbnet`
-- LayoutParser: `rtdetrv2`
-- TableStructureRecognizer: `rtdetrv2`
+| Model Type | Model Name |
+| :--- | :--- |
+| `TextRecognizer` | `"parseq"`, `"parseq-small"`, `"parseq-tiny"` |
+| `TextDetector` | `"dbnet"` |
+| `LayoutParser` | `"rtdetrv2"` |
+| `TableStructureRecognizer` | `"rtdetrv2"` |
 
 ### How to Write Config
 
-The config is provided in dictionary format. By using a config, you can execute processing on different devices for each module and set detailed parameters. For example, the following config allows the OCR processing to run on a GPU, while the layout analysis is performed on a CPU:
+The config is provided in dictionary format. By using a config, you can execute processing on different devices for each model and set detailed parameters.
+
+For example, the following config allows the OCR processing to run on a GPU, while the layout analysis is performed on a CPU:
 
 ```python
 from yomitoku import DocumentAnalyzer
@@ -103,7 +131,8 @@ if __name__ == "__main__":
 
 ## Defining Parameters in an YAML File
 
-By providing the path to a YAML file in the config, you can adjust detailed parameters for inference. Examples of YAML files can be found in the `configs` directory within the repository. While the model's network parameters cannot be modified, certain aspects like post-processing parameters and input image size can be adjusted.Refer to [configuration](configuration.en.mdmd) for configurable parameters.
+By providing the path to a YAML file in the config, you can adjust detailed parameters for inference. Examples of YAML files can be found in the `configs` directory within the repository.
+While the model's network parameters cannot be modified, certain aspects like post-processing parameters and input image size can be adjusted. Refer to [Model Config](configuration.en.md) for configurable parameters.
 
 For instance, you can define post-processing thresholds for the Text Detector in a YAML file and set its path in the config. The config file does not need to include all parameters; you only need to specify the parameters that require changes.
 
@@ -113,23 +142,8 @@ post_process:
   unclip_ratio: 2.5
 ```
 
-Storing the Path to a YAML File in the Config
+The path to the YAML file can be stored in the Config, as follows:
 
 <!--codeinclude-->
-
 [demo/setting_document_anaysis.py](../demo/setting_document_anaysis.py)
-
 <!--/codeinclude-->
-
-
-## Using Yomitoku in Offline Environments
-
-Yomitoku automatically downloads the model from Hugging Face Hub on its first run.
-An internet connection is required at that time, but by manually downloading the model beforehand, you can also run Yomitoku in environments without internet access.
-
-```
-download_model
-```
-
-By placing the downloaded repository folder `KotaroKinoshita` in the current directory at runtime, the local repository model will be loaded and executed without any internet connection.
-
