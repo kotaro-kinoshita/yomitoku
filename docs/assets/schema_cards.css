@@ -1,0 +1,317 @@
+/* Root container for the entire schema card tree structure */
+.schema-card-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Base card element for each schema node */
+.schema-card {
+  border: 1px solid var(--schema-card-border) !important;
+  border-left-width: 1px !important;
+  border-radius: 0.6rem;
+  background: var(--schema-card-bg);
+  color: var(--schema-card-text);
+  box-shadow: none;
+  padding: 0.2rem 0.6rem 0.6rem;
+  margin: 0;
+}
+
+/* Base styling for <summary> inside <details> */
+.schema-card summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  display: block;
+}
+
+/* Summary header styling including title + badges layout */
+.schema-card summary,
+.schema-card--inline-static .schema-card-summary {
+  padding: 0.55rem 0.75rem;
+  margin: -0.2rem -0.6rem 0.2rem;
+  background: var(--schema-card-summary-bg);
+  border-radius: 0.6rem 0.6rem 0 0;
+  color: var(--schema-card-title);
+}
+
+/* When the summary shows only badges (no title text) */
+.schema-card summary.schema-card-summary-toggle--badges-only,
+.schema-card--inline-static .schema-card-summary--badges-only {
+  margin: 0;
+  background: transparent;
+}
+
+/* Compact padding for toggle-only badge summaries */
+.schema-card summary.schema-card-summary-toggle--badges-only {
+  padding: 0.2rem 0.6rem;
+}
+
+/* Remove default markers/triangles from <summary> */
+.schema-card summary::-webkit-details-marker,
+.schema-card summary::marker,
+.schema-card summary::before,
+.schema-card summary::after {
+  display: none;
+}
+
+/* Compact inline-static summary version with only badges */
+.schema-card--inline-static .schema-card-summary--badges-only {
+  padding: 0.2rem 0.2rem;
+}
+
+/* Variant styling for inline child cards */
+.schema-card--inline {
+  margin-top: 0.5rem;
+  border-width: 1px;
+}
+
+/* Remove top margin from bodies in inline mode */
+.schema-card--inline .schema-card-body {
+  margin-top: 0;
+}
+
+/* Variant: a card that contains only a summary (no body section) */
+.schema-card--summary-only {
+  padding: 0.2rem 0.6rem 0.2rem;
+  background: var(--schema-card-summary-bg);
+}
+
+/* Adjust summary layout when body is absent */
+.schema-card--summary-only .schema-card-summary {
+  margin: -0.2rem -0.6rem 0;
+  border-radius: 0.6rem;
+  background: transparent;
+}
+
+/* Main summary wrapper with flex layout: title area + badges */
+.schema-card-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  justify-content: space-between;
+  padding: 0.4rem 0.2rem;
+}
+
+/* Badges-only summary compact variant */
+.schema-card-summary--badges-only {
+  padding: 0.2rem 0.2rem;
+  background: transparent;
+  margin-bottom: 0;
+}
+
+/* Align badges left when only badges are shown */
+.schema-card-summary--badges-only .schema-card-summary-badges {
+  justify-content: flex-start;
+}
+
+/* Remove top border/padding when summary is badges-only */
+.schema-card-summary--badges-only + .schema-card-body {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Holds title + description vertically */
+.schema-card-summary-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+/* Title styling */
+.schema-card summary,
+.schema-card--inline-static .schema-card-summary,
+.md-typeset .schema-card summary,
+.md-typeset .schema-card--inline-static .schema-card-summary {
+  text-transform: none !important;
+}
+
+/* Title styling */
+.schema-card-title,
+.md-typeset .schema-card-title {
+  font-weight: 500;
+  font-size: 1rem;
+  color: inherit;
+  text-decoration: none;
+  text-transform: none !important; /* Keep schema/property names exactly as written */
+}
+
+/* Summary description text */
+.schema-card-summary-desc {
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+
+/* Container for badges inside summary */
+.schema-card-summary-badges {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Badge wrappers keep layout consistent without being interactive */
+.schema-card-summary-badges .schema-card-badge-link {
+  display: inline-flex;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Base badge styling (rounded pills) */
+.schema-badge {
+  border-radius: 999px;
+  padding: 0.034rem 0.48rem;
+  font-size: 0.63rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  background: var(--schema-badge-bg);
+  color: var(--schema-badge-fg);
+}
+
+/* Required-property badge (usually highlighted) */
+.schema-badge--required {
+  background: var(--schema-badge-required-bg);
+  color: var(--schema-badge-required-fg);
+  border-color: var(--schema-badge-required-border);
+}
+
+/* Permalink control placed outside summary for accessibility */
+.schema-card-anchor-link {
+  display: block;
+  text-align: right;
+  padding: 0 0.75rem 0.15rem;
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: var(--md-typeset-a-color, var(--schema-card-title));
+  opacity: 0.6;
+}
+
+.schema-card-anchor-link::before {
+  content: "#";
+  margin-right: 0.1rem;
+}
+
+.schema-card-anchor-link:focus,
+.schema-card-anchor-link:hover {
+  opacity: 1;
+}
+
+/* Type badge (string, integer, array, etc.) */
+.schema-badge--type {
+  background: var(--schema-badge-type-bg);
+  color: var(--schema-badge-type-fg);
+  border-color: var(--schema-badge-type-border);
+}
+
+/* additionalProperties badge (often small + subtle) */
+.schema-badge--additional {
+  background: var(--schema-badge-additional-bg);
+  color: var(--schema-badge-additional-fg);
+  border-color: var(--schema-badge-additional-border);
+  font-weight: 400;
+  font-size: 0.576rem;
+}
+
+/* Main body content of the card (metadata, description, enums, etc.) */
+.schema-card-body {
+  border-top: 1px solid var(--schema-card-divider);
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+}
+
+/* Standalone description block */
+.schema-card-description {
+  font-size: 0.78rem;
+}
+
+/* Path/breadcrumb-like schema location display */
+.schema-card-path {
+  font-size: 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Links in path should be bold-ish and not underlined */
+.schema-card-path a {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Metadata grid (type, format, enum, min/max constraints, etc.) */
+.schema-card-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+/* dt as label */
+.schema-card-meta dt {
+  font-weight: 600;
+  margin: 0;
+}
+
+/* dd as value */
+.schema-card-meta dd {
+  margin: 0;
+}
+
+/* Section title headers inside body (e.g., "Examples", "Metadata") */
+.schema-card-section-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+/* Lists inside cards (e.g., enum values, required fields) */
+.schema-card-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+/* List item line height */
+.schema-card-list li {
+  line-height: 1.35;
+}
+
+/* Ensure example code blocks wrap properly */
+.schema-card-examples code {
+  white-space: pre-wrap;
+}
+
+/* Container for child schema cards (nested properties/items) */
+.schema-card-children {
+  border-left: 3px solid var(--schema-card-rail);
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Add top border for each nested card to visually separate */
+.schema-card-tree > .schema-card,
+.schema-card-children > .schema-card {
+  margin: 0;
+  border-top: 1px solid var(--schema-card-border);
+}
+
+/* Remove top border for the first card in each level */
+.schema-card-tree > .schema-card:first-child,
+.schema-card-children > .schema-card:first-child {
+  border-top: none;
+}
+
+/* Additional margin for array items block */
+.schema-card-array-items {
+  margin-top: 0.4rem;
+}

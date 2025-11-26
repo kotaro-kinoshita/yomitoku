@@ -1,10 +1,10 @@
 # MCP
 
-This section explains how to use the Yomitoku MCP server in conjunction with Claude Desktop.
+This section explains how to use the YomiToku MCP server in conjunction with Claude Desktop.
 
-## Installing Yomitoku
+## Installing YomiToku
 
-First, install Yomitoku by following the "Installation with uv" section in [Installation](installation.en.md).
+First, install YomiToku by following the "Installation with uv" section in [Installation](installation.en.md).
 
 However, to add `mcp` as a dependency during installation, include `mcp` in `--extra` as shown below.
 
@@ -23,7 +23,7 @@ Next, add the following configuration to the `mcpServers` section of the Claude 
       "command": "uv",
       "args": [
         "--directory",
-        "(Absolute path of the directory where Yomitoku was cloned)",
+        "(Absolute path of the directory where YomiToku was cloned)",
         "run",
         "yomitoku_mcp"
       ],
@@ -35,7 +35,7 @@ Next, add the following configuration to the `mcpServers` section of the Claude 
 }
 ```
 
-For example, if you executed `git clone https://github.com/kotaro-kinoshita/yomitoku.git` in `/Users/your-username/workspace`, then `(Directory where Yomitoku was cloned)` would be `/Users/your-username/workspace/yomitoku`, and if you use `sample.pdf` in the `yomitoku/demo` directory, specify `(Directory containing files for OCR)` as `/Users/your-username/workspace/yomitoku/demo`.
+For example, if you executed `git clone https://github.com/kotaro-kinoshita/yomitoku.git` in `/Users/your-username/workspace`, then `(Directory where YomiToku was cloned)` would be `/Users/your-username/workspace/yomitoku`, and if you use `sample.pdf` in the `yomitoku/demo` directory, specify `(Directory containing files for OCR)` as `/Users/your-username/workspace/yomitoku/demo`.
 
 ## Using Claude Desktop
 

@@ -9,7 +9,7 @@ source = "uv-dynamic-versioning"
 name = "yomitoku"
 dynamic = ["version"]
 authors = [{name = "Kotaro Kinoshita", email = "kotaro.kinoshita@mlism.com"}]
-description = "Yomitoku is an AI-powered document image analysis package designed specifically for the Japanese language."
+description = "YomiToku is an AI-powered document image analysis package designed specifically for the Japanese language."
 readme = "README.md"
 license = {text = "CC BY-NC-SA 4.0"}
 requires-python = ">=3.10,<3.13"
@@ -42,9 +42,9 @@ format = "{base}"
 
 [tool.uv]
 dev-dependencies = [
-    "json-schema-for-humans>=1.4.1",
     "mkdocs-codeinclude-plugin>=0.2.1",
     "mkdocs-include-markdown-plugin>=7.1.6",
+    "mkdocs-macros-plugin>=1.5.0",
     "mkdocs-material>=9.5.44",
     "mkdocs-static-i18n",
     "mkdocs>=1.6.1",
@@ -108,6 +108,7 @@ deps =
     mkdocs-include-markdown-plugin
     mkdocs-static-i18n
     mkdocs-codeinclude-plugin
+    mkdocs-macros-plugin
 commands = 
     mkdocs gh-deploy --force
 """
