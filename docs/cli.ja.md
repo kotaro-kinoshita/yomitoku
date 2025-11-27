@@ -46,7 +46,7 @@ yomitoku ${path_data} --lite -v
 yomitoku ${path_data} -f md
 ```
 
-PDF を指定した場合、画像内の文字情報を認識し、文字情報を透明テキストとして埋め込むことでサーチャブル PDF に変換します。
+`pdf` を指定した場合、画像内の文字情報を認識し、文字情報を透明テキストとして埋め込むことでサーチャブル PDF に変換します。
 
 ## 出力デバイスの指定
 
@@ -92,7 +92,7 @@ yomitoku ${path_data} --encoding utf-8-sig
 
 次のオプションで各モジュールに対する Config が記述された YAML ファイルへのパスを指定します。
 
-| オプション名  | 対象モジュール |
+| オプション名  | 対象モデル |
 | :--- | :--- |
 | `--td_cfg` | Text Detector (文字位置の検知) |
 | `--tr_cfg` | Text Recognizer (文字列認識) |
