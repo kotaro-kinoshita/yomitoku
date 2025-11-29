@@ -6,15 +6,17 @@ badges, inline/summary decisions). The helpers avoid side-effects so renderer
 logic can reuse the computed analysis safely.
 """
 
-import html
 import json
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 SCHEMA_DIR = Path(__file__).resolve().parent.parent / "schemas"
 SCALAR_TYPES = {"string", "number", "integer", "boolean", "null"}
+ConstraintKind = Literal["literal_list", "literal", "code", "flag"]
+ConstraintValue = str | list[str] | None
+AdditionalPropsPolicy = Literal["forbidden"]
 CONSTRAINT_LABELS: tuple[tuple[str, str], ...] = (
     ("minimum", "Minimum"),
     ("maximum", "Maximum"),
@@ -30,6 +32,15 @@ CONSTRAINT_LABELS: tuple[tuple[str, str], ...] = (
 )
 
 
+@dataclass(frozen=True)
+class ConstraintDetail:
+    """Structured representation of a constraint to be rendered into HTML later."""
+
+    kind: ConstraintKind
+    label: str
+    value: ConstraintValue = None
+
+
 # Immutable bundle returned by analyze(); keeps all analyzer-derived facts together.
 @dataclass(frozen=True)
 class SchemaNodeAnalysis:
@@ -37,22 +48,11 @@ class SchemaNodeAnalysis:
 
     schema: dict[str, Any]  # Dereferenced/normalized schema dict
     type_label: str | None  # Type badge text (inferred/explicit)
-    constraints: list[str]  # Human-readable constraint strings
+    constraints: list[ConstraintDetail]  # Structured constraint facts
     summary_only: bool  # True when header alone is sufficient
-    additional_badge: str | None  # Badge HTML for additionalProperties
+    additional_props_policy: AdditionalPropsPolicy | None
     default_label: str | None = None  # Fallback label for array items
-
-
-def format_literal(value: Any) -> str:
-    """Render literal values (dict/list/primitives) as inline code.
-
-    Many call sites (enum, const, examples, etc.) present raw Python objects to
-    the user. Wrapping them in <code> ensures consistent styling while escaping
-    HTML so we never output unsafe content.
-    """
-    if isinstance(value, (dict, list)):
-        return f"<code>{html.escape(json.dumps(value, ensure_ascii=False))}</code>"
-    return f"<code>{html.escape(str(value))}</code>"
+    examples: list[str] = field(default_factory=list)
 
 
 class SchemaAnalyzer:
@@ -76,20 +76,26 @@ class SchemaAnalyzer:
         type_label = self.determine_type_label(schema)
         # Aggregate human-readable constraint strings (enums, min/max, formats).
         constraints = self.collect_constraints(schema)
+        examples = self.collect_examples(schema)
         # Decide if the node can be represented by its summary alone (no body).
         summary_only = self.is_summary_only(schema)
         # Add an additionalProperties badge when the schema forbids extras.
-        additional_badge = self.additional_badge(schema.get("additionalProperties"))
+        additional_props_policy = self.additional_props_policy(
+            schema.get("additionalProperties")
+        )
         # Provide a fallback label for array items when the caller requests it.
-        default_label = self.default_item_label(schema) if compute_default_label else None
+        default_label = (
+            self.default_item_label(schema) if compute_default_label else None
+        )
         # Package all derived values together so rendering can be a single-step lookup.
         return SchemaNodeAnalysis(
             schema=schema,
             type_label=type_label,
             constraints=constraints,
             summary_only=summary_only,
-            additional_badge=additional_badge,
+            additional_props_policy=additional_props_policy,
             default_label=default_label,
+            examples=examples,
         )
 
     def dereference(self, node: dict[str, Any]) -> dict[str, Any]:
@@ -139,6 +145,13 @@ class SchemaAnalyzer:
             return self.dereference(schema_def)
         return {"type": schema_def}
 
+    @staticmethod
+    def stringify_literal(value: Any) -> str:
+        """Convert literal values to a stable string representation (no HTML)."""
+        if isinstance(value, (dict, list)):
+            return json.dumps(value, ensure_ascii=False)
+        return str(value)
+
     def default_item_label(self, schema: dict[str, Any]) -> str:
         """Provide a fallback title for array items."""
         if schema.get("title"):
@@ -147,40 +160,63 @@ class SchemaAnalyzer:
             return "ArrayItem"
         return "Item"
 
-    def collect_constraints(self, schema: dict[str, Any]) -> list[str]:
-        """Collate constraint strings (enum, min/max, etc.) for display.
+    def collect_constraints(self, schema: dict[str, Any]) -> list[ConstraintDetail]:
+        """Collate constraint facts (enum, min/max, etc.).
 
-        The MkDocs UI shows human readable bullet lists explaining everything
-        from allowed values to length limits.
+        The renderer can then decide how to present each fact (code blocks,
+        escaped text, etc.) without mixing analysis with markup.
         """
-        constraints: list[str] = []
+        constraints: list[ConstraintDetail] = []
 
         if "enum" in schema:
-            values = ", ".join(format_literal(value) for value in schema["enum"])
-            constraints.append(f"Allowed values: {values}")
+            values = [
+                self.stringify_literal(value) for value in schema["enum"]
+            ]
+            constraints.append(ConstraintDetail("literal_list", "Allowed values", values))
         if "const" in schema:
-            constraints.append(f"Constant value: {format_literal(schema['const'])}")
+            constraints.append(
+                ConstraintDetail("literal", "Constant value", self.stringify_literal(schema["const"]))
+            )
         if "default" in schema:
-            constraints.append(f"Default: {format_literal(schema['default'])}")
+            constraints.append(
+                ConstraintDetail("literal", "Default", self.stringify_literal(schema["default"]))
+            )
         if schema.get("format"):
-            constraints.append(f"Format: <code>{html.escape(str(schema['format']))}</code>")
+            constraints.append(
+                ConstraintDetail("code", "Format", str(schema["format"]))
+            )
         if schema.get("pattern"):
-            constraints.append(f"Pattern: <code>{html.escape(str(schema['pattern']))}</code>")
+            constraints.append(
+                ConstraintDetail("code", "Pattern", str(schema["pattern"]))
+            )
         for key, label in CONSTRAINT_LABELS:
             if schema.get(key) is not None:
                 constraints.append(
-                    f"{label}: <code>{html.escape(str(schema[key]))}</code>"
+                    ConstraintDetail("code", label, str(schema[key]))
                 )
         if schema.get("uniqueItems"):
-            constraints.append("Items must be unique")
+            constraints.append(ConstraintDetail("flag", "Items must be unique"))
 
         additional_props = schema.get("additionalProperties")
         if additional_props is False:
-            constraints.append("Additional properties are not allowed")
+            constraints.append(
+                ConstraintDetail("flag", "Additional properties are not allowed")
+            )
         elif isinstance(additional_props, dict):
-            constraints.append("Additional properties must match the nested schema")
+            constraints.append(
+                ConstraintDetail(
+                    "flag", "Additional properties must match the nested schema"
+                )
+            )
 
         return constraints
+
+    def collect_examples(self, schema: dict[str, Any]) -> list[str]:
+        """Collect example values as stringified literals."""
+        examples_field = schema.get("examples")
+        if not isinstance(examples_field, Iterable) or isinstance(examples_field, (str, bytes)):
+            return []
+        return [self.stringify_literal(example) for example in examples_field]
 
     def determine_type_label(self, schema: dict[str, Any]) -> str | None:
         """Determine the most informative type label for the header badge."""
@@ -219,7 +255,9 @@ class SchemaAnalyzer:
         type_value = schema.get("type")
         if isinstance(type_value, str):
             return [type_value]
-        if isinstance(type_value, Iterable) and not isinstance(type_value, (str, bytes)):
+        if isinstance(type_value, Iterable) and not isinstance(
+            type_value, (str, bytes)
+        ):
             return [str(item) for item in type_value]
         return []
 
@@ -246,14 +284,13 @@ class SchemaAnalyzer:
                 return literal_types.pop()
         return None
 
-    def additional_badge(self, additional_props: Any) -> str | None:
-        """Return badge HTML describing additional property behavior."""
+    def additional_props_policy(
+        self, additional_props: Any
+    ) -> AdditionalPropsPolicy | None:
+        """Return a policy indicator for additionalProperties (for badge rendering)."""
         if additional_props is False:
-            text = "No Additional Props"
-        else:
-            return None
-        # Badge text mirrors the MkDocs cards, so keep wording consistent here.
-        return f'<span class="schema-badge schema-badge--additional">{html.escape(text)}</span>'
+            return "forbidden"
+        return None
 
     def is_summary_only(self, schema: dict[str, Any]) -> bool:
         """Return True when the schema can be represented by the header alone."""
@@ -273,7 +310,9 @@ class SchemaAnalyzer:
             if isinstance(clauses, list) and clauses:
                 all_scalar = True
                 for clause in clauses:
-                    normalized = clause if isinstance(clause, dict) else {"type": clause}
+                    normalized = (
+                        clause if isinstance(clause, dict) else {"type": clause}
+                    )
                     if not self.is_summary_only(self.normalize_schema(normalized)):
                         all_scalar = False
                         break
