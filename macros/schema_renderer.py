@@ -58,20 +58,16 @@ class SchemaRenderer:
         assert isinstance(title, str)
 
         self._initialize_components(schema, title)
-        parts = [
-            # Root wrapper ensures CSS can style the entire schema tree at once.
-            '<div class="schema-card-tree">',
-            self._render_node(
-                RenderNodeParams(
-                    node=schema,
-                    display_name=title,
-                    segments=["root"],
-                    required=False,
-                )
-            ),
-            "</div>",
-        ]
-        return "\n".join(parts)
+        root_html = self._render_node(
+            RenderNodeParams(
+                node=schema,
+                display_name=title,
+                segments=["root"],
+                required=False,
+            )
+        )
+
+        return self._require_html_builder().wrap_schema_tree(root_html)
 
     def _initialize_components(self, schema: dict[str, Any], title: str) -> None:
         """Set up analyzer and HTML builder for the active schema."""
@@ -88,7 +84,7 @@ class SchemaRenderer:
         # Perform analysis once per node, but reuse when provided.
         analysis = params.analysis or analyzer.analyze(params.node)
 
-        # Derive render-specific metadata (titles/anchors/badges) from analysis.
+        # Compute UI-facing metadata from the analysis output.
         meta = self._build_node_meta(
             analysis, params.display_name, params.segments, params.required
         )
@@ -312,7 +308,7 @@ class SchemaRenderer:
         anchor = html_builder.anchor(segments)
         description = schema.get("description", "").strip()
         badges = html_builder.build_badges(
-            analysis.type_label, required, analysis.additional_badge
+            analysis.type_label, required, analysis.additional_props_policy
         )
         summary_desc = html_builder.format_summary_description(description)
         allow_inline_title = bool(schema.get("title") or display_name)
@@ -343,7 +339,7 @@ class SchemaRenderer:
             meta.type_label,
             meta.description,
             analysis.constraints,
-            meta.schema,
+            analysis.examples or [],
         )
         return html_builder.build_body_html(
             body_sections,
