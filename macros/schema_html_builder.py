@@ -51,7 +51,9 @@ class SchemaHTMLBuilder:
         """
         badges: list[str] = []
         if required:
-            badges.append('<span class="schema-badge schema-badge--required">Required</span>')
+            badges.append(
+                '<span class="schema-badge schema-badge--required">Required</span>'
+            )
         if additional_badge:
             badges.append(additional_badge)
         if type_label:
@@ -171,20 +173,22 @@ class SchemaHTMLBuilder:
         for idx, segment in enumerate(segments):
             if segment == "[item]":
                 continue
-            label = (self.root_title or "root") if idx == 0 else self._segment_label(segment)
+            label = (
+                (self.root_title or "root")
+                if idx == 0
+                else self._segment_label(segment)
+            )
             prefix = segments[: idx + 1]
             anchor = self.anchor(prefix)
             crumbs.append(f'<a href="#{anchor}">{html.escape(label)}</a>')
-        return (
-            '<div class="schema-card-path">'
-            + " › ".join(crumbs)
-            + "</div>"
-        )
+        return '<div class="schema-card-path">' + " › ".join(crumbs) + "</div>"
 
     @staticmethod
     def _wrap_badge_container(badge: str) -> str:
         """Wrap a badge span for styling while keeping it non-interactive."""
-        return f'<span class="schema-card-badge-link" role="presentation">{badge}</span>'
+        return (
+            f'<span class="schema-card-badge-link" role="presentation">{badge}</span>'
+        )
 
     @staticmethod
     def _meta_list(type_label: str | None) -> str:
@@ -229,11 +233,7 @@ class SchemaHTMLBuilder:
     @staticmethod
     def _wrap_body_content(body: str) -> str:
         """Wrap the composed body content with the body container."""
-        return (
-            '  <div class="schema-card-body">\n'
-            f"    {body}\n"
-            "  </div>"
-        )
+        return f'  <div class="schema-card-body">\n    {body}\n  </div>'
 
     @staticmethod
     def _card_inner(summary_inner: str, body_html: str) -> str:
@@ -246,11 +246,7 @@ class SchemaHTMLBuilder:
     @staticmethod
     def _wrap_card_div(anchor: str, classes: Sequence[str], inner: str) -> str:
         """Wrap inline cards in a div with the provided classes."""
-        return (
-            f'<div class="{" ".join(classes)}" id="{anchor}">\n'
-            f"  {inner}\n"
-            "</div>"
-        )
+        return f'<div class="{" ".join(classes)}" id="{anchor}">\n  {inner}\n</div>'
 
     @staticmethod
     def _append_permalink(summary_inner: str, permalink_html: str) -> str:
@@ -271,10 +267,7 @@ class SchemaHTMLBuilder:
     @staticmethod
     def _block_card_inner(header_html: str, body_html: str) -> str:
         """Assemble the inner contents of a block card."""
-        return (
-            f"{header_html}\n"
-            f"  {body_html}"
-        ).strip()
+        return (f"{header_html}\n  {body_html}").strip()
 
     @staticmethod
     def _wrap_details_card(anchor: str, card_inner: str, open_card: bool) -> str:
@@ -291,7 +284,7 @@ class SchemaHTMLBuilder:
         """Return the summary title span when it should be shown."""
         if title and (not inline or allow_inline_title):
             return (
-                '<span class="schema-card-title" style="-webkit-font-feature-settings:\'tnum\' 0,\'lnum\' 0;'
+                "<span class=\"schema-card-title\" style=\"-webkit-font-feature-settings:'tnum' 0,'lnum' 0;"
                 " font-feature-settings:'tnum' 0,'lnum' 0;\">"
                 f"{html.escape(title)}</span>"
             )
@@ -329,8 +322,22 @@ class SchemaHTMLBuilder:
         if summary_badge_only:
             summary_classes.append("schema-card-summary--badges-only")
         return (
-            f"  <div class=\"{' '.join(summary_classes)}\">\n"
+            f'  <div class="{" ".join(summary_classes)}">\n'
             f"    {summary_main}\n"
             f'    <div class="schema-card-summary-badges">{"".join(badges)}</div>\n'
             "  </div>"
         ).strip()
+    
+    @staticmethod
+    def format_summary_description(description: str) -> str:
+        """Render primary line normally and secondary lines using the small style."""
+        if not description:
+            return ""
+        lines = [line.strip() for line in description.splitlines() if line.strip()]
+        if not lines:
+            return ""
+        formatted_lines = [
+            f'<span class="schema-card-summary-desc">{html.escape(line)}</span>'
+            for line in lines
+        ]
+        return "<br />".join(formatted_lines)
