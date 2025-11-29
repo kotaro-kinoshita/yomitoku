@@ -2,12 +2,6 @@
 name: Change Log Generator
 
 on:
-  push:
-    branches:
-      - docs/fix-docs-little # for debug
-    paths-ignore:
-      - "CHANGELOG.md"
-
   pull_request:
     types: [closed]
     branches:
