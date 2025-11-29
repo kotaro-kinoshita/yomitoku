@@ -3,8 +3,9 @@ name: Change Log Generator
 
 on:
   pull_request:
-    types: [closed]      
-      - main    
+    types: [closed]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -19,7 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
       - uses: ruby/setup-ruby@v1
         with:
@@ -39,15 +39,15 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           branch: chore/changelog-${{ github.run_id }}
-          base:   ${{ github.event.workflow_run.head_branch }}
+          base: ${{ github.event.pull_request.base.ref }}
           title: "docs: Update CHANGELOG"
           body: |
             Automated CHANGELOG update triggered by Release Drafter.
             - Workflow run: ${{ github.run_id }}
           commit-message: "docs: update CHANGELOG"
           token: ${{ secrets.GITHUB_TOKEN }}
-          signoff: false 
-          delete-branch: true   
+          signoff: false
+          delete-branch: true
           labels: |
             changelog
             automated
