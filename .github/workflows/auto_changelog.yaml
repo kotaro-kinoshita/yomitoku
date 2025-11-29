@@ -4,7 +4,7 @@ name: Change Log Generator
 on:
   push:
     branches:
-      - fix-docs-little # for debug
+      - docs/fix-docs-little # for debug
     paths-ignore:
       - "CHANGELOG.md"
 
