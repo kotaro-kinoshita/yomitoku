@@ -1,6 +1,5 @@
 """Traverse JSON Schemas and render nested cards."""
 
-import html
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
