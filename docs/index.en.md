@@ -1,4 +1,4 @@
-## 🌟 Introduction
+# 🌟 Introduction
 
 YomiToku is a Document AI engine specialized in Japanese document image analysis. It provides full OCR (optical character recognition) and layout analysis capabilities, enabling the recognition, extraction, and conversion of text and diagrams from images.
 
@@ -20,22 +20,23 @@ YomiToku connects to Hugging Face Hub to automatically download model files duri
 Yes. For commercial use of YomiToku, we provide a **licensed product edition** through the options below.  
 The commercial edition includes numerous enhancements such as improved handwriting recognition accuracy, automatic image orientation correction, and advanced layout analysis features that are **available only in the product version**.
 
-* **[Guideline for Determining Commercial / Non-Commercial Use](commercial_use_guideline.en.md)**
-
+- **[Guideline for Determining Commercial / Non-Commercial Use](commercial_use_guideline.en.md)**
 
 #### On-Premises / Local PC Commercial Use
+
 If you wish to use YomiToku commercially in an on-premises environment or on a local PC,  
 we offer a dedicated **on-premises commercial license**.  
 For more details, please contact us via:
 
-- https://www.mlism.com/
+- <https://www.mlism.com/>
 
 #### Cloud-Based Commercial Use (AWS Marketplace)
+
 The commercial edition of YomiToku is also available on **AWS Marketplace**.  
 All processing is executed **entirely within your own AWS environment**, with no external network communication or transmission to third-party servers.  
 This ensures safe usage even for workloads involving confidential documents, internal corporate materials, or personal information.
 
 - **AWS Marketplace – YomiToku-Pro Document Analyzer**  
-  https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku
+  <https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku>
 - **Usage guide (YomiToku-Client documentation)**  
-  https://mlism-inc.github.io/yomitoku-client/
+  <https://mlism-inc.github.io/yomitoku-client/>

@@ -51,13 +51,13 @@ Analyze sample.pdf using OCR and translate it into English.
 
 Set the path to the folder containing the images to be processed by OCR in the resource directory.
 
-```
+```bash
 export RESOURCE_DIR="path of dataset"
 ```
 
 Start the SSE server using the following command:
 
-```
+```bash
 uv run yomitoku_mcp -t sse
 ```
 
