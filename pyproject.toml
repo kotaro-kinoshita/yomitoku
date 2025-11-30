@@ -12,7 +12,7 @@ authors = [{name = "Kotaro Kinoshita", email = "kotaro.kinoshita@mlism.com"}]
 description = "YomiToku is an AI-powered document image analysis package designed specifically for the Japanese language."
 readme = "README.md"
 license = {text = "CC BY-NC-SA 4.0"}
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<3.14"
 keywords = ["Japanese", "OCR", "Deep Learning"]
 dependencies = [
     "huggingface-hub>=0.26.1",
@@ -27,8 +27,8 @@ dependencies = [
     "torch>=2.5.0",
     "pypdfium2==4.30.0",
     "onnx>=1.17.0",
-    "torch>=2.5.0",
-    "torchvision>=0.20.0",
+    "torch>=2.6.0",
+    "torchvision>=0.21.0",
     "onnxruntime>=1.20.1",
     "reportlab>=4.4.1",
     "jaconv>=0.4.0",
@@ -86,7 +86,7 @@ mcp = [
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = lint, py310, py311, py312, docs
+envlist = lint, py310, py311, py312, py313, docs
 
 [testenv]
 deps = pytest

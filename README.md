@@ -2,7 +2,7 @@
 
 <img src="static/logo/horizontal.png" width="800px">
 
-![Python](https://img.shields.io/badge/Python-3.10|3.11|3.12-F9DC3E.svg?logo=python&logoColor=&style=flat)
+![Python](https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13-F9DC3E.svg?logo=python&logoColor=&style=flat)
 ![PyTorch](https://img.shields.io/badge/Pytorch-2.5-EE4C2C.svg?logo=Pytorch&style=fla)
 ![CUDA](https://img.shields.io/badge/CUDA->=11.8-76B900.svg?logo=NVIDIA&style=fla)
 ![OS](https://img.shields.io/badge/OS-Linux|Mac|Win-1793D1.svg?&style=fla)
