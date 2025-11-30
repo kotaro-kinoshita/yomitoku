@@ -16,9 +16,9 @@ yomitoku ${path_data} -v -o results
 
 **Supplement: About `${path_data}`**
 
-* An image file or a directory can be specified.
-* If a directory is specified, it will be processed recursively, including subdirectories.
-* The supported file formats are `pdf`, `jpeg`, `png`, `bmp`, and `tiff`.
+- An image file or a directory can be specified.
+- If a directory is specified, it will be processed recursively, including subdirectories.
+- The supported file formats are `pdf`, `jpeg`, `png`, `bmp`, and `tiff`.
 
 !!! note
     - Only printed text recognition is supported. While it may occasionally read handwritten text, official support is not provided.
@@ -49,7 +49,7 @@ You can specify the output format of the analysis results using the --format or 
 yomitoku ${path_data} -f md
 ```
 
-If a PDF file is specified, the system will recognize the text within the image using OCR and embed the text information as an invisible layer to convert it into a searchable PDF.
+If `pdf` is specified, the system will recognize the text within the image using OCR and embed the text information as an invisible layer to convert it into a searchable PDF.
 
 ## Specifying the Output Device
 
@@ -95,7 +95,7 @@ yomitoku ${path_data} --encoding utf-8-sig
 
 The following options are used to specify the path to the YAML configuration file for each respective module.
 
-| Option Name | Target Module |
+| Option Name | Target Model |
 | :--- | :--- |
 | `--td_cfg` | Text Detector (TD) |
 | `--tr_cfg` | Text Recognizer (TR) |
@@ -136,7 +136,7 @@ By default, the reading order option is set to `auto`.
 
 When `auto` is specified, the system identifies the document's orientation (horizontal or vertical) and automatically estimates the reading order. Specifically, the order is estimated as `top2left` for horizontal documents and `top2bottom` for vertical documents.
 
-"The reading order can also be specified manually, as follows:
+The reading order can also be specified manually, as follows:
 
 ```bash
 yomitoku ${path_data} --reading_order left2right

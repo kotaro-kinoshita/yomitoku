@@ -5,7 +5,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from macros.schema_analyzer import format_literal
+from macros.schema_analyzer import AdditionalPropsPolicy, ConstraintDetail
 
 
 class SchemaHTMLBuilder:
@@ -41,8 +41,16 @@ class SchemaHTMLBuilder:
                 slug_parts.append(cleaned)
         return "schema-" + "-".join(slug_parts or ["section"])
 
+    @staticmethod
+    def wrap_schema_tree(content: str) -> str:
+        """Wrap the entire rendered tree for styling."""
+        return f'<div class="schema-card-tree">\n{content}\n</div>'
+
     def build_badges(
-        self, type_label: str | None, required: bool, additional_badge: str | None
+        self,
+        type_label: str | None,
+        required: bool,
+        additional_props_policy: AdditionalPropsPolicy | None,
     ) -> list[str]:
         """Compose the badge list that sits in the card header.
 
@@ -51,7 +59,10 @@ class SchemaHTMLBuilder:
         """
         badges: list[str] = []
         if required:
-            badges.append('<span class="schema-badge schema-badge--required">Required</span>')
+            badges.append(
+                '<span class="schema-badge schema-badge--required">Required</span>'
+            )
+        additional_badge = self._additional_props_badge(additional_props_policy)
         if additional_badge:
             badges.append(additional_badge)
         if type_label:
@@ -65,8 +76,8 @@ class SchemaHTMLBuilder:
         segments: Sequence[str],
         type_label: str | None,
         description: str,
-        constraints: list[str],
-        schema: dict[str, Any],
+        constraints: Sequence[ConstraintDetail],
+        examples: Sequence[str],
     ) -> list[str]:
         """Build all descriptive sections shown inside the card body.
 
@@ -79,11 +90,13 @@ class SchemaHTMLBuilder:
                 1,
                 f'<div class="schema-card-description">{html.escape(description)}</div>',
             )
-        if constraints:
-            sections.append(self._bullet_section("Constraints", constraints))
-        examples = schema.get("examples")
-        if isinstance(examples, Sequence) and examples:
-            formatted = ", ".join(format_literal(example) for example in examples)
+        formatted_constraints = [
+            self._format_constraint(constraint) for constraint in constraints
+        ]
+        if formatted_constraints:
+            sections.append(self._bullet_section("Constraints", formatted_constraints))
+        if examples:
+            formatted = ", ".join(self._format_literal(example) for example in examples)
             sections.append(
                 '<div class="schema-card-section"><div class="schema-card-section-title">Examples</div>'
                 f'<div class="schema-card-examples">{formatted}</div></div>'
@@ -171,20 +184,22 @@ class SchemaHTMLBuilder:
         for idx, segment in enumerate(segments):
             if segment == "[item]":
                 continue
-            label = (self.root_title or "root") if idx == 0 else self._segment_label(segment)
+            label = (
+                (self.root_title or "root")
+                if idx == 0
+                else self._segment_label(segment)
+            )
             prefix = segments[: idx + 1]
             anchor = self.anchor(prefix)
             crumbs.append(f'<a href="#{anchor}">{html.escape(label)}</a>')
-        return (
-            '<div class="schema-card-path">'
-            + " › ".join(crumbs)
-            + "</div>"
-        )
+        return '<div class="schema-card-path">' + " › ".join(crumbs) + "</div>"
 
     @staticmethod
     def _wrap_badge_container(badge: str) -> str:
         """Wrap a badge span for styling while keeping it non-interactive."""
-        return f'<span class="schema-card-badge-link" role="presentation">{badge}</span>'
+        return (
+            f'<span class="schema-card-badge-link" role="presentation">{badge}</span>'
+        )
 
     @staticmethod
     def _meta_list(type_label: str | None) -> str:
@@ -229,11 +244,7 @@ class SchemaHTMLBuilder:
     @staticmethod
     def _wrap_body_content(body: str) -> str:
         """Wrap the composed body content with the body container."""
-        return (
-            '  <div class="schema-card-body">\n'
-            f"    {body}\n"
-            "  </div>"
-        )
+        return f'  <div class="schema-card-body">\n    {body}\n  </div>'
 
     @staticmethod
     def _card_inner(summary_inner: str, body_html: str) -> str:
@@ -246,11 +257,7 @@ class SchemaHTMLBuilder:
     @staticmethod
     def _wrap_card_div(anchor: str, classes: Sequence[str], inner: str) -> str:
         """Wrap inline cards in a div with the provided classes."""
-        return (
-            f'<div class="{" ".join(classes)}" id="{anchor}">\n'
-            f"  {inner}\n"
-            "</div>"
-        )
+        return f'<div class="{" ".join(classes)}" id="{anchor}">\n  {inner}\n</div>'
 
     @staticmethod
     def _append_permalink(summary_inner: str, permalink_html: str) -> str:
@@ -271,10 +278,7 @@ class SchemaHTMLBuilder:
     @staticmethod
     def _block_card_inner(header_html: str, body_html: str) -> str:
         """Assemble the inner contents of a block card."""
-        return (
-            f"{header_html}\n"
-            f"  {body_html}"
-        ).strip()
+        return (f"{header_html}\n  {body_html}").strip()
 
     @staticmethod
     def _wrap_details_card(anchor: str, card_inner: str, open_card: bool) -> str:
@@ -291,7 +295,7 @@ class SchemaHTMLBuilder:
         """Return the summary title span when it should be shown."""
         if title and (not inline or allow_inline_title):
             return (
-                '<span class="schema-card-title" style="-webkit-font-feature-settings:\'tnum\' 0,\'lnum\' 0;'
+                "<span class=\"schema-card-title\" style=\"-webkit-font-feature-settings:'tnum' 0,'lnum' 0;"
                 " font-feature-settings:'tnum' 0,'lnum' 0;\">"
                 f"{html.escape(title)}</span>"
             )
@@ -329,8 +333,63 @@ class SchemaHTMLBuilder:
         if summary_badge_only:
             summary_classes.append("schema-card-summary--badges-only")
         return (
-            f"  <div class=\"{' '.join(summary_classes)}\">\n"
+            f'  <div class="{" ".join(summary_classes)}">\n'
             f"    {summary_main}\n"
             f'    <div class="schema-card-summary-badges">{"".join(badges)}</div>\n'
             "  </div>"
         ).strip()
+
+    @staticmethod
+    def format_summary_description(description: str) -> str:
+        """Render primary line normally and secondary lines using the small style."""
+        if not description:
+            return ""
+        lines = [line.strip() for line in description.splitlines() if line.strip()]
+        if not lines:
+            return ""
+        formatted_lines = [
+            f'<span class="schema-card-summary-desc">{html.escape(line)}</span>'
+            for line in lines
+        ]
+        return "<br />".join(formatted_lines)
+
+    @staticmethod
+    def _format_literal(value: Any) -> str:
+        """Render literal values (already stringified) as inline code."""
+        return f"<code>{html.escape(str(value))}</code>"
+
+    def _format_constraint(self, constraint: ConstraintDetail) -> str:
+        """Convert structured constraint data into a rendered bullet string."""
+        if constraint.kind == "literal_list":
+            values: Sequence[Any] = (
+                constraint.value
+                if isinstance(constraint.value, Sequence)
+                and not isinstance(constraint.value, (str, bytes))
+                else []
+            )
+            if not values:
+                return html.escape(constraint.label)
+            formatted_values = ", ".join(self._format_literal(item) for item in values)
+            return f"{constraint.label}: {formatted_values}"
+        if constraint.kind == "literal":
+            return f"{constraint.label}: {self._format_literal(constraint.value)}"
+        if constraint.kind == "code":
+            return (
+                f"{constraint.label}: <code>{html.escape(str(constraint.value))}</code>"
+            )
+        # Default to escaping the label for flags/unknown kinds to avoid HTML injection.
+        return html.escape(constraint.label)
+
+    @staticmethod
+    def _additional_props_badge(
+        policy: AdditionalPropsPolicy | None,
+    ) -> str | None:
+        """Return badge HTML describing additional property behavior."""
+        if policy == "forbidden":
+            text = "No Additional Props"
+            return (
+                '<span class="schema-badge schema-badge--additional">'
+                f"{html.escape(text)}"
+                "</span>"
+            )
+        return None
