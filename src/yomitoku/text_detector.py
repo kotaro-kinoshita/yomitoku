@@ -88,7 +88,7 @@ class TextDetector(BaseModule):
             self.model,
             dummy_input,
             path_onnx,
-            opset_version=14,
+            opset_version=16,
             input_names=["input"],
             output_names=["output"],
             dynamic_axes=dynamic_axes,
