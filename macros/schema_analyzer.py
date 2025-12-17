@@ -169,17 +169,21 @@ class SchemaAnalyzer:
         constraints: list[ConstraintDetail] = []
 
         if "enum" in schema:
-            values = [
-                self.stringify_literal(value) for value in schema["enum"]
-            ]
-            constraints.append(ConstraintDetail("literal_list", "Allowed values", values))
+            values = [self.stringify_literal(value) for value in schema["enum"]]
+            constraints.append(
+                ConstraintDetail("literal_list", "Allowed values", values)
+            )
         if "const" in schema:
             constraints.append(
-                ConstraintDetail("literal", "Constant value", self.stringify_literal(schema["const"]))
+                ConstraintDetail(
+                    "literal", "Constant value", self.stringify_literal(schema["const"])
+                )
             )
         if "default" in schema:
             constraints.append(
-                ConstraintDetail("literal", "Default", self.stringify_literal(schema["default"]))
+                ConstraintDetail(
+                    "literal", "Default", self.stringify_literal(schema["default"])
+                )
             )
         if schema.get("format"):
             constraints.append(
@@ -191,9 +195,7 @@ class SchemaAnalyzer:
             )
         for key, label in CONSTRAINT_LABELS:
             if schema.get(key) is not None:
-                constraints.append(
-                    ConstraintDetail("code", label, str(schema[key]))
-                )
+                constraints.append(ConstraintDetail("code", label, str(schema[key])))
         if schema.get("uniqueItems"):
             constraints.append(ConstraintDetail("flag", "Items must be unique"))
 
@@ -214,7 +216,9 @@ class SchemaAnalyzer:
     def collect_examples(self, schema: dict[str, Any]) -> list[str]:
         """Collect example values as stringified literals."""
         examples_field = schema.get("examples")
-        if not isinstance(examples_field, Iterable) or isinstance(examples_field, (str, bytes)):
+        if not isinstance(examples_field, Iterable) or isinstance(
+            examples_field, (str, bytes)
+        ):
             return []
         return [self.stringify_literal(example) for example in examples_field]
 
