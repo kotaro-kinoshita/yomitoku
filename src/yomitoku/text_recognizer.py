@@ -4,6 +4,30 @@ import os
 import unicodedata
 
 from .base import BaseModelCatalog, BaseModule
+
+
+class TextRecognizerTransform:
+    """GPU-accelerated normalization for TextRecognizer."""
+
+    def __init__(self, device):
+        self.device = device
+        # Normalize(0.5, 0.5) = (x - 0.5) / 0.5 = 2x - 1
+        self.mean = torch.tensor([0.5]).view(1, 1, 1, 1)
+        self.std = torch.tensor([0.5]).view(1, 1, 1, 1)
+        self._device_ready = False
+
+    def _ensure_device(self):
+        if not self._device_ready:
+            self.mean = self.mean.to(self.device)
+            self.std = self.std.to(self.device)
+            self._device_ready = True
+
+    def __call__(self, batch_tensor: torch.Tensor) -> torch.Tensor:
+        self._ensure_device()
+        # batch_tensor: (N, C, H, W) already on device
+        return (batch_tensor - self.mean) / self.std
+
+
 from .configs import (
     TextRecognizerPARSeqConfig,
     TextRecognizerPARSeqSmallConfig,
@@ -80,6 +104,13 @@ class TextRecognizer(BaseModule):
 
         if self.model is not None:
             self.model.to(self.device)
+
+        self._transform = None  # Lazy initialization
+
+    def _get_transform(self):
+        if self._transform is None:
+            self._transform = TextRecognizerTransform(self.device)
+        return self._transform
 
     def preprocess(self, img, polygons):
         if polygons is None:
@@ -165,12 +196,15 @@ class TextRecognizer(BaseModule):
         directions = []
         for data in dataloader:
             if self.infer_onnx:
+                # Apply normalization on CPU for ONNX
+                data = (data - 0.5) / 0.5
                 input = data.numpy()
                 results = self.sess.run(["output"], {"input": input})
                 p = torch.tensor(results[0])
             else:
                 with torch.inference_mode():
                     data = data.to(self.device)
+                    data = self._get_transform()(data)  # GPU normalization
                     p = self.model(data).softmax(-1)
 
             pred, score, direction = self.postprocess(p, points)

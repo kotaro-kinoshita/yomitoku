@@ -17,12 +17,8 @@ class ParseqDataset(Dataset):
         self.quads = quads
         self.cfg = cfg
         self.img = img
-        self.transform = T.Compose(
-            [
-                T.ToTensor(),
-                T.Normalize(0.5, 0.5),
-            ]
-        )
+        # Note: Normalize removed - done on GPU in TextRecognizer for MPS acceleration
+        self.transform = T.ToTensor()
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             data = list(executor.map(self.preprocess, self.quads))
