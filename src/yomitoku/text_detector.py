@@ -8,9 +8,7 @@ from .configs import (
     TextDetectorDBNetV2Config,
 )
 from .data.functions import (
-    array_to_tensor,
     resize_shortest_edge,
-    standardization_image,
 )
 from .models import DBNet
 from .postprocessor import DBnetPostProcessor
@@ -20,6 +18,39 @@ from .schemas import TextDetectorSchema
 
 import onnx
 import onnxruntime
+
+
+class TextDetectorTransform:
+    """GPU-accelerated preprocessing for TextDetector."""
+
+    def __init__(self, device, shortest_size, limit_size):
+        self.device = device
+        self.shortest_size = shortest_size
+        self.limit_size = limit_size
+        self.mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+        self.std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
+        self._device_ready = False
+
+    def _ensure_device(self):
+        if not self._device_ready:
+            self.mean = self.mean.to(self.device)
+            self.std = self.std.to(self.device)
+            self._device_ready = True
+
+    def __call__(self, img: np.ndarray) -> torch.Tensor:
+        self._ensure_device()
+
+        # Note: Original code had double BGR/RGB flip that canceled out.
+        # Keeping BGR format for bug-compatibility with trained model.
+        # 1. Resize on CPU (cv2 is efficient)
+        resized = resize_shortest_edge(img, self.shortest_size, self.limit_size)
+
+        # 2. Transfer to GPU + normalize (GPU-accelerated)
+        tensor = torch.from_numpy(resized).permute(2, 0, 1).unsqueeze(0)
+        tensor = tensor.to(device=self.device, dtype=torch.float32)
+        tensor = (tensor / 255.0 - self.mean) / self.std
+
+        return tensor
 
 
 class TextDetectorModelCatalog(BaseModelCatalog):
@@ -76,6 +107,17 @@ class TextDetector(BaseModule):
         if self.model is not None:
             self.model.to(self.device)
 
+        self._transform = None  # Lazy initialization
+
+    def _get_transform(self):
+        if self._transform is None:
+            self._transform = TextDetectorTransform(
+                self.device,
+                self._cfg.data.shortest_size,
+                self._cfg.data.limit_size,
+            )
+        return self._transform
+
     def convert_onnx(self, path_onnx):
         dynamic_axes = {
             "input": {0: "batch_size", 2: "height", 3: "width"},
@@ -95,14 +137,7 @@ class TextDetector(BaseModule):
         )
 
     def preprocess(self, img):
-        img = img.copy()
-        img = img[:, :, ::-1].astype(np.float32)
-        resized = resize_shortest_edge(
-            img, self._cfg.data.shortest_size, self._cfg.data.limit_size
-        )
-        normalized = standardization_image(resized)
-        tensor = array_to_tensor(normalized)
-        return tensor
+        return self._get_transform()(img)
 
     def postprocess(self, preds, image_size):
         return self.post_processor(preds, image_size)
@@ -118,13 +153,12 @@ class TextDetector(BaseModule):
         tensor = self.preprocess(img)
 
         if self.infer_onnx:
-            input = tensor.numpy()
-            results = self.sess.run(["output"], {"input": input})
+            input_np = tensor.cpu().numpy()  # Move from GPU to CPU for ONNX
+            results = self.sess.run(["output"], {"input": input_np})
             preds = {"binary": torch.tensor(results[0])}
         else:
             with torch.inference_mode():
-                tensor = tensor.to(self.device)
-                preds = self.model(tensor)
+                preds = self.model(tensor)  # tensor is already on device
 
         quads, scores = self.postprocess(preds, (ori_h, ori_w))
         outputs = {"points": quads, "scores": scores}
