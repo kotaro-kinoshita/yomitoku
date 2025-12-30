@@ -43,6 +43,7 @@ class TextRecognizer(BaseModule):
         visualize=False,
         from_pretrained=True,
         infer_onnx=False,
+        infer_torch_script=False,
     ):
         super().__init__()
         self.load_model(
@@ -57,7 +58,6 @@ class TextRecognizer(BaseModule):
 
         self.model.tokenizer = self.tokenizer
         self.model.eval()
-
         self.visualize = visualize
 
         self.infer_onnx = infer_onnx
@@ -78,7 +78,18 @@ class TextRecognizer(BaseModule):
             else:
                 self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
+        if infer_torch_script:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_ts = f"{ROOT_DIR}/torch_script/{name}-{self.device}.pt"
+            if not os.path.exists(path_ts):
+                self.convert_torch_script(path_ts)
+
+            self.model = torch.jit.load(path_ts, map_location=self.device)
+            # self.model = torch.jit.optimize_for_inference(self.model)
+            self.model.eval()
+
         if self.model is not None:
+            print(self.device)
             self.model.to(self.device)
 
     def preprocess(self, img, polygons):
@@ -134,6 +145,21 @@ class TextRecognizer(BaseModule):
             dynamic_axes=dynamic_axes,
         )
 
+    def convert_torch_script(self, path_ts):
+        img_size = self._cfg.data.img_size
+        batch_size = self._cfg.data.batch_size
+        dummy_input = torch.randn(batch_size, 3, *img_size, requires_grad=False).to(
+            self.device
+        )
+        ts = torch.jit.trace(
+            self.model.eval().to(self.device),
+            dummy_input,
+            strict=False,
+        )
+        # ts = torch.jit.freeze(ts)
+        ts.save(path_ts)
+        # traced_script_module.save(path_ts)
+
     def postprocess(self, p, points):
         pred, score = self.tokenizer.decode(p)
         pred = [unicodedata.normalize("NFKC", x) for x in pred]
@@ -171,6 +197,7 @@ class TextRecognizer(BaseModule):
             else:
                 with torch.inference_mode():
                     data = data.to(self.device)
+                    print(data.shape)
                     p = self.model(data).softmax(-1)
 
             pred, score, direction = self.postprocess(p, points)

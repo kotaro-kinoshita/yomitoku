@@ -40,6 +40,7 @@ class TextDetector(BaseModule):
         visualize=False,
         from_pretrained=True,
         infer_onnx=False,
+        infer_torch_script=True,
     ):
         super().__init__()
         self.load_model(
@@ -73,7 +74,18 @@ class TextDetector(BaseModule):
 
             self.model = None
 
+        if infer_torch_script:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_ts = f"{ROOT_DIR}/torch_script/{name}-{self.device}.pt"
+            if not os.path.exists(path_ts):
+                self.convert_torch_script(path_ts)
+
+            self.model = torch.jit.load(path_ts, map_location=self.device)
+            self.model = torch.jit.optimize_for_inference(self.model)
+            self.model.eval()
+
         if self.model is not None:
+            print(self.device)
             self.model.to(self.device)
 
     def convert_onnx(self, path_onnx):
@@ -93,6 +105,17 @@ class TextDetector(BaseModule):
             output_names=["output"],
             dynamic_axes=dynamic_axes,
         )
+
+    def convert_torch_script(self, path_ts):
+        dummy_input = torch.randn(1, 3, 256, 256, requires_grad=False).to(self.device)
+        ts = torch.jit.trace(
+            self.model.to(self.device),
+            dummy_input,
+            strict=False,
+        )
+        ts = torch.jit.freeze(ts)
+        ts.save(path_ts)
+        # traced_script_module.save(path_ts)
 
     def preprocess(self, img):
         img = img.copy()
@@ -123,6 +146,7 @@ class TextDetector(BaseModule):
             preds = {"binary": torch.tensor(results[0])}
         else:
             with torch.inference_mode():
+                print("aaa")
                 tensor = tensor.to(self.device)
                 preds = self.model(tensor)
 
