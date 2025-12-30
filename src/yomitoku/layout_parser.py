@@ -85,6 +85,7 @@ class LayoutParser(BaseModule):
         visualize=False,
         from_pretrained=True,
         infer_onnx=False,
+        infer_torch_script=False,
     ):
         super().__init__()
         self.load_model(model_name, path_cfg, from_pretrained)
@@ -92,7 +93,6 @@ class LayoutParser(BaseModule):
         self.visualize = visualize
 
         self.model.eval()
-
         self.postprocessor = RTDETRPostProcessor(
             num_classes=self._cfg.RTDETRTransformerv2.num_classes,
             num_top_queries=self._cfg.RTDETRTransformerv2.num_queries,
@@ -129,8 +129,30 @@ class LayoutParser(BaseModule):
             else:
                 self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
+        if infer_torch_script:
+            name = self._cfg.hf_hub_repo.split("/")[-1]
+            path_ts = f"{ROOT_DIR}/torch_script/{name}-{self.device}.pt"
+            if not os.path.exists(path_ts):
+                self.convert_torch_script(path_ts)
+
+            self.model = torch.jit.load(path_ts, map_location=self.device)
+            # self.model = torch.jit.optimize_for_inference(self.model)
+            self.model.eval()
+
         if self.model is not None:
             self.model.to(self.device)
+
+    def convert_torch_script(self, path_ts):
+        img_size = self._cfg.data.img_size
+        dummy_input = torch.randn(1, 3, *img_size, requires_grad=False).to(self.device)
+        ts = torch.jit.trace(
+            self.model.eval().to(self.device),
+            dummy_input,
+            strict=False,
+        )
+        # ts = torch.jit.freeze(ts)
+        ts.save(path_ts)
+        # traced_script_module.save(path_ts)
 
     def convert_onnx(self, path_onnx):
         dynamic_axes = {
