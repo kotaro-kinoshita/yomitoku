@@ -7,10 +7,14 @@ from .ocr import OCR
 from .table_structure_recognizer import TableStructureRecognizer
 from .text_detector import TextDetector
 from .text_recognizer import TextRecognizer
+from .table_detector import TableDetector
+from .table_parser import TableParser
 
 __all__ = [
     "OCR",
     "LayoutParser",
+    "TableDetector",
+    "TableParser",
     "TableStructureRecognizer",
     "TextDetector",
     "TextRecognizer",

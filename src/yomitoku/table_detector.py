@@ -9,26 +9,18 @@ from PIL import Image
 from .constants import ROOT_DIR
 
 from .base import BaseModelCatalog, BaseModule
-from .configs import (
-    LayoutParserRTDETRv2Config,
-    LayoutParserRTDETRv2V2Config,
-    TableDetectorRTDETRv2BetaConfig,
-)
+from .configs import TableDetectorRTDETRv2BetaConfig
 
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import filter_by_flag, is_contained
 from .utils.visualizer import layout_visualizer
 
-from .schemas import LayoutParserSchema
 
-
-class LayoutParserModelCatalog(BaseModelCatalog):
+class TableDetectorModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
-        self.register("rtdetrv2", LayoutParserRTDETRv2Config, RTDETRv2)
-        self.register("rtdetrv2v2", LayoutParserRTDETRv2V2Config, RTDETRv2)
-        self.register("table_detector_beta", TableDetectorRTDETRv2BetaConfig, RTDETRv2)
+        self.register("rtdetrv2beta", TableDetectorRTDETRv2BetaConfig, RTDETRv2)
 
 
 def filter_contained_rectangles_within_category(category_elements):
@@ -80,18 +72,17 @@ def filter_contained_rectangles_across_categories(category_elements, source, tar
     return category_elements
 
 
-class LayoutParser(BaseModule):
-    model_catalog = LayoutParserModelCatalog()
+class TableDetector(BaseModule):
+    model_catalog = TableDetectorModelCatalog()
 
     def __init__(
         self,
-        model_name="rtdetrv2v2",
+        model_name="rtdetrv2beta",
         path_cfg=None,
         device="cuda",
         visualize=False,
         from_pretrained=True,
         infer_onnx=False,
-        infer_torch_script=False,
     ):
         super().__init__()
         self.load_model(model_name, path_cfg, from_pretrained)
@@ -135,30 +126,8 @@ class LayoutParser(BaseModule):
             else:
                 self.sess = onnxruntime.InferenceSession(model.SerializeToString())
 
-        if infer_torch_script:
-            name = self._cfg.hf_hub_repo.split("/")[-1]
-            path_ts = f"{ROOT_DIR}/torch_script/{name}-{self.device}.pt"
-            if not os.path.exists(path_ts):
-                self.convert_torch_script(path_ts)
-
-            self.model = torch.jit.load(path_ts, map_location=self.device)
-            # self.model = torch.jit.optimize_for_inference(self.model)
-            self.model.eval()
-
         if self.model is not None:
             self.model.to(self.device)
-
-    def convert_torch_script(self, path_ts):
-        img_size = self._cfg.data.img_size
-        dummy_input = torch.randn(1, 3, *img_size, requires_grad=False).to(self.device)
-        ts = torch.jit.trace(
-            self.model.eval().to(self.device),
-            dummy_input,
-            strict=False,
-        )
-        # ts = torch.jit.freeze(ts)
-        ts.save(path_ts)
-        # traced_script_module.save(path_ts)
 
     def convert_onnx(self, path_onnx):
         dynamic_axes = {
@@ -190,8 +159,8 @@ class LayoutParser(BaseModule):
         orig_size = torch.tensor([w, h])[None].to(self.device)
         outputs = self.postprocessor(preds, orig_size, self.thresh_score)
         outputs = self.filtering_elements(outputs[0])
-        results = LayoutParserSchema(**outputs)
-        return results
+        # results = LayoutParserSchema(**outputs)
+        return outputs
 
     def filtering_elements(self, preds):
         scores = preds["scores"]
@@ -220,13 +189,13 @@ class LayoutParser(BaseModule):
                 }
             )
 
-        category_elements = filter_contained_rectangles_within_category(
-            category_elements
-        )
+        # category_elements = filter_contained_rectangles_within_category(
+        #    category_elements
+        # )
 
-        category_elements = filter_contained_rectangles_across_categories(
-            category_elements, "tables", "paragraphs"
-        )
+        # category_elements = filter_contained_rectangles_across_categories(
+        #    category_elements, "tables", "paragraphs"
+        # )
 
         return category_elements
 

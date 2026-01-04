@@ -97,11 +97,14 @@ def det_visualizer(img, quads, preds=None, vis_heatmap=False, line_color=(0, 255
 
 def layout_visualizer(results, img):
     out = img.copy()
-    results_dict = results.dict()
+    results_dict = results
     for id, (category, preds) in enumerate(results_dict.items()):
         for element in preds:
             box = element["box"]
             role = element["role"]
+
+            if category != "tables":
+                continue
 
             if role is None:
                 role = ""
@@ -149,6 +152,65 @@ def table_visualizer(img, table):
         )
 
     return out
+
+
+def table_parser_visualizer(img1, img2, table):
+    out1 = img1.copy()
+    out2 = img2.copy()
+
+    fill = np.full_like(img1, 255)
+
+    cells = table["cells"]
+
+    for cell in cells:
+        box = cell["box"]
+        role = cell["role"]
+
+        # if cell["id"] == 16:
+        #    continue
+
+        if role == "header":
+            color = (0, 255, 0)
+        elif role == "empty":
+            color = (0, 0, 255)
+        elif role == "group":
+            color = (255, 0, 0)
+        else:
+            color = (255, 255, 0)
+
+        if role in ["cell", "header", "empty"]:
+            x1, y1, x2, y2 = map(int, box)
+            fill = cv2.rectangle(fill, (x1, y1), (x2, y2), color, -1)
+            out1 = cv2.rectangle(out1, (x1, y1), (x2, y2), color, 2)
+        else:
+            x1, y1, x2, y2 = map(int, box)
+            out2 = cv2.rectangle(out2, (x1, y1), (x2, y2), (255, 0, 255), 2)
+
+    out1 = np.where(
+        fill == 255,
+        img1.copy(),
+        cv2.addWeighted(img1.copy(), 0.7, fill, 0.3, 0),
+    )
+
+    for c in [c for c in cells if c["role"] in ["cell", "header", "empty"]]:
+        box = c["box"]
+
+        # if c["id"] != 16:
+        #    continue
+
+        x1, y1, x2, y2 = map(int, box)
+        out1 = cv2.rectangle(out1, (x1, y1), (x2, y2), (0, 0, 255), 2)
+        out1 = cv2.putText(
+            out1,
+            str(c["id"]),
+            (int((x1 + x2) / 2), int((y1 + y2) / 2)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 0, 255),
+            2,
+        )
+
+    return out1, out2
 
 
 def rec_visualizer(
