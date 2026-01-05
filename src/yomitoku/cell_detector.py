@@ -24,7 +24,7 @@ class TableParserModelCatalog(BaseModelCatalog):
         self.register("rtdetrv2beta", TableParserRTDETRv2BetaConfig, RTDETRv2)
 
 
-class TableParser(BaseModule):
+class CellDetector(BaseModule):
     model_catalog = TableParserModelCatalog()
 
     def __init__(
@@ -204,7 +204,6 @@ class TableParser(BaseModule):
 
         cells = self.extract_cell_elements(category_elements)
         cells = self.remove_noize_cells(cells, min_width=10, min_height=10)
-        print(cells)
         cells = self.sort_cells(cells)
 
         if len(cells) == 0:

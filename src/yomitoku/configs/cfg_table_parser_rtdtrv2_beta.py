@@ -46,24 +46,24 @@ class Decoder:
     num_levels: int = 3
 
     num_layers: int = 6
-    num_queries: int = 1000
+    num_queries: int = 2500
 
-    num_denoising: int = 100
+    num_denoising: int = 1000
     label_noise_ratio: float = 0.5
     box_noise_scale: float = 1.0
     eval_spatial_size: List[int] = field(default_factory=lambda: [640, 640])
 
     eval_idx: int = -1
 
-    num_points: List[int] = field(default_factory=lambda: [6, 6, 6])
+    num_points: List[int] = field(default_factory=lambda: [4, 4, 4])
     cross_attn_method: str = "default"
     query_select_method: str = "default"
 
 
 @dataclass
 class TableParserRTDETRv2BetaConfig:
-    # hf_hub_repo: str = "weights/table_parser_phase2_20251228"
-    hf_hub_repo: str = "weights/table_parser_phase2_20260104"
+    hf_hub_repo: str = "weights/table_parser_phase2_20251228"
+    # hf_hub_repo: str = "weights/table_parser_phase2_20260104"
     thresh_score: float = 0.5
     data: Data = field(default_factory=Data)
     PResNet: BackBone = field(default_factory=BackBone)

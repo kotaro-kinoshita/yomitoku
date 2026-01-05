@@ -5,7 +5,7 @@ from yomitoku.layout_parser import LayoutParser
 from yomitoku.table_structure_recognizer import TableStructureRecognizer
 from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognizer import TextRecognizer
-from yomitoku.table_parser import TableParser
+from yomitoku.cell_detector import CellDetector
 
 
 def get_module(module_name, device):
@@ -37,7 +37,7 @@ def get_module(module_name, device):
         )
         return module
     elif module_name == "table_parser":
-        module = TableParser(
+        module = CellDetector(
             from_pretrained=False,
             device=device,
         )
