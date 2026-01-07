@@ -20,7 +20,7 @@ from .postprocessor import RTDETRPostProcessor
 from .utils.misc import filter_by_flag, is_contained
 from .utils.visualizer import layout_visualizer
 
-from .schemas import LayoutParserSchema
+from .schemas.document_analyzer import LayoutParserSchema
 
 
 class LayoutParserModelCatalog(BaseModelCatalog):
@@ -217,6 +217,7 @@ class LayoutParser(BaseModule):
                     "box": box.astype(int).tolist(),
                     "score": float(score),
                     "role": role,
+                    "order": -1,
                 }
             )
 

@@ -1,8 +1,36 @@
 from typing import List, Union
 from pydantic import conlist, Field
 
-from .base import BaseSchema
-from .export import export_csv, export_html, export_markdown, export_json
+from ..base import BaseSchema
+from ..export import (
+    export_csv,
+    export_html,
+    export_markdown,
+    export_json,
+)
+
+
+class TextRecognizerSchema(BaseSchema):
+    contents: List[str] = Field(
+        ...,
+        description="List of recognized text contents",
+    )
+    directions: List[str] = Field(
+        ..., description="List of text directions, e.g., ['horizontal' or 'vertical']"
+    )
+    scores: List[float] = Field(
+        ..., description="List of confidence scores for each recognized text"
+    )
+    points: List[
+        conlist(
+            conlist(int, min_length=2, max_length=2),
+            min_length=4,
+            max_length=4,
+        )
+    ] = Field(
+        ...,
+        description="List of bounding boxes of recognized text in the format [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]",
+    )
 
 
 class Element(BaseSchema):
@@ -17,6 +45,10 @@ class Element(BaseSchema):
     role: Union[str, None] = Field(
         ...,
         description="Role of the element, e.g., ['section_headings', 'page_header', 'page_footer', 'list_item', 'caption', 'inline_formula', 'display_formula', 'index']",
+    )
+    order: Union[int, None] = Field(
+        ...,
+        description="Order of the element in the document",
     )
 
 
@@ -40,6 +72,17 @@ class ParagraphSchema(BaseSchema):
     role: Union[str, None] = Field(
         ...,
         description="Role of the paragraph, e.g., ['section_headings', 'page_header', 'page_footer'])",
+    )
+
+
+class TableLineSchema(BaseSchema):
+    box: conlist(int, min_length=4, max_length=4) = Field(
+        ...,
+        description="Bounding box of the table line in the format [x1, y1, x2, y2]",
+    )
+    score: float = Field(
+        ...,
+        description="Confidence score of the table line detection",
     )
 
 
@@ -67,17 +110,6 @@ class TableCellSchema(BaseSchema):
     contents: Union[str, None] = Field(
         ...,
         description="Text content of the cell",
-    )
-
-
-class TableLineSchema(BaseSchema):
-    box: conlist(int, min_length=4, max_length=4) = Field(
-        ...,
-        description="Bounding box of the table line in the format [x1, y1, x2, y2]",
-    )
-    score: float = Field(
-        ...,
-        description="Confidence score of the table line detection",
     )
 
 
@@ -216,26 +248,3 @@ class DocumentAnalyzerSchema(BaseSchema):
 
     def to_json(self, out_path: str, **kwargs):
         return export_json(self, out_path, **kwargs)
-
-
-class TextRecognizerSchema(BaseSchema):
-    contents: List[str] = Field(
-        ...,
-        description="List of recognized text contents",
-    )
-    directions: List[str] = Field(
-        ..., description="List of text directions, e.g., ['horizontal' or 'vertical']"
-    )
-    scores: List[float] = Field(
-        ..., description="List of confidence scores for each recognized text"
-    )
-    points: List[
-        conlist(
-            conlist(int, min_length=2, max_length=2),
-            min_length=4,
-            max_length=4,
-        )
-    ] = Field(
-        ...,
-        description="List of bounding boxes of recognized text in the format [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]",
-    )

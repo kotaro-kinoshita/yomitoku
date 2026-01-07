@@ -1,7 +1,7 @@
 from .layout_parser import LayoutParser
 from .table_structure_recognizer import TableStructureRecognizer
 
-from .schemas import LayoutAnalyzerSchema
+from .schemas.document_analyzer import LayoutAnalyzerSchema
 
 
 class LayoutAnalyzer:

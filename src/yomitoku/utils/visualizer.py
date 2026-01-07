@@ -127,6 +127,26 @@ def layout_visualizer(results, img):
     return out
 
 
+def table_detector_visualizer(img, tables):
+    out = img.copy()
+    for i, table in enumerate(tables):
+        box = table.box
+        id = table.order
+        x1, y1, x2, y2 = map(int, box)
+        out = cv2.rectangle(out, (x1, y1), (x2, y2), (0, 255, 255), 2)
+        out = cv2.putText(
+            out,
+            f"table {id}",
+            (x1, y1 - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.0,
+            (255, 0, 0),
+            2,
+        )
+
+    return out
+
+
 def table_visualizer(img, table):
     out = img.copy()
     cells = table.cells
@@ -154,37 +174,26 @@ def table_visualizer(img, table):
     return out
 
 
-def table_parser_visualizer(img1, img2, table):
+def text_detector_visualizer(img1, img2, cells):
     out1 = img1.copy()
     out2 = img2.copy()
 
     fill = np.full_like(img1, 255)
-
-    cells = table["cells"]
+    colors = {
+        "cell": (255, 128, 0),
+        "empty": (255, 0, 255),
+        "header": (0, 255, 0),
+        "group": (255, 255, 0),
+    }
 
     for cell in cells:
-        box = cell["box"]
-        role = cell["role"]
-
-        # if cell["id"] == 16:
-        #    continue
-
-        if role == "header":
-            color = (0, 255, 0)
-        elif role == "empty":
-            color = (0, 0, 255)
-        elif role == "group":
-            color = (255, 0, 0)
-        else:
-            color = (255, 255, 0)
-
+        box = cell.box
+        role = cell.role
+        color = colors.get(role, (200, 200, 200))
         if role in ["cell", "header", "empty"]:
             x1, y1, x2, y2 = map(int, box)
             fill = cv2.rectangle(fill, (x1, y1), (x2, y2), color, -1)
             out1 = cv2.rectangle(out1, (x1, y1), (x2, y2), color, 2)
-        else:
-            x1, y1, x2, y2 = map(int, box)
-            out2 = cv2.rectangle(out2, (x1, y1), (x2, y2), (255, 0, 255), 2)
 
     out1 = np.where(
         fill == 255,
@@ -192,17 +201,14 @@ def table_parser_visualizer(img1, img2, table):
         cv2.addWeighted(img1.copy(), 0.7, fill, 0.3, 0),
     )
 
-    for c in [c for c in cells if c["role"] in ["cell", "header", "empty"]]:
-        box = c["box"]
-
-        # if c["id"] != 16:
-        #    continue
-
+    for c in cells:
+        box = c.box
         x1, y1, x2, y2 = map(int, box)
-        out1 = cv2.rectangle(out1, (x1, y1), (x2, y2), (0, 0, 255), 2)
-        out1 = cv2.putText(
-            out1,
-            str(c["id"]),
+        target = out1 if c.role != "group" else out2
+        target = cv2.rectangle(target, (x1, y1), (x2, y2), (0, 0, 255), 2)
+        target = cv2.putText(
+            target,
+            c.id,
             (int((x1 + x2) / 2), int((y1 + y2) / 2)),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.5,
@@ -211,6 +217,26 @@ def table_parser_visualizer(img1, img2, table):
         )
 
     return out1, out2
+
+
+def dag_visualizer(dag, img):
+    for u, v, attrs in dag.edges(data=True):
+        if attrs["dir"] in ["L", "U"]:
+            continue
+        cx1 = (dag.nodes[u]["bbox"][0] + dag.nodes[u]["bbox"][2]) / 2
+        cy1 = (dag.nodes[u]["bbox"][1] + dag.nodes[u]["bbox"][3]) / 2
+        cx2 = (dag.nodes[v]["bbox"][0] + dag.nodes[v]["bbox"][2]) / 2
+        cy2 = (dag.nodes[v]["bbox"][1] + dag.nodes[v]["bbox"][3]) / 2
+        color = (0, 255, 0) if attrs["dir"] == "R" else (255, 0, 0)
+        img = cv2.arrowedLine(
+            img,
+            (int(cx1), int(cy1)),
+            (int(cx2), int(cy2)),
+            color,
+            2,
+        )
+
+    return img
 
 
 def rec_visualizer(

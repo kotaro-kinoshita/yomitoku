@@ -15,7 +15,7 @@ from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import calc_intersection, filter_by_flag, is_contained
 from .utils.visualizer import table_visualizer
-from .schemas import TableStructureRecognizerSchema
+from .schemas.document_analyzer import TableStructureRecognizerSchema
 
 
 class TableStructureRecognizerModelCatalog(BaseModelCatalog):

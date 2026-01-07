@@ -13,15 +13,100 @@ from .base import BaseModelCatalog, BaseModule
 from .configs import TableParserRTDETRv2BetaConfig
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
-from .utils.visualizer import table_parser_visualizer
+from .utils.visualizer import text_detector_visualizer
 
 from .utils.misc import calc_overlap_ratio
+
+from .schemas.table_semantic_parser import CellSchema, CellDetectorSchema
+from .utils.misc import is_right_adjacent, is_bottom_adjacent
+
+import numpy as np
 
 
 class TableParserModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
-        self.register("rtdetrv2beta", TableParserRTDETRv2BetaConfig, RTDETRv2)
+        self.register("rtdetrv2_beta", TableParserRTDETRv2BetaConfig, RTDETRv2)
+
+
+def find_holes_as_rects(table_shape, cell_boxes, pad=2, close_ksize=5, min_area=300):
+    mask = np.full((table_shape[0], table_shape[1]), 255, np.uint8)
+
+    for bx1, by1, bx2, by2 in cell_boxes:
+        bx1, by1, bx2, by2 = map(int, [bx1, by1, bx2, by2])
+        cv2.rectangle(mask, (bx1, by1), (bx2, by2), 0, thickness=-1)
+
+    if close_ksize > 1:
+        k = cv2.getStructuringElement(cv2.MORPH_RECT, (close_ksize, close_ksize))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k, iterations=3)
+
+    ff = mask.copy()
+    h, w = ff.shape
+    flood_mask = np.zeros((h + 2, w + 2), np.uint8)
+    cv2.floodFill(ff, flood_mask, (0, 0), 0)
+
+    holes = ff  # 穴だけが白として残る
+    cnts, _ = cv2.findContours(holes, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    rects = []
+    for c in cnts:
+        x, y, rw, rh = cv2.boundingRect(c)
+        area = rw * rh
+        if area < min_area:
+            continue
+        rects.append([x - pad, y - pad, x + rw + pad, y + rh + pad])
+
+    return rects
+
+
+def choose_role(role_counts):
+    if not role_counts:
+        return None
+
+    max_count = max(role_counts.values())
+    candidates = [r for r, c in role_counts.items() if c == max_count]
+
+    # 同点なら必ず cell
+    if len(candidates) > 1 and "cell" in candidates:
+        return "cell"
+
+    return candidates[0]
+
+
+def calc_adjacent_holes_to_cells(holes, cells):
+    """
+    セルの隣接関係を計算
+    セルが同じサブテーブル or 同じグループに属している場合のみ隣接関係を追加
+    """
+
+    directions = ["R", "L", "D", "U"]
+    role = ["cell", "header", "empty"]
+
+    kept_holes = []
+    for i, hole in enumerate(holes):
+        edge_counts = {dir: 0 for dir in directions}
+        role_counts = {r: 0 for r in role}
+
+        for j, node in enumerate(cells):
+            # 左右の隣接判定
+            if is_right_adjacent(hole["box"], node["box"]):
+                edge_counts["R"] += 1
+                role_counts[node["role"]] += 1
+            if is_right_adjacent(node["box"], hole["box"]):
+                edge_counts["L"] += 1
+                role_counts[node["role"]] += 1
+            # 上下の隣接判定
+            if is_bottom_adjacent(hole["box"], node["box"]):
+                edge_counts["D"] += 1
+                role_counts[node["role"]] += 1
+            if is_bottom_adjacent(node["box"], hole["box"]):
+                edge_counts["U"] += 1
+                role_counts[node["role"]] += 1
+
+        if sum([count > 0 for count in edge_counts.values()]) > 2:
+            hole["role"] = choose_role(role_counts)
+            kept_holes.append(hole)
+
+    return kept_holes
 
 
 class CellDetector(BaseModule):
@@ -29,7 +114,7 @@ class CellDetector(BaseModule):
 
     def __init__(
         self,
-        model_name="rtdetrv2beta",
+        model_name="rtdetrv2_beta",
         path_cfg=None,
         device="cuda",
         visualize=False,
@@ -106,12 +191,12 @@ class CellDetector(BaseModule):
             dynamic_axes=dynamic_axes,
         )
 
-    def preprocess(self, img, boxes):
+    def preprocess(self, img, tables):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         table_imgs = []
-        for box in boxes:
-            x1, y1, x2, y2 = map(int, box)
+        for table in tables:
+            x1, y1, x2, y2 = map(int, table.box)
             table_img = cv_img[y1:y2, x1:x2, :]
             th, hw = table_img.shape[:2]
             table_img = Image.fromarray(table_img)
@@ -129,17 +214,17 @@ class CellDetector(BaseModule):
         if len(cells) == 0:
             return cells
 
-        min_height = min([(cell["box"][3] - cell["box"][1]) for cell in cells])
+        min_height = min([(cell.box[3] - cell.box[1]) for cell in cells])
 
-        values = [c for c in cells if c["role"] in ["cell", "header", "empty"]]
-        groups = [c for c in cells if c["role"] == "group"]
+        values = [c for c in cells if c.role in ["cell", "header", "empty"]]
+        groups = [c for c in cells if c.role == "group"]
 
-        values = sorted(values, key=lambda x: (x["box"][1] // min_height, x["box"][0]))
-        groups = sorted(groups, key=lambda x: (x["box"][1], x["box"][0]))
+        values = sorted(values, key=lambda x: (x.box[1] // min_height, x.box[0]))
+        groups = sorted(groups, key=lambda x: (x.box[1], x.box[0]))
 
         cells = values + groups
         for i, cell in enumerate(cells):
-            cell["id"] = i + 1
+            cell.id = str(i + 1)
 
         return cells
 
@@ -153,49 +238,90 @@ class CellDetector(BaseModule):
             return True
         return False
 
+    def is_fully_contained(self, box1, box2, threshold=0.95):
+        overlap_ratio, _ = calc_overlap_ratio(box1, box2)
+        return overlap_ratio >= threshold
+
     def postprocess(self, preds, data, table_box):
         h, w = data["size"]
         orig_size = torch.tensor([w, h])[None].to(self.device)
         outputs = self.postprocessor(preds, orig_size, self.thresh_score)
 
         preds = outputs[0]
-        scores = preds["scores"]
+
         boxes = preds["boxes"]
         labels = preds["labels"]
+        scores = preds["scores"]
 
         category_elements = {category: [] for category in self.label_mapper.values()}
+        category_elements["hole"] = []
+
         for box, score, label in zip(boxes, scores, labels):
             category = self.label_mapper[label.item()]
             box = box.astype(int).tolist()
 
-            box[0] += data["offset"][0]
-            box[1] += data["offset"][1]
-            box[2] += data["offset"][0]
-            box[3] += data["offset"][1]
-
-            if (
-                calc_overlap_ratio(
-                    box,
-                    table_box,
-                )[0]
-                > 0.95
-            ):
+            if self.is_fully_contained(box, table_box):
                 continue
 
             category_elements[category].append(
                 {
                     "box": box,
                     "score": float(score),
+                    "role": category,
                 }
             )
 
-        # category_elements = filter_contained_rectangles_within_category(
-        #    category_elements, ["group"]
-        # )
+        cell_boxes = (
+            category_elements["cell"]
+            + category_elements["header"]
+            + category_elements["empty"]
+        )
 
-        # category_elements = filter_contained_rectangles_across_categories(
-        #    category_elements, "cell", "header"
-        # )
+        hole_boxes = find_holes_as_rects(
+            data["size"],
+            [cell["box"] for cell in cell_boxes],
+        )
+
+        for box in hole_boxes:
+            category_elements["hole"].append(
+                {
+                    "box": box,
+                    "score": 1.0,
+                    "role": "hole",
+                }
+            )
+
+        for category, cells in category_elements.items():
+            for cell in cells:
+                cell["box"][0] += data["offset"][0]
+                cell["box"][1] += data["offset"][1]
+                cell["box"][2] += data["offset"][0]
+                cell["box"][3] += data["offset"][1]
+
+        # グループが検出されなかった場合、テーブル全体をグループとして扱う
+        if len(category_elements["group"]) == 0:
+            category_elements["group"] = [
+                {
+                    "box": table_box,
+                    "role": "group",
+                }
+            ]
+
+        # テーブル内にセルが検出されなかった場合、テーブル全体をセルとして扱う
+        if (
+            len(
+                category_elements["cell"]
+                + category_elements["empty"]
+                + category_elements["header"]
+            )
+            == 0
+        ):
+            category_elements["cell"] = [
+                {
+                    "box": table_box,
+                    "role": "cell",
+                }
+            ]
 
         table_x, table_y = data["offset"]
         table_x2 = table_x + data["size"][1]
@@ -203,40 +329,14 @@ class CellDetector(BaseModule):
         table_box = [table_x, table_y, table_x2, table_y2]
 
         cells = self.extract_cell_elements(category_elements)
-        cells = self.remove_noize_cells(cells, min_width=10, min_height=10)
+        cells = self.remove_noise_cells(cells, min_width=10, min_height=10)
         cells = self.sort_cells(cells)
+        return cells
 
-        if len(cells) == 0:
-            cells = [
-                {
-                    "col": [],
-                    "row": [],
-                    "col_span": 1,
-                    "row_span": 1,
-                    "box": table_box,
-                    "role": "cell",
-                    "contents": None,
-                    "id": 1,
-                }
-            ]
-        table = {
-            "box": table_box,
-            "n_row": 0,
-            "n_col": 0,
-            "rows": [],
-            "cols": [],
-            "spans": [],
-            "cells": cells,
-            "order": 0,
-        }
-
-        # results = TableStructureRecognizerSchema(**table)
-        return table
-
-    def remove_noize_cells(self, cells, min_width=30, min_height=30):
+    def remove_noise_cells(self, cells, min_width=30, min_height=30):
         filtered_cells = []
         for cell in cells:
-            box = cell["box"]
+            box = cell.box
             x1, y1, x2, y2 = box
             width = x2 - x1
             height = y2 - y1
@@ -245,30 +345,31 @@ class CellDetector(BaseModule):
         return filtered_cells
 
     def extract_cell_elements(self, elements):
+        elements["hole"] = calc_adjacent_holes_to_cells(
+            elements["hole"],
+            [c for c in elements["cell"] + elements["header"] + elements["empty"]],
+        )
+
         cells = []
         for category, values in elements.items():
-            if category in ["cell", "header", "empty", "group"]:
-                # if category in ["group"]:
+            if category in ["cell", "header", "empty", "group", "hole"]:
                 for value in values:
                     box = value["box"]
                     cells.append(
-                        {
-                            "col": [],
-                            "row": [],
-                            "col_span": 1,
-                            "row_span": 1,
-                            "box": box,
-                            "role": category,
-                            "contents": None,
-                        }
+                        CellSchema(
+                            id=None,
+                            box=box,
+                            role=value["role"],
+                            contents=None,
+                        )
                     )
 
         return cells
 
-    def __call__(self, img, table_boxes, vis=None):
-        img_tensors = self.preprocess(img, table_boxes)
+    def __call__(self, img, tables, vis=None):
+        img_tensors = self.preprocess(img, tables)
         outputs = []
-        for data, box in zip(img_tensors, table_boxes):
+        for _, (data, table) in enumerate(zip(img_tensors, tables)):
             if self.infer_onnx:
                 input = data["tensor"].numpy()
                 results = self.sess.run(None, {"input": input})
@@ -282,20 +383,29 @@ class CellDetector(BaseModule):
                     data["tensor"] = data["tensor"].to(self.device)
                     pred = self.model(data["tensor"])
 
-            table = self.postprocess(pred, data, box)
+            cells = self.postprocess(pred, data, table.box)
 
-            if len(table["cells"]) > 0:
-                outputs.append(table)
+            if len(cells) == 0:
+                continue
+
+            outputs.append(
+                CellDetectorSchema(
+                    id=str(table.order),
+                    box=table.box,
+                    role=table.role,
+                    cells=cells,
+                )
+            )
 
         vis_cell = vis.copy()
         vis_group = vis.copy()
 
         if self.visualize:
             for table in outputs:
-                vis_cell, vis_group = table_parser_visualizer(
+                vis_cell, vis_group = text_detector_visualizer(
                     vis_cell,
                     vis_group,
-                    table,
+                    table.cells,
                 )
 
         return outputs, vis_cell, vis_group

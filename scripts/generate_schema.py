@@ -1,7 +1,11 @@
 import json
 from typing import Any, Dict
 
-from yomitoku.schemas import DocumentAnalyzerSchema, LayoutAnalyzerSchema, OCRSchema
+from yomitoku.schemas.schemas import (
+    DocumentAnalyzerSchema,
+    LayoutAnalyzerSchema,
+    OCRSchema,
+)
 
 
 def output_json(targets: list[Dict[str, Any]]):

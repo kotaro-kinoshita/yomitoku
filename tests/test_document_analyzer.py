@@ -18,7 +18,7 @@ from yomitoku.document_analyzer import (
     _split_text_across_cells,
 )
 
-from yomitoku.schemas import (
+from yomitoku.schemas.document_analyzer import (
     DocumentAnalyzerSchema,
     ParagraphSchema,
     FigureSchema,

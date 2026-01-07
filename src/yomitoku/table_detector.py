@@ -13,63 +13,17 @@ from .configs import TableDetectorRTDETRv2BetaConfig
 
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
-from .utils.misc import filter_by_flag, is_contained
-from .utils.visualizer import layout_visualizer
+from .utils.visualizer import table_detector_visualizer
+from .reading_order import prediction_reading_order
+from .layout_parser import filter_contained_rectangles_within_category
+
+from .schemas.document_analyzer import Element
 
 
 class TableDetectorModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
-        self.register("rtdetrv2beta", TableDetectorRTDETRv2BetaConfig, RTDETRv2)
-
-
-def filter_contained_rectangles_within_category(category_elements):
-    """同一カテゴリに属する矩形のうち、他の矩形の内側に含まれるものを除外"""
-
-    for category, elements in category_elements.items():
-        group_box = [element["box"] for element in elements]
-        check_list = [True] * len(group_box)
-        for i, box_i in enumerate(group_box):
-            for j, box_j in enumerate(group_box):
-                if i >= j:
-                    continue
-
-                ij = is_contained(box_i, box_j)
-                ji = is_contained(box_j, box_i)
-
-                box_i_area = (box_i[2] - box_i[0]) * (box_i[3] - box_i[1])
-                box_j_area = (box_j[2] - box_j[0]) * (box_j[3] - box_j[1])
-
-                # 双方から見て内包関係にある場合、面積の大きい方を残す
-                if ij and ji:
-                    if box_i_area > box_j_area:
-                        check_list[j] = False
-                    else:
-                        check_list[i] = False
-                elif ij:
-                    check_list[j] = False
-                elif ji:
-                    check_list[i] = False
-
-        category_elements[category] = filter_by_flag(elements, check_list)
-
-    return category_elements
-
-
-def filter_contained_rectangles_across_categories(category_elements, source, target):
-    """sourceカテゴリの矩形がtargetカテゴリの矩形に内包される場合、sourceカテゴリの矩形を除外"""
-
-    src_boxes = [element["box"] for element in category_elements[source]]
-    tgt_boxes = [element["box"] for element in category_elements[target]]
-
-    check_list = [True] * len(tgt_boxes)
-    for i, src_box in enumerate(src_boxes):
-        for j, tgt_box in enumerate(tgt_boxes):
-            if is_contained(src_box, tgt_box):
-                check_list[j] = False
-
-    category_elements[target] = filter_by_flag(category_elements[target], check_list)
-    return category_elements
+        self.register("rtdetrv2_beta", TableDetectorRTDETRv2BetaConfig, RTDETRv2)
 
 
 class TableDetector(BaseModule):
@@ -77,7 +31,7 @@ class TableDetector(BaseModule):
 
     def __init__(
         self,
-        model_name="rtdetrv2beta",
+        model_name="rtdetrv2_beta",
         path_cfg=None,
         device="cuda",
         visualize=False,
@@ -159,7 +113,7 @@ class TableDetector(BaseModule):
         orig_size = torch.tensor([w, h])[None].to(self.device)
         outputs = self.postprocessor(preds, orig_size, self.thresh_score)
         outputs = self.filtering_elements(outputs[0])
-        # results = LayoutParserSchema(**outputs)
+
         return outputs
 
     def filtering_elements(self, preds):
@@ -186,16 +140,13 @@ class TableDetector(BaseModule):
                     "box": box.astype(int).tolist(),
                     "score": float(score),
                     "role": role,
+                    "order": 0,
                 }
             )
 
-        # category_elements = filter_contained_rectangles_within_category(
-        #    category_elements
-        # )
-
-        # category_elements = filter_contained_rectangles_across_categories(
-        #    category_elements, "tables", "paragraphs"
-        # )
+        category_elements = filter_contained_rectangles_within_category(
+            category_elements
+        )
 
         return category_elements
 
@@ -218,11 +169,15 @@ class TableDetector(BaseModule):
 
         results = self.postprocess(preds, (ori_h, ori_w))
 
+        tables = [Element(**table) for table in results["tables"]]
+        tables = prediction_reading_order(tables, direction="top2bottom")
+        tables = sorted(tables, key=lambda x: x.order)
+
         vis = None
         if self.visualize:
-            vis = layout_visualizer(
-                results,
+            vis = table_detector_visualizer(
                 img,
+                tables,
             )
 
-        return results, vis
+        return tables, vis

@@ -17,7 +17,7 @@ from .utils.misc import load_charset
 from .utils.visualizer import rec_visualizer
 
 from .constants import ROOT_DIR
-from .schemas import TextRecognizerSchema
+from .schemas.document_analyzer import TextRecognizerSchema
 
 import onnx
 import onnxruntime
@@ -89,7 +89,6 @@ class TextRecognizer(BaseModule):
             self.model.eval()
 
         if self.model is not None:
-            print(self.device)
             self.model.to(self.device)
 
     def preprocess(self, img, polygons):
@@ -197,7 +196,6 @@ class TextRecognizer(BaseModule):
             else:
                 with torch.inference_mode():
                     data = data.to(self.device)
-                    print(data.shape)
                     p = self.model(data).softmax(-1)
 
             pred, score, direction = self.postprocess(p, points)

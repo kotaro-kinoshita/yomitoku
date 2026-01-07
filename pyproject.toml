@@ -34,6 +34,7 @@ dependencies = [
     "anytree>=2.13.0",
     "networkx>=3.4.2",
     "scipy>=1.15.3",
+    "pandas>=2.3.3",
 ]
 
 [tool.uv-dynamic-versioning]

@@ -11,7 +11,11 @@ from .ocr import OCRSchema, ocr_aggregate
 from .reading_order import prediction_reading_order
 from .utils.misc import calc_overlap_ratio, is_contained, quad_to_xyxy
 from .utils.visualizer import det_visualizer, reading_order_visualizer
-from .schemas import ParagraphSchema, FigureSchema, DocumentAnalyzerSchema
+from .schemas.document_analyzer import (
+    ParagraphSchema,
+    FigureSchema,
+    DocumentAnalyzerSchema,
+)
 
 
 def combine_flags(flag1, flag2):

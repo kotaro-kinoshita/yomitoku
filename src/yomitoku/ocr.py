@@ -1,6 +1,6 @@
 from yomitoku.text_detector import TextDetector
 from yomitoku.text_recognizer import TextRecognizer
-from .schemas import OCRSchema
+from .schemas.document_analyzer import OCRSchema
 
 
 def ocr_aggregate(det_outputs, rec_outputs):

@@ -16,7 +16,7 @@ from .models import DBNet
 from .postprocessor import DBnetPostProcessor
 from .utils.visualizer import det_visualizer
 from .constants import ROOT_DIR
-from .schemas import TextDetectorSchema
+from .schemas.document_analyzer import TextDetectorSchema
 
 import onnx
 import onnxruntime
@@ -85,7 +85,6 @@ class TextDetector(BaseModule):
             self.model.eval()
 
         if self.model is not None:
-            print(self.device)
             self.model.to(self.device)
 
     def convert_onnx(self, path_onnx):
@@ -146,7 +145,6 @@ class TextDetector(BaseModule):
             preds = {"binary": torch.tensor(results[0])}
         else:
             with torch.inference_mode():
-                print("aaa")
                 tensor = tensor.to(self.device)
                 preds = self.model(tensor)
 

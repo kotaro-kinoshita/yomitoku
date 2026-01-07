@@ -10,6 +10,7 @@ from .text_recognizer import TextRecognizer
 from .table_detector import TableDetector
 from .cell_detector import CellDetector
 
+
 __all__ = [
     "OCR",
     "LayoutParser",

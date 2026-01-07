@@ -11,7 +11,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 from ..constants import ROOT_DIR
-from ..schemas import DocumentAnalyzerSchema
+from ..schemas.document_analyzer import DocumentAnalyzerSchema
 from .misc import is_contained
 
 from typing import List, Optional

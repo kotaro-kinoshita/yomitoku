@@ -17,7 +17,7 @@ from yomitoku.export.export_markdown import (
     table_to_md,
 )
 
-from yomitoku.schemas import (
+from yomitoku.schemas.schemas import (
     DocumentAnalyzerSchema,
     LayoutAnalyzerSchema,
     LayoutParserSchema,
