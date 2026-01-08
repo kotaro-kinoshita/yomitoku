@@ -204,6 +204,11 @@ def _calc_group_direction(dag, match, nodes):
                     group_direction[group.id] = "VHC"
                     break
 
+                if is_right_adjacent(header_box["bbox"], cell_a_box["bbox"]):
+                    is_vertical = False
+                    group_direction[group.id] = "H"
+                    break
+
             for cell_b in cells:
                 if cell_a == cell_b:
                     continue
@@ -224,6 +229,7 @@ def _calc_group_direction(dag, match, nodes):
                     group_direction[group.id] = "VCC"
                     is_vertical = True
                     break
+
         if not is_vertical:
             group_direction[group.id] = "H"
 

@@ -45,7 +45,7 @@ def _split_nodes_with_role(cells):
 
 class TableSemanticParser:
     def __init__(
-        self, configs={}, device="cuda:1", visualize=False, dag_visualize=False
+        self, configs={}, device="cuda:1", visualize=False, dag_visualize=True
     ):
         table_detector_kwargs = {
             "device": device,

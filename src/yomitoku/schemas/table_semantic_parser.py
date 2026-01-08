@@ -3,7 +3,7 @@ import json
 
 from ..base import BaseSchema
 
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic import conlist, Field, PrivateAttr
 
 from typing import Dict
@@ -12,8 +12,9 @@ import pandas as pd
 
 from .document_analyzer import WordPrediction
 
-
 from collections import defaultdict
+
+from ..utils.misc import is_contained, is_bottom_adjacent, is_right_adjacent
 
 
 def make_unique_all(seq):
@@ -154,19 +155,83 @@ class TableSemanticContentsSchema(BaseSchema):
         c = self.cells.get(cell_id)
         return c.contents or "" if c is not None else ""
 
-    def search_cell_by_id(self, cell_id: str) -> CellSchema | None:
+    def find_cell_by_id(self, cell_id: str) -> Optional[CellSchema]:
         """
-        Search for a cell by its ID.
+        find for a cell by its ID.
         セルIDに対応するセルを返す
+
         Args:
             cell_id (str): 検索するセルID
-
         """
-
         return self.cells.get(str(cell_id))
 
-    def search_cell_by_query(self, query: str) -> List[CellSchema]:
-        """Search for cells containing the query string in their contents.
+    def search_cells_by_bbox(self, box: List[int]) -> List[CellSchema]:
+        """
+        search for a cell by its bounding box.
+        セルの位置情報（bounding box）に対応するセルを返す
+
+        Args:
+            box (List[int]): 検索するバウンディングボックス [x1, y1, x2, y2]
+        """
+        cells = []
+        for cell in self.cells.values():
+            if cell.role == "group":
+                continue
+
+            if is_contained(box, cell.box, threshold=0.5):
+                cells.append(cell)
+
+        return cells
+
+    def search_cells_below_key_text(self, key: str) -> List[CellSchema]:
+        """
+        search for cells located below the cells containing the given
+        キー文字列を含むセルに隣接する下の位置にあるセルを返す
+
+        Args:
+            query (str): 検索するクエリ文字列. セルの内容に部分一致するものを検索
+        """
+        query_cells = self.search_cells_by_query(key)
+        if query_cells is None:
+            return []
+
+        cells = []
+        for cell in self.cells.values():
+            if cell.role == "group":
+                continue
+
+            for query_cell in query_cells:
+                if is_bottom_adjacent(query_cell.box, cell.box):
+                    cells.append(cell)
+
+        return cells
+
+    def search_cells_right_of_key_text(self, key: str) -> List[CellSchema]:
+        """
+        search for cells located to the right of the cells containing the given
+        キー文字列を含むセル隣接する右の位置にあるセルを返す
+
+        Args:
+            query (str): 検索するクエリ文字列. セルの内容に部分一致するものを検索
+        """
+        query_cells = self.search_cells_by_query(key)
+        if query_cells is None:
+            return []
+
+        cells = []
+        for cell in self.cells.values():
+            if cell.role == "group":
+                continue
+
+            for query_cell in query_cells:
+                if is_right_adjacent(query_cell.box, cell.box):
+                    cells.append(cell)
+
+        return cells
+
+    def search_cells_by_query(self, query: str) -> List[CellSchema]:
+        """
+        search for cells containing the query string in their contents.
         クエリーに部分一致する内容を持つセルを返す
 
         Args:
@@ -184,15 +249,16 @@ class TableSemanticContentsSchema(BaseSchema):
                 out.append(cell)
         return out
 
-    def search_kv_items_by_key(self, query: str) -> List[dict]:
+    def search_kv_items_by_key(self, key: str) -> List[dict]:
         """
-        Search for key-value items or grid cells where the key matches the query string.
+        search for key-value items or grid cells where the key matches the query string.
         クエリーに部分一致するキーを持つKVアイテムおよびグリッドセルを返す
+
         Args:
-            query (str): 検索するクエリ文字列. キー部分に部分一致するものを検索
+            key (str): 検索するクエリ文字列. キー部分に部分一致するものを検索
         """
 
-        q = normalize(query)
+        q = normalize(key)
         results: List[dict] = []
 
         # kv_items 側
@@ -222,12 +288,12 @@ class TableSemanticContentsSchema(BaseSchema):
 
         return results
 
-    def search_table_by_column_name(
+    def find_table_by_column_name(
         self,
         queries,
     ) -> "TableSemanticContentsSchema":
         """
-        Search for columns matching the specified column names.
+        find for columns matching the specified column names.
         指定した列名に部分一致する列のみを含むテーブルを返す
 
         Args:
@@ -259,6 +325,10 @@ class TableSemanticContentsSchema(BaseSchema):
         """
         列名から空白を除去した上で、
         queries のいずれかに部分一致する列のみ残す
+
+        Args:
+            grid (TableGridSchema): フィルタリング対象のテーブルグリッド
+            queries (List[str]): 検索する列名のリスト
         """
         norm_queries = [normalize(q) for q in queries]
         result = {
@@ -286,7 +356,7 @@ class TableSemanticContentsSchema(BaseSchema):
                         "cells": filtered_row,
                     }
                 )
-        return TableGridSchema(**result) if result["rows"] else None  #
+        return TableGridSchema(**result) if result["rows"] else None
 
 
 class TableSemanticContentsExport:
@@ -305,6 +375,7 @@ class TableSemanticContentsExport:
         """
         Export table grids to a CSV file.
         テーブルグリッドの内容をCSV形式で出力
+
         Args:
             out_path (str): 出力先のファイルパス
             columns (List[str], optional): 抽出する列名のリスト. 指定しない場合は全列を抽出
@@ -312,7 +383,7 @@ class TableSemanticContentsExport:
         """
         table_contents = self.table
         if columns is not None:
-            table_contents = self.table.search_table_by_column_name(queries=columns)
+            table_contents = self.table.find_table_by_column_name(queries=columns)
 
         df = table_contents.export.grids_to_dataframe(grid_id=grid_id)
         if df is not None:
@@ -341,6 +412,7 @@ class TableSemanticContentsExport:
         """
         Export table grids to a JSON file.
         テーブルグリッドの内容をJSON形式で出力
+
         Args:
             out_path (str): 出力先のファイルパス
         """
@@ -353,6 +425,7 @@ class TableSemanticContentsExport:
         """
         Export key-value items to a JSON file.
         キーと値のペアの文字列を展開し、JSON形式で出力
+
         Args:
             out_path (str): 出力先のファイルパス
         """
@@ -439,10 +512,13 @@ class TableSemanticParserSchema(BaseSchema):
         description="List of recognized words in the document",
     )
 
-    def search_table_by_id(
+    def find_table_by_id(
         self, table_id: str
     ) -> Union[TableSemanticContentsSchema, None]:
-        """Search for a table by its ID.
+        """
+        Search for a table by its ID.
+        テーブルIDに対応するテーブルを返す
+
         Args:
             table_id (str): 検索するテーブルID
         """
