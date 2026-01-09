@@ -64,7 +64,7 @@ class Decoder:
 class TableParserRTDETRv2BetaConfig:
     hf_hub_repo: str = "weights/table_parser_phase2_20251228"
     # hf_hub_repo: str = "weights/table_parser_phase2_20260104"
-    thresh_score: float = 0.5
+    thresh_score: float = 0.45
     data: Data = field(default_factory=Data)
     PResNet: BackBone = field(default_factory=BackBone)
     HybridEncoder: Encoder = field(default_factory=Encoder)

@@ -10,10 +10,12 @@ from .ocr import OCRSchema, ocr_aggregate
 from .cell_relation import calc_cell_relation_dag
 from .parse_table_semantic_infomation import parse_semantic_table_information
 
-from .utils.visualizer import det_visualizer, dag_visualizer
+from .utils.visualizer import det_visualizer, dag_visualizer, cell_detector_visualizer
 from .utils.misc import (
-    replace_spanning_words_with_clipped_polys,
-    build_text_detector_schema_from_split_words,
+    replace_spanning_words_with_clipped_polys_poly,
+    build_text_detector_schema_from_split_words_rotated_quad,
+    box_to_poly,
+    quad_to_poly,
 )
 
 from .schemas.table_semantic_parser import (
@@ -132,15 +134,26 @@ class TableSemanticParser:
             img, tables, vis=vis_layout
         )
 
+        word_dicts = [
+            {"poly": quad_to_poly(q), "score": s}
+            for q, s in zip(results_det.points, results_det.scores)
+        ]
+
+        cell_dicts = [
+            {"id": str(t.id), "poly": box_to_poly(t.box)} for t in results_table
+        ]
+
         # セルにまたがるテキスト領域の分割
-        split_words = replace_spanning_words_with_clipped_polys(
-            words=results_det.points,
-            cells=[{"id": t.id, "box": t.box} for t in results_table],
+        split_words = replace_spanning_words_with_clipped_polys_poly(
+            words=word_dicts,
+            cells=cell_dicts,
             min_area_ratio=0.03,
             keep_unsplit=True,
         )
 
-        schema_dict = build_text_detector_schema_from_split_words(split_words)
+        schema_dict = build_text_detector_schema_from_split_words_rotated_quad(
+            split_words
+        )
         results_det = TextDetectorSchema(**schema_dict)
 
         vis_det = None
@@ -156,10 +169,10 @@ class TableSemanticParser:
         outputs = {"words": ocr_aggregate(results_det, results_rec)}
         results_ocr = OCRSchema(**outputs)
 
-        return results_ocr, results_table, vis_cell, vis_group, vis_ocr
+        return results_ocr, results_table, vis_cell, vis_layout, vis_ocr
 
-    def __call__(self, img):
-        results_ocr, results_table, vis_cell, vis_group, vis_ocr = asyncio.run(
+    def __call__(self, img, template=None):
+        results_ocr, results_table, vis_cell, vis_layout, vis_ocr = asyncio.run(
             self.run_models(img)
         )
 
@@ -176,33 +189,45 @@ class TableSemanticParser:
                 "kv_items": [],
                 "grids": [],
             }
+            if template is None:
+                nodes = _split_nodes_with_role(table.cells)
 
-            nodes = _split_nodes_with_role(table.cells)
+                # セル間の関係をDAGで表現
+                cell_relation_dag, match, group_direction, grid_regions = (
+                    calc_cell_relation_dag(nodes)
+                )
 
-            # セル間の関係をDAGで表現
-            cell_relation_dag, match, group_direction, grid_regions = (
-                calc_cell_relation_dag(nodes)
-            )
+                # 解析してKVアイテムとグリッドを抽出
+                grids, kv_items = parse_semantic_table_information(
+                    cell_relation_dag,
+                    match,
+                    nodes,
+                    grid_regions,
+                    group_direction,
+                )
 
-            # 解析してKVアイテムとグリッドを抽出
-            grids, kv_items = parse_semantic_table_information(
-                cell_relation_dag,
-                match,
-                nodes,
-                grid_regions,
-                group_direction,
-            )
+                table_information["kv_items"].extend(kv_items)
+                table_information["grids"].extend(grids)
 
-            table_information["kv_items"].extend(kv_items)
-            table_information["grids"].extend(grids)
+                # For Debug Visualization
+                if self.dag_visualize:
+                    vis_cell = dag_visualizer(cell_relation_dag, vis_cell)
+
             semantic_info.append(TableSemanticContentsSchema(**table_information))
-
-            # For Debug Visualization
-            if self.dag_visualize:
-                vis_cell = dag_visualizer(cell_relation_dag, vis_cell)
 
         semantic_info = TableSemanticParserSchema(
             tables=semantic_info,
             words=results_ocr.words,
         )
-        return semantic_info, vis_cell, vis_group, vis_ocr
+
+        if template is not None:
+            semantic_info.load_template_json(template)
+            vis_cell = vis_layout.copy()
+            for table in semantic_info.tables:
+                vis_cell, _ = cell_detector_visualizer(
+                    vis_cell,
+                    vis_layout,
+                    table.cells.values(),
+                )
+
+        return semantic_info, vis_cell, vis_ocr

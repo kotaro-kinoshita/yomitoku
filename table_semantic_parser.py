@@ -4,7 +4,6 @@ from yomitoku.data.functions import load_image
 
 import cv2
 import os
-import json
 
 analyzer = TableSemanticParser(
     device="cuda:1",
@@ -39,31 +38,38 @@ for file in os.listdir(tardir):
 
     for i, img in enumerate(imgs):
         # cv2.imwrite(f"{os.path.splitext(os.path.basename(path_img))[0]}_{i}.jpg", img)
-        results, vis_cell, vis_group, vis_ocr = analyzer(img)
+        results, vis_cell, vis_ocr = analyzer(
+            img,
+            # template=f"{output}/{basename}_raw_result_{i}.json",
+            # f"{output}/{basename}_template_{i}.json",
+        )
 
         if len(results.tables) == 0:
             print(f"No table found in {path_img} page {i}")
             continue
 
-        cv2.imwrite(f"{output}/{basename}_cell.jpg", vis_cell)
-        cv2.imwrite(f"{output}/{basename}_group.jpg", vis_group)
-        cv2.imwrite(f"{output}/{basename}_ocr.jpg", vis_ocr)
+        results.save_template_json(f"{output}/{basename}_template_{i}.json")
 
-        # results.to_json(f"{output}/table_analyzer_result_{i}.json")
+        cv2.imwrite(f"{output}/{basename}_{i}_ocr.jpg", vis_ocr)
+        cv2.imwrite(f"{output}/{basename}_{i}_cell.jpg", vis_cell)
 
-        d = results.to_dict()
+        vis_items = img.copy()
+        vis_grids = img.copy()
 
-        with open(f"{output}/{basename}_result_{i}.json", "w") as f:
-            json.dump(d, f, indent=4, ensure_ascii=False)
+        for j, table in enumerate(results.tables):
+            vis_grids = table.view.visualize_grids(vis_grids)
+            vis_items = table.view.visualize_kv_items(vis_items)
 
-        # dataframe = results.to_dataframe()
-        #
-        # dataframe["pairs"].to_csv(f"{output}/{basename}_pairs_{i}.csv", index=False)
-        # for j, df in enumerate(dataframe["matrix"]):
-        #    print(df.head())
-        #    df.to_csv(f"{output}/{basename}_{j}.csv", index=False)
+        cv2.imwrite(
+            f"{output}/{basename}_vis_grids_{i}.jpg",
+            vis_grids,
+        )
+        cv2.imwrite(
+            f"{output}/{basename}_kv_items_{i}.jpg",
+            vis_items,
+        )
 
-        ##print(pd.DataFrame(parsed["matrix"][0]))
-
-        # import pprint
-        # pprint.pprint(parsed)
+        table.export.kv_items_to_json(f"{output}/{basename}_kv_items_{i}.json")
+        table.export.grids_to_json(f"{output}/{basename}_grids_{i}.json")
+        table.export.grids_to_csv(f"{output}/{basename}_grids_{i}.csv")
+        table.export.kv_items_to_csv(f"{output}/{basename}_kv_items_{i}.csv")

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, features
-from ..constants import PALETTE
+from ..constants import PALETTE, ROOT_DIR
 from .logger import set_logger
 
 logger = set_logger(__name__, "INFO")
@@ -131,7 +131,7 @@ def table_detector_visualizer(img, tables):
     out = img.copy()
     for i, table in enumerate(tables):
         box = table.box
-        id = table.order
+        id = f"t{table.order}"
         x1, y1, x2, y2 = map(int, box)
         out = cv2.rectangle(out, (x1, y1), (x2, y2), (0, 255, 255), 2)
         out = cv2.putText(
@@ -174,7 +174,7 @@ def table_visualizer(img, table):
     return out
 
 
-def text_detector_visualizer(img1, img2, cells):
+def cell_detector_visualizer(img1, img2, cells):
     out1 = img1.copy()
     out2 = img2.copy()
 
@@ -211,12 +211,49 @@ def text_detector_visualizer(img1, img2, cells):
             c.id,
             (int((x1 + x2) / 2), int((y1 + y2) / 2)),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
+            0.8,
             (0, 0, 255),
             2,
         )
 
     return out1, out2
+
+
+def cell_visualizer(
+    img,
+    cell,
+    font_path=None,
+    font_size=12,
+    font_color=(255, 0, 0),
+    bbox_color=(0, 255, 0),
+):
+    out = img.copy()
+    pillow_img = Image.fromarray(out)
+    draw = ImageDraw.Draw(pillow_img)
+    has_raqm = features.check_feature(feature="raqm")
+    if not has_raqm:
+        logger.warning(
+            "libraqm is not installed. Vertical text rendering is not supported. Rendering horizontally instead."
+        )
+
+    if font_path is None:
+        font_path = f"{ROOT_DIR}/resource/MPLUS1p-Medium.ttf"
+
+    font = ImageFont.truetype(font_path, font_size)
+    draw.rectangle(
+        [tuple(cell.box[0:2]), tuple(cell.box[2:4])],
+        outline=bbox_color,
+        width=2,
+    )
+    draw.text(
+        (cell.box[0], cell.box[1] - font_size),
+        f"{cell.contents}",
+        font=font,
+        fill=font_color,
+    )
+
+    out = np.array(pillow_img)
+    return out
 
 
 def dag_visualizer(dag, img):
@@ -237,6 +274,173 @@ def dag_visualizer(dag, img):
         )
 
     return img
+
+
+def kv_items_visualizer(img, table):
+    out = img.copy()
+    for kv_item in table.kv_items:
+        if len(kv_item.key) == 0 or len(kv_item.value) == 0:
+            continue
+
+        start_x = None
+        start_y = None
+        end_x = None
+        end_y = None
+
+        for i, key_cell_id in enumerate(kv_item.key):
+            key_cell = table.cells.get(key_cell_id)
+
+            end_x = (key_cell.box[0] + key_cell.box[2]) // 2
+            end_y = (key_cell.box[1] + key_cell.box[3]) // 2
+
+            cv2.rectangle(
+                out,
+                (key_cell.box[0], key_cell.box[1]),
+                (key_cell.box[2], key_cell.box[3]),
+                color=(0, 255, 0),
+                thickness=2,
+            )
+
+            cv2.putText(
+                out,
+                key_cell_id,
+                (end_x, end_y),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 0, 0),
+                2,
+            )
+
+            if start_x is not None and start_y is not None:
+                out = cv2.line(
+                    out,
+                    (end_x, end_y),
+                    (start_x, start_y),
+                    color=(
+                        255,
+                        0,
+                    ),
+                    thickness=2,
+                )
+            start_x = end_x
+            start_y = end_y
+
+        for value_cel_id in kv_item.value:
+            value_cell = table.cells.get(value_cel_id)
+
+            end_x = (value_cell.box[0] + value_cell.box[2]) // 2
+            end_y = (value_cell.box[1] + value_cell.box[3]) // 2
+
+            cv2.rectangle(
+                out,
+                (value_cell.box[0], value_cell.box[1]),
+                (value_cell.box[2], value_cell.box[3]),
+                color=(255, 0, 0),
+                thickness=2,
+            )
+
+            cv2.putText(
+                out,
+                value_cell.id,
+                (end_x, end_y),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 0, 0),
+                2,
+            )
+
+            out = cv2.arrowedLine(
+                out,
+                (start_x, start_y),
+                (end_x, end_y),
+                color=(0, 0, 255),
+                thickness=2,
+                tipLength=0.2,
+            )
+
+            start_x = end_x
+            start_y = end_y
+
+    return out
+
+
+def grids_visualizer(
+    img, table, value_color=(255, 0, 0), col_color=(0, 255, 0), row_color=(0, 128, 255)
+):
+    out = img.copy()
+    for grid in table.grids:
+        for row in grid.rows:
+            for cell in row.cells:
+                for col in cell.col_keys:
+                    col = table.cells.get(col)
+                    out = cv2.rectangle(
+                        out,
+                        (col.box[0], col.box[1]),
+                        (col.box[2], col.box[3]),
+                        color=col_color,
+                        thickness=2,
+                    )
+
+                    cx = (col.box[0] + col.box[2]) // 2
+                    cy = (col.box[1] + col.box[3]) // 2
+
+                    cv2.putText(
+                        out,
+                        col.id,
+                        (cx, cy),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (255, 0, 0),
+                        2,
+                    )
+
+                for row_key in cell.row_keys:
+                    row_key = table.cells.get(row_key)
+                    out = cv2.rectangle(
+                        out,
+                        (row_key.box[0], row_key.box[1]),
+                        (row_key.box[2], row_key.box[3]),
+                        color=row_color,
+                        thickness=2,
+                    )
+
+                    cx = (row_key.box[0] + row_key.box[2]) // 2
+                    cy = (row_key.box[1] + row_key.box[3]) // 2
+
+                    cv2.putText(
+                        out,
+                        row_key.id,
+                        (cx, cy),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (255, 0, 0),
+                        2,
+                    )
+
+                value = table.cells.get(cell.value)
+
+                out = cv2.rectangle(
+                    out,
+                    (value.box[0], value.box[1]),
+                    (value.box[2], value.box[3]),
+                    color=value_color,
+                    thickness=2,
+                )
+
+                cx = (value.box[0] + value.box[2]) // 2
+                cy = (value.box[1] + value.box[3]) // 2
+
+                cv2.putText(
+                    out,
+                    value.id,
+                    (cx, cy),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (255, 0, 0),
+                    2,
+                )
+
+    return out
 
 
 def rec_visualizer(

@@ -3,9 +3,15 @@ import math
 
 from typing import List, Tuple, Dict, Any
 
+
+import numpy as np
+
 Point = Tuple[float, float]
 Poly = List[Point]
 Rect = Tuple[float, float, float, float]  # x1,y1,x2,y2
+
+
+EPS = 1e-9
 
 
 def load_charset(charset_path):
@@ -349,226 +355,245 @@ def is_bottom_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="s
     return False
 
 
-def _clip_poly_halfplane(poly: Poly, inside_fn, intersect_fn) -> Poly:
-    """Sutherland–Hodgman: poly を half-plane でクリップ"""
-    if not poly:
-        return []
-    out: Poly = []
-    prev = poly[-1]
-    prev_in = inside_fn(prev)
-
-    for cur in poly:
-        cur_in = inside_fn(cur)
-        if cur_in:
-            if not prev_in:
-                out.append(intersect_fn(prev, cur))
-            out.append(cur)
-        else:
-            if prev_in:
-                out.append(intersect_fn(prev, cur))
-        prev, prev_in = cur, cur_in
-
-    return out
-
-
-def _intersect_with_vertical(p1: Point, p2: Point, x: float) -> Point:
-    """線分(p1->p2)と垂直線 x=const の交点（p1.x!=p2.x想定）"""
-    x1, y1 = p1
-    x2, y2 = p2
-    if x2 == x1:
-        return (x, y1)  # 退避（実際は平行）
-    t = (x - x1) / (x2 - x1)
-    return (x, y1 + t * (y2 - y1))
-
-
-def _intersect_with_horizontal(p1: Point, p2: Point, y: float) -> Point:
-    """線分(p1->p2)と水平線 y=const の交点（p1.y!=p2.y想定）"""
-    x1, y1 = p1
-    x2, y2 = p2
-    if y2 == y1:
-        return (x1, y)  # 退避（実際は平行）
-    t = (y - y1) / (y2 - y1)
-    return (x1 + t * (x2 - x1), y)
-
-
-def clip_poly_to_rect(poly: Poly, rect: Rect) -> Poly:
-    """任意ポリゴンを軸平行矩形でクリップして返す"""
-    x1, y1, x2, y2 = rect
-    # Left: x >= x1
-    poly = _clip_poly_halfplane(
-        poly,
-        inside_fn=lambda p: p[0] >= x1,
-        intersect_fn=lambda a, b: _intersect_with_vertical(a, b, x1),
-    )
-    # Right: x <= x2
-    poly = _clip_poly_halfplane(
-        poly,
-        inside_fn=lambda p: p[0] <= x2,
-        intersect_fn=lambda a, b: _intersect_with_vertical(a, b, x2),
-    )
-    # Top: y >= y1
-    poly = _clip_poly_halfplane(
-        poly,
-        inside_fn=lambda p: p[1] >= y1,
-        intersect_fn=lambda a, b: _intersect_with_horizontal(a, b, y1),
-    )
-    # Bottom: y <= y2
-    poly = _clip_poly_halfplane(
-        poly,
-        inside_fn=lambda p: p[1] <= y2,
-        intersect_fn=lambda a, b: _intersect_with_horizontal(a, b, y2),
-    )
-    return poly
-
-
-def poly_area(poly: Poly) -> float:
-    """符号なし面積（Shoelace）"""
+def signed_area(poly: Poly) -> float:
     if len(poly) < 3:
         return 0.0
     s = 0.0
     for (x1, y1), (x2, y2) in zip(poly, poly[1:] + [poly[0]]):
         s += x1 * y2 - x2 * y1
-    return abs(s) * 0.5
+    return 0.5 * s
 
 
-def poly_to_quad(poly):
+def poly_area(poly: Poly) -> float:
+    return abs(signed_area(poly))
+
+
+def ensure_ccw(poly: Poly) -> Poly:
+    # クリッパはCCW前提に揃える
+    return poly if signed_area(poly) >= 0 else list(reversed(poly))
+
+
+def cross(ax, ay, bx, by) -> float:
+    return ax * by - ay * bx
+
+
+def is_inside_halfplane_ccw(p: Point, a: Point, b: Point) -> bool:
     """
-    任意多角形 poly -> 軸平行 quad [[x1,y1]...[x4,y4]]
+    clip edge a->b が CCW のとき、左側(=内側)を inside とする
+    inside: cross(b-a, p-a) >= 0
     """
-    xs = [p[0] for p in poly]
-    ys = [p[1] for p in poly]
-    x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
-
-    return [
-        [int(x1), int(y1)],
-        [int(x2), int(y1)],
-        [int(x2), int(y2)],
-        [int(x1), int(y2)],
-    ]
+    px, py = p
+    ax, ay = a
+    bx, by = b
+    return cross(bx - ax, by - ay, px - ax, py - ay) >= -EPS
 
 
-def poly_to_aabb(poly: Poly) -> Rect:
-    xs = [p[0] for p in poly]
-    ys = [p[1] for p in poly]
-    return (min(xs), min(ys), max(xs), max(ys))
+def line_intersection(p1: Point, p2: Point, a: Point, b: Point) -> Point:
+    """
+    直線 p1->p2 と 直線 a->b の交点（無限直線として計算）
+    Sutherland–Hodgman 用。平行に近い場合は p2 を返して退避。
+    """
+    x1, y1 = p1
+    x2, y2 = p2
+    x3, y3 = a
+    x4, y4 = b
+
+    # (p1 + t*(p2-p1)) と (a + u*(b-a)) の交点
+    dx12, dy12 = x2 - x1, y2 - y1
+    dx34, dy34 = x4 - x3, y4 - y3
+
+    denom = cross(dx12, dy12, dx34, dy34)
+    if abs(denom) < EPS:
+        return p2  # ほぼ平行
+
+    # t = cross((a - p1), (b - a)) / cross((p2 - p1), (b - a))
+    t = cross(x3 - x1, y3 - y1, dx34, dy34) / denom
+    return (x1 + t * dx12, y1 + t * dy12)
 
 
-def split_text_quad_by_cells(
-    text_quad: Poly,
+def clip_convex_poly(subject: Poly, clipper: Poly) -> Poly:
+    """
+    凸多角形 subject を 凸多角形 clipper でクリップ（傾きOK）
+    ※ clipper は CCW に揃える
+    """
+    if not subject or len(subject) < 3:
+        return []
+    if not clipper or len(clipper) < 3:
+        return []
+
+    clipper = ensure_ccw(clipper)
+    output = subject[:]
+
+    for i in range(len(clipper)):
+        a = clipper[i]
+        b = clipper[(i + 1) % len(clipper)]
+        if not output:
+            break
+
+        input_list = output
+        output = []
+
+        prev = input_list[-1]
+        prev_in = is_inside_halfplane_ccw(prev, a, b)
+
+        for cur in input_list:
+            cur_in = is_inside_halfplane_ccw(cur, a, b)
+
+            if cur_in:
+                if not prev_in:
+                    output.append(line_intersection(prev, cur, a, b))
+                output.append(cur)
+            else:
+                if prev_in:
+                    output.append(line_intersection(prev, cur, a, b))
+
+            prev, prev_in = cur, cur_in
+
+    # 連続重複点の簡易除去
+    cleaned: Poly = []
+    for p in output:
+        if not cleaned or (
+            abs(p[0] - cleaned[-1][0]) > 1e-6 or abs(p[1] - cleaned[-1][1]) > 1e-6
+        ):
+            cleaned.append(p)
+    if (
+        len(cleaned) >= 2
+        and abs(cleaned[0][0] - cleaned[-1][0]) < 1e-6
+        and abs(cleaned[0][1] - cleaned[-1][1]) < 1e-6
+    ):
+        cleaned.pop()
+    return cleaned
+
+
+def poly_to_rotated_quad(poly: Poly) -> List[List[int]]:
+    """
+    任意poly -> 最小外接回転矩形(4点) (cv2.minAreaRect)
+    TextDetectorSchema の points に入れたい場合に使う
+    """
+    if len(poly) == 0:
+        return [[0, 0], [0, 0], [0, 0], [0, 0]]
+
+    arr = np.array(poly, dtype=np.float32)
+    rect = cv2.minAreaRect(arr)  # ((cx,cy),(w,h),angle)
+    box = cv2.boxPoints(rect)  # 4x2
+    box = box.astype(int).tolist()
+    return box
+
+
+def box_to_poly(box):
+    x1, y1, x2, y2 = box
+    return [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]
+
+
+def quad_to_poly(quad):
+    # quad: [[x,y],[x,y],[x,y],[x,y]]
+    return [tuple(p) for p in quad]
+
+
+def split_text_poly_by_cells_poly(
+    text_poly: Poly,
     cells: List[Dict[str, Any]],
     min_area_ratio: float = 0.05,
 ) -> List[Dict[str, Any]]:
     """
-    text_quad: 4点のquad（順序は時計回り/反時計回りどちらでもOKだが自己交差はNG）
-    cells: [{"id":..., "box":[x1,y1,x2,y2], ...}, ...]
-    min_area_ratio: 元quad面積に対して小さすぎる欠片を捨てる閾値
-    return: [{"cell_id":..., "poly":..., "aabb":..., "area":...}, ...]
+    text_poly: 文字領域poly（例：4点quad）
+    cells: [{"id":..., "poly":[(x,y),...4点...], ...}, ...]  ※セルもpoly
     """
-    base_area = poly_area(text_quad)
+    base_area = poly_area(text_poly)
     if base_area <= 0:
         return []
 
     out = []
     for cell in cells:
-        rect = tuple(cell["box"])
-        clipped = clip_poly_to_rect(text_quad, rect)
+        cell_poly = cell.get("poly")
+        if not cell_poly or len(cell_poly) < 3:
+            continue
+
+        clipped = clip_convex_poly(text_poly, cell_poly)
         a = poly_area(clipped)
         if a <= 0:
             continue
         if a / base_area < min_area_ratio:
             continue
+
         out.append(
             {
                 "cell_id": cell["id"],
-                "poly": clipped,  # セル内に切られたポリゴン（分割片）
-                "aabb": poly_to_aabb(clipped),  # 使いやすいように軸平行bboxも添付
+                "poly": clipped,  # 交差poly（傾き保持）
                 "area": a,
                 "area_ratio": a / base_area,
             }
         )
 
-    # 面積が大きい順に
     out.sort(key=lambda d: d["area"], reverse=True)
     return out
 
 
-def replace_spanning_words_with_clipped_polys(
-    words,
-    cells,
+def normalize_quad_ccw(poly):
+    # 重心
+    cx = sum(p[0] for p in poly) / len(poly)
+    cy = sum(p[1] for p in poly) / len(poly)
+
+    # 角度でソート（反時計回り）
+    poly = sorted(poly, key=lambda p: math.atan2(p[1] - cy, p[0] - cx))
+    return poly
+
+
+def replace_spanning_words_with_clipped_polys_poly(
+    words: List[Dict[str, Any]],
+    cells: List[Dict[str, Any]],
     min_area_ratio=0.05,
     keep_unsplit=True,
 ):
     """
-    words: list[dict] 例 {"id": "w1", "poly": [(x,y),...], "text": "..."}
-    cells: list[dict] 例 {"id": "c1", "box": [x1,y1,x2,y2]}
-    min_area_ratio: 小さすぎる欠片を捨てる
-    keep_unsplit: 1セルしかヒットしない場合に元wordを残すか
-
-    return: new_words
+    words: [{"poly": [(x,y)..], "score":..., ...}, ...]   # poly(quad)前提
+    cells: [{"id":..., "poly":[(x,y)..], ...}, ...]       # poly(quad)前提
     """
-
     new_words = []
     for w in words:
-        parts = split_text_quad_by_cells(
-            text_quad=w,
+        wpoly = w["poly"]
+        parts = split_text_poly_by_cells_poly(
+            text_poly=wpoly,
             cells=cells,
             min_area_ratio=min_area_ratio,
         )
 
-        # ヒットなし → そのまま（テーブル外とか）
         if len(parts) == 0:
-            new_words.append(
-                {
-                    "poly": w,
-                }
-            )
+            new_words.append(w)  # テーブル外など
             continue
 
-        # 1セルだけ → 置換しない（任意）
         if len(parts) == 1 and keep_unsplit:
-            new_words.append(
-                {
-                    "poly": w,
-                }
-            )
+            new_words.append(w)
             continue
 
-        for k, p in enumerate(parts):
-            # nw = {"poly": p["poly"], "aabb": p["aabb"], "cell_id": p["cell_id"]}
-            new_words.append(
-                {
-                    "poly": p["poly"],
-                }
-            )
-
-    # print(new_words)
+        for p in parts:
+            nw = dict(w)
+            nw["poly"] = p["poly"]
+            nw["area_ratio"] = p["area_ratio"]
+            nw["cell_id"] = p["cell_id"]
+            new_words.append(nw)
 
     return new_words
 
 
-def build_text_detector_schema_from_split_words(
-    split_words,
+def build_text_detector_schema_from_split_words_rotated_quad(
+    split_words: List[Dict[str, Any]],
     score_strategy="inherit",  # or "area_ratio"
 ):
     """
-    split_words: replace_spanning_words_with_clipped_polys の出力
-    return: dict compatible with TextDetectorSchema
+    split_words の poly を回転quadに戻して points に入れる
     """
-
     points = []
     scores = []
 
     for w in split_words:
-        quad = poly_to_quad(w["poly"])
-        points.append(quad)
+        quad = poly_to_rotated_quad(w["poly"])  # 傾き保持
+        points.append(normalize_quad_ccw(quad))
 
         if score_strategy == "area_ratio":
-            base_score = w.get("score", 1.0)
-            scores.append(base_score * w.get("area_ratio", 1.0))
+            base = w.get("score", 1.0)
+            scores.append(base * w.get("area_ratio", 1.0))
         else:
             scores.append(w.get("score", 1.0))
 
-    return {
-        "points": points,
-        "scores": scores,
-    }
+    return {"points": points, "scores": scores}

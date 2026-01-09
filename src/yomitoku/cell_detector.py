@@ -13,9 +13,9 @@ from .base import BaseModelCatalog, BaseModule
 from .configs import TableParserRTDETRv2BetaConfig
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
-from .utils.visualizer import text_detector_visualizer
+from .utils.visualizer import cell_detector_visualizer
 
-from .utils.misc import calc_overlap_ratio
+from .utils.misc import calc_overlap_ratio, filter_by_flag, is_contained
 
 from .schemas.table_semantic_parser import CellSchema, CellDetectorSchema
 from .utils.misc import is_right_adjacent, is_bottom_adjacent
@@ -27,6 +27,59 @@ class TableParserModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
         self.register("rtdetrv2_beta", TableParserRTDETRv2BetaConfig, RTDETRv2)
+
+
+def filter_contained_rectangles_with_category(category_elements, ignore_categories=[]):
+    """同一カテゴリに属する矩形のうち、他の矩形の外側に含まれるものを除外"""
+
+    for category, elements in category_elements.items():
+        if category in ignore_categories:
+            continue
+
+        group_box = [element["box"] for element in elements]
+        check_list = [True] * len(group_box)
+        for i, box_i in enumerate(group_box):
+            for j, box_j in enumerate(group_box):
+                if i >= j:
+                    continue
+
+                ij = is_contained(box_i, box_j)
+                ji = is_contained(box_j, box_i)
+
+                box_i_area = (box_i[2] - box_i[0]) * (box_i[3] - box_i[1])
+                box_j_area = (box_j[2] - box_j[0]) * (box_j[3] - box_j[1])
+
+                # 双方から見て内包関係にある場合、面積の小さい方を残す
+                if ij and ji:
+                    if box_i_area < box_j_area:
+                        check_list[j] = False
+                    else:
+                        check_list[i] = False
+
+                elif ij:
+                    check_list[i] = False
+                elif ji:
+                    check_list[j] = False
+
+        category_elements[category] = filter_by_flag(elements, check_list)
+
+    return category_elements
+
+
+def filter_contained_rectangles_across_categories(category_elements, source, target):
+    """sourceカテゴリの矩形がtargetカテゴリの矩形に内包される場合、sourceカテゴリの矩形を除外"""
+
+    src_boxes = [element["box"] for element in category_elements[source]]
+    tgt_boxes = [element["box"] for element in category_elements[target]]
+
+    check_list = [True] * len(tgt_boxes)
+    for i, src_box in enumerate(src_boxes):
+        for j, tgt_box in enumerate(tgt_boxes):
+            if is_contained(src_box, tgt_box):
+                check_list[j] = False
+
+    category_elements[target] = filter_by_flag(category_elements[target], check_list)
+    return category_elements
 
 
 def find_holes_as_rects(table_shape, cell_boxes, pad=2, close_ksize=5, min_area=300):
@@ -224,7 +277,7 @@ class CellDetector(BaseModule):
 
         cells = values + groups
         for i, cell in enumerate(cells):
-            cell.id = str(i + 1)
+            cell.id = f"c{str(i)}"
 
         return cells
 
@@ -270,6 +323,16 @@ class CellDetector(BaseModule):
                     "role": category,
                 }
             )
+
+        category_elements = filter_contained_rectangles_with_category(
+            category_elements,
+            ignore_categories=["group"],
+        )
+        category_elements = filter_contained_rectangles_across_categories(
+            category_elements,
+            source="header",
+            target="cell",
+        )
 
         cell_boxes = (
             category_elements["cell"]
@@ -390,7 +453,7 @@ class CellDetector(BaseModule):
 
             outputs.append(
                 CellDetectorSchema(
-                    id=str(table.order),
+                    id=f"t{str(table.order)}",
                     box=table.box,
                     role=table.role,
                     cells=cells,
@@ -402,7 +465,7 @@ class CellDetector(BaseModule):
 
         if self.visualize:
             for table in outputs:
-                vis_cell, vis_group = text_detector_visualizer(
+                vis_cell, vis_group = cell_detector_visualizer(
                     vis_cell,
                     vis_group,
                     table.cells,

@@ -123,7 +123,7 @@ def _get_grid_n_rows(dag, match, grid_region):
     return n_rows, base_cols
 
 
-def _calc_kv_items(dag, match, groups):
+def _calc_kv_items(dag, match, groups, scanned_nodes):
     """
     グループ内の終端セルから左方向に走査してキーとバリューを取得
     """
@@ -172,6 +172,37 @@ def _calc_kv_items(dag, match, groups):
             key = sorted(key, key=lambda x: x["bbox"][0])
             value = sorted(value, key=lambda x: x["bbox"][0])
 
+            for v in value:
+                scanned_nodes[v["id"]] = True
+
+            kv_items.append(
+                KvItemSchema(
+                    key=[k["id"] for k in key],
+                    value=[v["id"] for v in value],
+                )
+            )
+
+    for node_id, scanned in scanned_nodes.items():
+        if not scanned:
+            search_left = walk_to_terminal_by_edge_type_bbox_axis(
+                dag,
+                node_id,
+                edge_attr="dir",
+                edge_value="L",
+                axis="y",
+                use="center",
+            )
+            key = []
+            value = []
+            for node in search_left:
+                if dag.nodes[node]["role"] in ["cell", "empty"]:
+                    value.append(dag.nodes[node])
+                elif dag.nodes[node]["role"] == "header":
+                    key.append(dag.nodes[node])
+            key = sorted(key, key=lambda x: x["bbox"][0])
+            value = sorted(value, key=lambda x: x["bbox"][0])
+            for v in value:
+                scanned_nodes[v["id"]] = True
             kv_items.append(
                 KvItemSchema(
                     key=[k["id"] for k in key],
@@ -182,11 +213,7 @@ def _calc_kv_items(dag, match, groups):
     return kv_items
 
 
-def _calc_grids(
-    dag,
-    match,
-    grid_regions,
-):
+def _calc_grids(dag, match, grid_regions, scanned_nodes):
     """
     基準列のセルから左右に走査して行全体を取得し、各セルから上方向に辿って列ヘッダーを取得
     """
@@ -266,9 +293,11 @@ def _calc_grids(
                     )
                 )
 
-            rows.append(TableGridRow(cells=row, id=str(len(rows))))
+                scanned_nodes[v] = True
+
+            rows.append(TableGridRow(cells=row, id=f"r{str(len(rows))}"))
         grids.append(TableGridSchema(rows=rows, id=None))
-    return grids
+    return grids, scanned_nodes
 
 
 def _convert_grid_to_kv_items(grids, kv_items):
@@ -304,7 +333,7 @@ def _convert_grid_to_kv_items(grids, kv_items):
                     )
             continue
 
-        grid.id = str(len(kept_grids))
+        grid.id = f"g{str(len(kept_grids))}"
         kept_grids.append(grid)
 
     return kept_grids, kv_items
@@ -313,19 +342,15 @@ def _convert_grid_to_kv_items(grids, kv_items):
 def parse_semantic_table_information(
     cell_relation_dag, match, nodes, grid_regions, group_direction
 ):
-    grids = _calc_grids(
-        cell_relation_dag,
-        match,
-        grid_regions,
+    scanned_nodes = {n.id: False for n in nodes["cell"] + nodes["empty"]}
+
+    grids, scanned_nodes = _calc_grids(
+        cell_relation_dag, match, grid_regions, scanned_nodes
     )
 
     kv_items_groups = _get_kv_items_groups(match, nodes, group_direction)
 
-    kv_items = _calc_kv_items(
-        cell_relation_dag,
-        match,
-        kv_items_groups,
-    )
+    kv_items = _calc_kv_items(cell_relation_dag, match, kv_items_groups, scanned_nodes)
 
     grids, kv_items = _convert_grid_to_kv_items(grids, kv_items)
 
