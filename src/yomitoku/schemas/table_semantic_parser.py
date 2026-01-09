@@ -461,7 +461,7 @@ class TableSemanticContentsExport:
     def __init__(self, table: TableSemanticContentsSchema):
         self.table = table
 
-    def grids_to_dataframe(self, grid_id: str = "0") -> DataFrame | None:
+    def grids_to_dataframe(self, grid_id: str = "g0") -> DataFrame | None:
         grids = self.table.view.grids_to_dicts()
         for g in grids:
             if str(g["id"]) != str(grid_id):
@@ -469,7 +469,7 @@ class TableSemanticContentsExport:
             return pd.DataFrame(g["rows"])
         return None
 
-    def grids_to_csv(self, out_path, columns=None, grid_id="0"):
+    def grids_to_csv(self, out_path, columns=None, grid_id="g0"):
         """
         Export table grids to a CSV file.
         テーブルグリッドの内容をCSV形式で出力
