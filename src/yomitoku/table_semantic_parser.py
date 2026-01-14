@@ -1263,7 +1263,7 @@ class TableSemanticParser:
                                 if is_header_row[row_idx]:
                                     if data[row_idx][col_idx] is not None:
                                         col_header.append(data[row_idx][col_idx])
-                            col_headers.append(col_header)
+                            col_headers.append(list(set(col_header)))
 
                         data = [
                             raw for i, raw in enumerate(data) if not is_header_row[i]
