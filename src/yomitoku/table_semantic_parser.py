@@ -970,7 +970,12 @@ def _calc_spans_and_indices_from_raw_grid(raw_data):
 
 class TableSemanticParser:
     def __init__(
-        self, configs={}, device="cuda:1", visualize=False, dag_visualize=True
+        self,
+        configs={},
+        device="cuda:1",
+        visualize=False,
+        dag_visualize=True,
+        prediction_kv=False,
     ):
         table_detector_kwargs = {
             "device": device,
@@ -1025,6 +1030,7 @@ class TableSemanticParser:
 
         self.visualize = visualize
         self.dag_visualize = dag_visualize
+        self.prediction_kv = prediction_kv
 
     def aggregate(self, ocr_res, cells):
         """
@@ -1171,11 +1177,16 @@ class TableSemanticParser:
             }
             if template is None:
                 nodes = _split_nodes_with_role(table.cells)
-                clusters = weakly_cluster_nodes_with_graph(nodes)
-                cluster_nodes_list = cluster_nodes(clusters, nodes)
+
+                if self.prediction_kv:
+                    clusters = weakly_cluster_nodes_with_graph(nodes)
+                    cluster_nodes_list = cluster_nodes(clusters, nodes)
+                else:
+                    clusters = [list(table.cells.keys())]
+                    cluster_nodes_list = [nodes]
 
                 for cluster, clustered_nodes in zip(clusters, cluster_nodes_list):
-                    if is_grid_cluster(clustered_nodes):
+                    if not self.prediction_kv or self.is_grid_cluster(clustered_nodes):
                         dag = get_grid_dag(clustered_nodes)
                         dag = expand_grid_to_unit(dag)
                         row_root = cluster_heads_by_in_degree(dag, dir_value="R")[0]
