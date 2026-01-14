@@ -1211,7 +1211,7 @@ class TableSemanticParser:
                     cluster_nodes_list = [nodes]
 
                 for cluster, clustered_nodes in zip(clusters, cluster_nodes_list):
-                    if not self.prediction_kv or self.is_grid_cluster(clustered_nodes):
+                    if not self.prediction_kv or is_grid_cluster(clustered_nodes):
                         dag = get_grid_dag(clustered_nodes)
 
                         dag = expand_grid_to_unit(dag)
