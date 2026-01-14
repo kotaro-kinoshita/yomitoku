@@ -1182,7 +1182,7 @@ class TableSemanticParser:
                     clusters = weakly_cluster_nodes_with_graph(nodes)
                     cluster_nodes_list = cluster_nodes(clusters, nodes)
                 else:
-                    clusters = [list(table.cells.keys())]
+                    clusters = [[cell.id for cell in table.cells]]
                     cluster_nodes_list = [nodes]
 
                 for cluster, clustered_nodes in zip(clusters, cluster_nodes_list):
