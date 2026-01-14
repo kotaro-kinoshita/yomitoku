@@ -298,7 +298,14 @@ def gap_interval(interval_a, interval_b):
     return 0.0
 
 
-def is_right_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="soft"):
+def is_right_adjacent(
+    box_a,
+    box_b,
+    dist_threshold=10,
+    overlap_ratio_th=0.5,
+    ignore_dist_threshold=10,
+    rule="soft",
+):
     """
     box_aの右隣にbox_bがあるか判定
     """
@@ -318,35 +325,47 @@ def is_right_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="so
 
     # 3) 頂点間の距離の制約
     # Aの右下とBの左上が近すぎる場合は隣接しない
-    if point_distance((ax2, ay2), (bx1, by1)) < threshold:
+    if point_distance((ax2, ay2), (bx1, by1)) < ignore_dist_threshold:
         return False
 
     # Aの右上とBの左下が近すぎる場合は隣接しない
-    if point_distance((ax2, ay1), (bx1, by2)) < threshold:
+    if point_distance((ax2, ay1), (bx1, by2)) < ignore_dist_threshold:
         return False
 
     # 4) 頂点と線分距離制約
     d1, d2, d3, d4 = right_edge_to_left_edge_dist(box_a, box_b)
     if rule == "hard":
         if (
-            point_distance((ax2, ay1), (bx1, by1)) < threshold
-            and point_distance((ax2, ay2), (bx1, by2)) < threshold
+            point_distance((ax2, ay1), (bx1, by1)) < dist_threshold
+            and point_distance((ax2, ay2), (bx1, by2)) < dist_threshold
         ):
             return True
     elif rule == "soft":
-        if d1 < threshold or d2 < threshold or d3 < threshold or d4 < threshold:
+        if (
+            d1 < dist_threshold
+            or d2 < dist_threshold
+            or d3 < dist_threshold
+            or d4 < dist_threshold
+        ):
             return True
     elif rule == "semisoft":
-        if d3 < threshold and d4 < threshold:
+        if d3 < dist_threshold and d4 < dist_threshold:
             return True
     elif rule == "nest":
-        if d3 < threshold:
+        if d3 < dist_threshold:
             return True
 
     return False
 
 
-def is_bottom_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="soft"):
+def is_bottom_adjacent(
+    box_a,
+    box_b,
+    dist_threshold=10,
+    overlap_ratio_th=0.5,
+    ignore_dist_threshold=10,
+    rule="soft",
+):
     """
     box_aの下隣にbox_bがあるか判定
     """
@@ -366,11 +385,11 @@ def is_bottom_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="s
 
     # 3) 頂点間の距離の制約
     # Aの右下とBの左上が近すぎる場合は隣接しない
-    if point_distance((ax2, ay2), (bx1, by1)) < threshold:
+    if point_distance((ax2, ay2), (bx1, by1)) < ignore_dist_threshold:
         return False
 
     # Aの左下とBの右上が近すぎる場合は隣接しない
-    if point_distance((ax1, ay2), (bx2, by1)) < threshold:
+    if point_distance((ax1, ay2), (bx2, by1)) < ignore_dist_threshold:
         return False
 
     # 4) 頂点間距離制約
@@ -379,28 +398,33 @@ def is_bottom_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="s
     if rule == "hard":
         # 1:1結合のみ許容
         if (
-            point_distance((ax1, ay2), (bx1, by1)) < threshold
-            and point_distance((ax2, ay2), (bx2, by1)) < threshold
+            point_distance((ax1, ay2), (bx1, by1)) < dist_threshold
+            and point_distance((ax2, ay2), (bx2, by1)) < dist_threshold
         ):
             return True
 
     elif rule == "soft":
         # いずれかの距離が閾値以下なら隣接とみなす(1:1, N:1, 1:N, N:M結合を許容)
-        if d1 < threshold or d2 < threshold or d3 < threshold or d4 < threshold:
+        if (
+            d1 < dist_threshold
+            or d2 < dist_threshold
+            or d3 < dist_threshold
+            or d4 < dist_threshold
+        ):
             return True
 
     elif rule == "nest":
         # ネストにおいて上下要素関係の場合のみ　N:1結合は許容しない
-        if d3 < threshold:
+        if d3 < dist_threshold:
             return True
     elif rule == "child":
         # ネストにおいて子要素関係の場合のみ。1:1結合は許容しない
         hard = (
-            point_distance((ax1, ay2), (bx1, by1)) < threshold
-            and point_distance((ax2, ay2), (bx2, by1)) < threshold
+            point_distance((ax1, ay2), (bx1, by1)) < dist_threshold
+            and point_distance((ax2, ay2), (bx2, by1)) < dist_threshold
         )
 
-        nest = d3 < threshold
+        nest = d3 < dist_threshold
 
         if not hard and nest:
             return True

@@ -13,7 +13,8 @@ analyzer = TableSemanticParser(
 
 
 # path_img = "dataset/EPSON012.PDF"
-path_img = "dataset/キノシタコウタロウ_確定申告書_2024年分.pdf"
+# path_img = "dataset/キノシタコウタロウ_確定申告書_2024年分.pdf"
+path_img = "dataset/個人申告書サンプル.pdf"
 # path_img = "dataset/table_parser/00008357_3484180_4.jpg"
 # imgs = load_image(path_img)
 imgs = load_pdf(path_img)
@@ -41,6 +42,8 @@ for i, img in enumerate(imgs):
 
     # 解析結果をJSONで保存
     results.to_json(f"{output}/{basename}_raw_result_{i}.json")
+
+    continue
 
     # 解析結果から住所というキーを持つKey-Valueペアを検索
     address_kv = results.search_kv_items_by_key(key="住所")

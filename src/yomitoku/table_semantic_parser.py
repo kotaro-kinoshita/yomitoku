@@ -257,7 +257,12 @@ def normalize_row_with_out_edges(
             def ok_adj(bwd, dup):
                 # bwd(左) は dup の左にいるはず
                 return is_right_adjacent(
-                    G.nodes[bwd]["bbox"], G.nodes[dup]["bbox"], rule="soft"
+                    G.nodes[bwd]["bbox"],
+                    G.nodes[dup]["bbox"],
+                    rule="soft",
+                    dist_threshold=20,
+                    ignore_dist_threshold=10,
+                    overlap_ratio_th=0.25,
                 )
 
         elif out_edge_type == "L":
@@ -267,7 +272,12 @@ def normalize_row_with_out_edges(
             def ok_adj(bwd, dup):
                 # bwd(右) は dup の右にいるはず（判定向きを反転）
                 return is_right_adjacent(
-                    G.nodes[dup]["bbox"], G.nodes[bwd]["bbox"], rule="soft"
+                    G.nodes[dup]["bbox"],
+                    G.nodes[bwd]["bbox"],
+                    rule="soft",
+                    dist_threshold=20,
+                    ignore_dist_threshold=10,
+                    overlap_ratio_th=0.25,
                 )
 
         else:
@@ -370,14 +380,24 @@ def normalize_col_with_out_edges(
 
             def ok_adj(bwd, dup):
                 return is_bottom_adjacent(
-                    G.nodes[bwd]["bbox"], G.nodes[dup]["bbox"], rule="soft"
+                    G.nodes[bwd]["bbox"],
+                    G.nodes[dup]["bbox"],
+                    rule="soft",
+                    dist_threshold=20,
+                    ignore_dist_threshold=10,
+                    overlap_ratio_th=0.25,
                 )
         elif out_edge_type == "U":
             outs_bwd = [v for v in G.successors(u) if G[u][v].get(dir_key) == "D"]
 
             def ok_adj(bwd, dup):
                 return is_bottom_adjacent(
-                    G.nodes[dup]["bbox"], G.nodes[bwd]["bbox"], rule="soft"
+                    G.nodes[dup]["bbox"],
+                    G.nodes[bwd]["bbox"],
+                    rule="soft",
+                    dist_threshold=20,
+                    ignore_dist_threshold=10,
+                    overlap_ratio_th=0.25,
                 )
         else:
             outs_bwd = []
@@ -439,10 +459,11 @@ def normalize_col_with_out_edges(
                         # 後方ノードは再探索
                         queue.append(bwd)
 
-            # 元ノード削除
-            G.remove_node(u)
             for dup in dups:
                 queue.append(dup)
+
+            # 元ノード削除
+            G.remove_node(u)
         else:
             for v in outs_fwd:
                 queue.append(v)
@@ -704,6 +725,8 @@ def get_grid_dag(nodes):
                 cell1.box,
                 cell2.box,
                 rule="soft",
+                dist_threshold=20,
+                overlap_ratio_th=0.25,
             ):
                 dag.add_edge(cell1.id, cell2.id, dir="D")
                 dag.add_edge(cell2.id, cell1.id, dir="U")
@@ -712,6 +735,8 @@ def get_grid_dag(nodes):
                 cell1.box,
                 cell2.box,
                 rule="soft",
+                dist_threshold=20,
+                overlap_ratio_th=0.25,
             ):
                 dag.add_edge(cell1.id, cell2.id, dir="R")
                 dag.add_edge(cell2.id, cell1.id, dir="L")
@@ -1188,7 +1213,10 @@ class TableSemanticParser:
                 for cluster, clustered_nodes in zip(clusters, cluster_nodes_list):
                     if not self.prediction_kv or self.is_grid_cluster(clustered_nodes):
                         dag = get_grid_dag(clustered_nodes)
+
                         dag = expand_grid_to_unit(dag)
+                        vis_cell = dag_visualizer(dag, vis_cell)
+
                         row_root = cluster_heads_by_in_degree(dag, dir_value="R")[0]
                         col_root = cluster_heads_by_in_degree(dag, dir_value="D")[0]
 
@@ -1290,7 +1318,7 @@ class TableSemanticParser:
 
                         table_information["grids"].append(grid)
 
-                        vis_cell = dag_visualizer(dag, vis_cell)
+                        # vis_cell = dag_visualizer(dag, vis_cell)
 
                     else:
                         dag = self.get_kv_items_dag(clustered_nodes, nodes["group"])
