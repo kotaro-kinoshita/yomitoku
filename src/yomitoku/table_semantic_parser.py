@@ -1333,18 +1333,25 @@ class TableSemanticParser:
 
                             headers = []
                             headers.extend(
-                                [
-                                    dag.nodes[h]
-                                    for h in kv_items_row
-                                    if dag.nodes[h]["role"] == "header"
-                                ]
+                                sorted(
+                                    [
+                                        dag.nodes[h]
+                                        for h in kv_items_row
+                                        if dag.nodes[h]["role"] == "header"
+                                    ],
+                                    key=lambda n: dag.nodes[n]["bbox"][0],
+                                )
                             )
+
                             headers.extend(
-                                [
-                                    dag.nodes[h]
-                                    for h in kv_items_col
-                                    if dag.nodes[h]["role"] == "header"
-                                ]
+                                sorted(
+                                    [
+                                        dag.nodes[h]
+                                        for h in kv_items_col
+                                        if dag.nodes[h]["role"] == "header"
+                                    ],
+                                    key=lambda n: dag.nodes[n]["bbox"][1],
+                                )
                             )
 
                             kv_items = KvItemSchema(
