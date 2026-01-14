@@ -190,7 +190,7 @@ def cell_detector_visualizer(img1, img2, cells):
         box = cell.box
         role = cell.role
         color = colors.get(role, (200, 200, 200))
-        if role in ["cell", "header", "empty"]:
+        if role in ["cell", "empty", "header"]:
             x1, y1, x2, y2 = map(int, box)
             fill = cv2.rectangle(fill, (x1, y1), (x2, y2), color, -1)
             out1 = cv2.rectangle(out1, (x1, y1), (x2, y2), color, 2)
@@ -203,6 +203,7 @@ def cell_detector_visualizer(img1, img2, cells):
 
     for c in cells:
         box = c.box
+
         x1, y1, x2, y2 = map(int, box)
         target = out1 if c.role != "group" else out2
         target = cv2.rectangle(target, (x1, y1), (x2, y2), (0, 0, 255), 2)

@@ -12,7 +12,8 @@ from typing import Dict
 from pandas import DataFrame
 import pandas as pd
 
-from .document_analyzer import WordPrediction
+from .document_analyzer import WordPrediction, ParagraphSchema
+from ..reading_order import prediction_reading_order
 from ..utils.visualizer import kv_items_visualizer, grids_visualizer
 
 from collections import defaultdict
@@ -23,6 +24,7 @@ from ..utils.misc import (
     is_bottom_adjacent,
     is_right_adjacent,
     calc_overlap_ratio,
+    quad_to_xyxy,
 )
 
 MatchPolicy = Literal["cell_id", "bbox"]
@@ -79,6 +81,25 @@ class CellSchema(BaseSchema):
         ...,
         description="Bounding box of the cell in the format [x1, y1, x2, y2]",
     )
+    row: Union[int, None] = Field(
+        ...,
+        description="Row index of the cell in the table",
+    )
+
+    col: Union[int, None] = Field(
+        ...,
+        description="Column index of the cell in the table",
+    )
+
+    row_span: Union[int, None] = Field(
+        ...,
+        description="Number of rows spanned by the cell",
+    )
+
+    col_span: Union[int, None] = Field(
+        ...,
+        description="Number of columns spanned by the cell",
+    )
 
 
 class CellDetectorSchema(BaseSchema):
@@ -102,30 +123,14 @@ class CellDetectorSchema(BaseSchema):
 
 class KvItemSchema(BaseSchema):
     key: Union[str, List[str]] = Field(..., description="Key cell id(s)")
-    value: Union[str, List[str]] = Field(..., description="Value cell id(s)")
-
-    @field_validator("key", "value", mode="before")
-    @classmethod
-    def _coerce_to_list(cls, v):
-        if v is None:
-            return []
-        if isinstance(v, str):
-            return [v]
-        if isinstance(v, list):
-            # ついでに None/空文字を除外しておくと事故りにくい
-            return [x for x in v if isinstance(x, str) and x != ""]
-        raise TypeError(f"Expected str or list[str], got {type(v)}")
-
-    @field_serializer("key", "value")
-    def _serialize_single_or_list(self, v: List[str]):
-        if len(v) == 1:
-            return v[0]
-        return v
+    value: str = Field(..., description="Value cell id")
 
 
 class TableGridCell(BaseSchema):
     row_keys: List[str] = Field(..., description="Row key cell id(s)")
     col_keys: List[str] = Field(..., description="Column key cell id(s)")
+    col: int = Field(..., description="Column index of the cell in the grid")
+    row: int = Field(..., description="Row index of the cell in the grid")
     value: str = Field(..., description="Value cell id(s)")
 
     # ---------- input: str | list[str] -> list[str] ----------
@@ -153,6 +158,10 @@ class TableGridRow(BaseSchema):
         ...,
         description="Unique identifier of the table grid row",
     )
+    row: int = Field(
+        ...,
+        description="Row index of the table grid row",
+    )
     cells: List[TableGridCell] = Field(
         ...,
         description="List of cells in the table grid row",
@@ -164,9 +173,21 @@ class TableGridSchema(BaseSchema):
         ...,
         description="Unique identifier of the table grid",
     )
-    rows: List[TableGridRow] = Field(
+    n_row: int = Field(
         ...,
-        description="List of rows in the table grid",
+        description="Number of rows in the table grid",
+    )
+    n_col: int = Field(
+        ...,
+        description="Number of columns in the table grid",
+    )
+    col_headers: List[List[str]] = Field(
+        ...,
+        description="2D array representing the column header cell ids",
+    )
+    data: List[List[Union[str, None]]] = Field(
+        ...,
+        description="2D array representing the table grid data with cell ids",
     )
 
 
@@ -362,27 +383,26 @@ class TableSemanticContentsSchema(BaseSchema):
         # kv_items 側
         for kv_item in self.kv_items:
             key_cells = [self.cells.get(k) for k in kv_item.key]
-            val_cells = [self.cells.get(v) for v in kv_item.value]
+            value_cell = self.cells.get(kv_item.value)
 
             key_text = "".join([(kc.contents or "") for kc in key_cells if kc])
             if q in normalize(key_text):
-                results.append({"key": key_cells, "value": val_cells})
+                results.append({"key": key_cells, "value": value_cell})
 
         # grids 側
         for grid in self.grids:
-            for row in grid.rows:
-                for cell_info in row.cells:
-                    row_cells = [self.cells.get(rk) for rk in cell_info.row_keys]
-                    col_cells = [self.cells.get(ck) for ck in cell_info.col_keys]
-                    v_cell = self.cells.get(cell_info.value)
+            for i, col in enumerate(grid.col_headers):
+                col_cells = [self.cells.get(ck) for ck in col]
+                col_text = "".join(
+                    [self.safe_contents(c.contents) for c in col_cells if c]
+                )
 
-                    row_text = "".join([(c.contents or "") for c in row_cells if c])
-                    col_text = "".join([(c.contents or "") for c in col_cells if c])
-
-                    if q in normalize(row_text):
-                        results.append({"key": row_cells, "value": [v_cell]})
-                    elif q in normalize(col_text):
-                        results.append({"key": col_cells, "value": [v_cell]})
+                if q in normalize(col_text):
+                    value_cells = []
+                    for row in grid.data:
+                        cell_id = row[i]
+                        value_cell = self.cells.get(cell_id)
+                        results.append({"key": col_cells, "value": value_cells})
 
         return results
 
@@ -431,14 +451,16 @@ class TableSemanticContentsSchema(BaseSchema):
         norm_queries = [normalize(q) for q in queries]
         result = {
             "id": grid.id,
-            "rows": [],
+            "data": [],
         }
-        for row in grid.rows:
+
+        col_headers_filtered = defaultdict(int)
+        for row in grid.data:
             filtered_row = []
-            for cell in row.cells:
+            for i, cell in enumerate(row):
                 has_query = False
                 key_contents = [
-                    self.cells.get(rk).contents or "" for rk in cell.col_keys
+                    self.cells.get(rk).contents or "" for rk in grid.col_headers[i]
                 ]
                 nk = normalize("".join(key_contents))
                 for q in norm_queries:
@@ -447,14 +469,16 @@ class TableSemanticContentsSchema(BaseSchema):
                         break
                 if has_query:
                     filtered_row.append(cell)
+                    col_headers_filtered[tuple(grid.col_headers[i])] += 1
+
             if filtered_row:
-                result["rows"].append(
-                    {
-                        "id": row.id,
-                        "cells": filtered_row,
-                    }
-                )
-        return TableGridSchema(**result) if result["rows"] else None
+                result["data"].append(filtered_row)
+                result["n_col"] = len(filtered_row)
+
+        result["n_row"] = len(result["data"])
+        result["col_headers"] = list(col_headers_filtered.keys())
+
+        return TableGridSchema(**result) if result["data"] else None
 
 
 class TableSemanticContentsExport:
@@ -563,13 +587,13 @@ class TableSemanticContentsView:
 
         for kv in t.kv_items:
             k = [t.safe_contents(i) for i in kv.key]
-            v = [t.safe_contents(i) for i in kv.value]
+            v = t.safe_contents(kv.value)
             keys.append(k)
             vals.append(v)
 
         keys = make_unique_all(keys)
         for k, v in zip(keys, vals):
-            parsed["_".join(map(str, k))] = " ".join(map(str, v))
+            parsed["_".join(map(str, k))] = str(v)
 
         return parsed
 
@@ -583,27 +607,17 @@ class TableSemanticContentsView:
         results = []
         for grid in t.grids:
             row_record_list = []
-            for row in grid.rows:
+            for row in grid.data:
                 parsed_row = {}
                 col_key_list, value_list = [], []
-                row_key = None
 
-                for cell in row.cells:
-                    rk = [t.safe_contents(i) for i in cell.row_keys]
-                    ck = [t.safe_contents(i) for i in cell.col_keys]
-                    v = t.safe_contents(cell.value)
-
-                    if row_key is None and rk:
-                        row_key = rk
+                for i, cell in enumerate(row):
+                    ck = [t.safe_contents(i) for i in grid.col_headers[i]]
+                    v = t.safe_contents(cell)
                     col_key_list.append(ck)
                     value_list.append(v)
 
-                row_key = row_key or []
                 col_key_list = make_unique_all(col_key_list)
-
-                for i, rk in enumerate(row_key):
-                    parsed_row[f"row_key_{i}"] = rk
-
                 for ck, v in zip(col_key_list, value_list):
                     parsed_row["_".join(map(str, ck))] = v
 
@@ -688,6 +702,41 @@ class TableSemanticParserSchema(BaseSchema):
         ...,
         description="List of recognized words in the document",
     )
+
+    def search_words_by_position(self, bbox) -> str:
+        """
+        Search for words by their bounding box.
+        位置情報（bounding box）に対応する文字列を返す
+
+        Args:
+            box (List[int]): 検索するバウンディングボックス [x1, y1, x2, y2]
+        """
+        words = []
+        for word in self.words:
+            word_box = quad_to_xyxy(word.points)
+            if is_contained(bbox, word_box, threshold=0.5):
+                word = ParagraphSchema(
+                    box=word_box,
+                    contents=word.content,
+                    direction=word.direction,
+                    order=0,
+                    role=None,
+                )
+
+                words.append(word)
+
+        word_direction = [word.direction for word in words]
+        cnt_horizontal = word_direction.count("horizontal")
+        cnt_vertical = word_direction.count("vertical")
+
+        element_direction = (
+            "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
+        )
+        order = "left2right" if element_direction == "horizontal" else "right2left"
+        words = prediction_reading_order(words, order)
+        words = sorted(words, key=lambda x: x.order)
+
+        return "".join([word.contents for word in words])
 
     def load_json(self, json_path: str) -> "TableSemanticParserSchema":
         with open(json_path, "r", encoding="utf-8") as f:

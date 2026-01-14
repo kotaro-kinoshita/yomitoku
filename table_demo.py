@@ -12,8 +12,12 @@ analyzer = TableSemanticParser(
 )
 
 
-path_img = "dataset/EPSON012.PDF"
+# path_img = "dataset/EPSON012.PDF"
+path_img = "dataset/キノシタコウタロウ_確定申告書_2024年分.pdf"
+# path_img = "dataset/table_parser/00008357_3484180_4.jpg"
+# imgs = load_image(path_img)
 imgs = load_pdf(path_img)
+
 output = "outputs"
 
 os.makedirs(output, exist_ok=True)
@@ -45,8 +49,10 @@ for i, img in enumerate(imgs):
     [{'key': [CellSchema(meta={}, contents='住 所', role='header', id='c10', box=[155, 702, 371, 861])], 'value': [CellSchema(meta={}, contents='〒260 277-8520千葉県柏市若菜178番地4柏の葉キャンパス148街区2ショップ&オフィス棟6下', role='cell', id='c11', box=[371, 682, 1508, 858])]}]
     """
 
+    print(results.search_words_by_position([371, 682, 1508, 858]))
+
     # テーブルIDがt0のテーブルを取得
-    table = results.find_table_by_id(table_id="t0")
+    table = results.find_table_by_id(table_id="t2")
 
     # テーブルt0から「申込日」というキーを持つKey-Valueペアを検索
     print(table.search_kv_items_by_key(key="申込日"))
@@ -69,6 +75,8 @@ for i, img in enumerate(imgs):
     # テーブルIDがt1のテーブルを取得
     table = results.find_table_by_id(table_id="t1")
 
+    table.export.grids_to_csv(f"{output}/{basename}_grids_{i}.csv")
+
     # テーブルt1から「イベント名」というキーにその右隣のセルを検索
     print(table.search_cells_right_of_key_text(key="イベント名"))
     """
@@ -87,43 +95,43 @@ for i, img in enumerate(imgs):
     [CellSchema(meta={}, contents='Document AI開発', role='cell', id='c1', box=[380, 1045, 1513, 1165])]
     """
 
-    table = results.find_table_by_id(table_id="t2")
+    table = results.find_table_by_id(table_id="t0")
 
     # テーブルt2に含まれるグリッド情報をJSONで保存
     table.export.grids_to_json(f"{output}/{basename}_grids_{i}.json")
 
     # テーブルt2に含まれるグリッド情報をDataFrameで取得して先頭5行を表示
-    print(table.export.grids_to_dataframe().head())
-    """
-    使 用 日     開始時間    終了時間 備考
-    0  2026年1月20日  8 時 00分  23時00分   
-    1  2026年1月21日   8 時00分  23時00分   
-    2       年 月 日      時 分     時 分   
-    3       年 月 日      時 分     時 分   
-    4       年 月 日      時 分     時 分 
-    """
+    # print(table.export.grids_to_dataframe().head())
+    # """
+    # 使 用 日     開始時間    終了時間 備考
+    # 0  2026年1月20日  8 時 00分  23時00分
+    # 1  2026年1月21日   8 時00分  23時00分
+    # 2       年 月 日      時 分     時 分
+    # 3       年 月 日      時 分     時 分
+    # 4       年 月 日      時 分     時 分
+    # """
 
-    # テーブルt2に含まれるグリッド情報をCSVで保存。指定したカラムのみ抽出。
-    table.export.grids_to_csv(
-        columns=["使用日", "開始時間", "終了時間"],
-        out_path=f"{output}/{basename}_table_{i}.csv",
-    )
+    ## テーブルt2に含まれるグリッド情報をCSVで保存。指定したカラムのみ抽出。
+    # table.export.grids_to_csv(
+    #    columns=["使用日", "開始時間", "終了時間"],
+    #    out_path=f"{output}/{basename}_table_{i}.csv",
+    # )
 
-    """
-    ,使 用 日,開始時間,終了時間
-    0,2026年1月20日,8 時 00分,23時00分
-    1,2026年1月21日,8 時00分,23時00分
-    2,年 月 日,時 分,時 分
-    3,年 月 日,時 分,時 分
-    4,年 月 日,時 分,時 分
-    ,,,
-    """
+    # """
+    # ,使 用 日,開始時間,終了時間
+    # 0,2026年1月20日,8 時 00分,23時00分
+    # 1,2026年1月21日,8 時00分,23時00分
+    # 2,年 月 日,時 分,時 分
+    # 3,年 月 日,時 分,時 分
+    # 4,年 月 日,時 分,時 分
+    # ,,,
+    # """
 
-    # テンプレートJSONとして保存
-    results.save_template_json(f"{output}/{basename}_template_{i}.json")
+    ## テンプレートJSONとして保存
+    # results.save_template_json(f"{output}/{basename}_template_{i}.json")
 
-    # テンプレートJSONを使って再解析
-    results, vis_cell, vis_ocr = analyzer(
-        img,
-        template=f"{output}/{basename}_template_{i}.json",
-    )
+    ## テンプレートJSONを使って再解析
+    # results, vis_cell, vis_ocr = analyzer(
+    #    img,
+    #    template=f"{output}/{basename}_template_{i}.json",
+    # )

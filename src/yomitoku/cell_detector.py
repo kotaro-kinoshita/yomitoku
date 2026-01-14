@@ -15,7 +15,7 @@ from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.visualizer import cell_detector_visualizer
 
-from .utils.misc import calc_overlap_ratio, filter_by_flag, is_contained
+from .utils.misc import filter_by_flag, is_contained, calc_iou
 
 from .schemas.table_semantic_parser import CellSchema, CellDetectorSchema
 from .utils.misc import is_right_adjacent, is_bottom_adjacent
@@ -51,15 +51,15 @@ def filter_contained_rectangles_with_category(category_elements, ignore_categori
 
                 # 双方から見て内包関係にある場合、面積の小さい方を残す
                 if ij and ji:
-                    if box_i_area < box_j_area:
-                        check_list[j] = False
-                    else:
+                    if box_i_area > box_j_area:
                         check_list[i] = False
+                    else:
+                        check_list[j] = False
 
                 elif ij:
-                    check_list[i] = False
-                elif ji:
                     check_list[j] = False
+                elif ji:
+                    check_list[i] = False
 
         category_elements[category] = filter_by_flag(elements, check_list)
 
@@ -291,8 +291,8 @@ class CellDetector(BaseModule):
             return True
         return False
 
-    def is_fully_contained(self, box1, box2, threshold=0.95):
-        overlap_ratio, _ = calc_overlap_ratio(box1, box2)
+    def is_fully_contained(self, box1, box2, threshold=0.9):
+        overlap_ratio = calc_iou(box1, box2)
         return overlap_ratio >= threshold
 
     def postprocess(self, preds, data, table_box):
@@ -312,8 +312,7 @@ class CellDetector(BaseModule):
         for box, score, label in zip(boxes, scores, labels):
             category = self.label_mapper[label.item()]
             box = box.astype(int).tolist()
-
-            if self.is_fully_contained(box, table_box):
+            if self.is_fully_contained(box, [0, 0, w, h]):
                 continue
 
             category_elements[category].append(
@@ -424,6 +423,10 @@ class CellDetector(BaseModule):
                             box=box,
                             role=value["role"],
                             contents=None,
+                            row=None,
+                            col=None,
+                            row_span=None,
+                            col_span=None,
                         )
                     )
 

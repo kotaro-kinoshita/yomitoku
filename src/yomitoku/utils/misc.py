@@ -52,6 +52,28 @@ def calc_overlap_ratio(rect_a, rect_b):
     return overlap_ratio, intersection
 
 
+def calc_iou(rect_a, rect_b):
+    intersection = calc_intersection(rect_a, rect_b)
+    if intersection is None:
+        return 0
+
+    ix1, iy1, ix2, iy2 = intersection
+
+    overlap_width = ix2 - ix1
+    overlap_height = iy2 - iy1
+    bx1, by1, bx2, by2 = rect_b
+    ax1, ay1, ax2, ay2 = rect_a
+
+    a_area = (ax2 - ax1) * (ay2 - ay1)
+    b_area = (bx2 - bx1) * (by2 - by1)
+
+    overlap_area = overlap_width * overlap_height
+
+    overlap_ratio = overlap_area / (a_area + b_area - overlap_area)
+
+    return overlap_ratio
+
+
 def is_contained(rect_a, rect_b, threshold=0.8):
     """二つの矩形A, Bが与えられたとき、矩形Bが矩形Aに含まれるかどうかを判定する。
     ずれを許容するため、重複率求め、thresholdを超える場合にTrueを返す。
@@ -306,10 +328,19 @@ def is_right_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="so
     # 4) 頂点と線分距離制約
     d1, d2, d3, d4 = right_edge_to_left_edge_dist(box_a, box_b)
     if rule == "hard":
-        if d1 < threshold and d2 < threshold and d3 < threshold and d4 < threshold:
+        if (
+            point_distance((ax2, ay1), (bx1, by1)) < threshold
+            and point_distance((ax2, ay2), (bx1, by2)) < threshold
+        ):
             return True
     elif rule == "soft":
         if d1 < threshold or d2 < threshold or d3 < threshold or d4 < threshold:
+            return True
+    elif rule == "semisoft":
+        if d3 < threshold and d4 < threshold:
+            return True
+    elif rule == "nest":
+        if d3 < threshold:
             return True
 
     return False
@@ -346,10 +377,32 @@ def is_bottom_adjacent(box_a, box_b, threshold=10, overlap_ratio_th=0.5, rule="s
     d1, d2, d3, d4 = top_edge_to_bottom_edge_dist(box_a, box_b)
 
     if rule == "hard":
-        if d1 < threshold and d2 < threshold and d3 < threshold and d4 < threshold:
+        # 1:1結合のみ許容
+        if (
+            point_distance((ax1, ay2), (bx1, by1)) < threshold
+            and point_distance((ax2, ay2), (bx2, by1)) < threshold
+        ):
             return True
+
     elif rule == "soft":
+        # いずれかの距離が閾値以下なら隣接とみなす(1:1, N:1, 1:N, N:M結合を許容)
         if d1 < threshold or d2 < threshold or d3 < threshold or d4 < threshold:
+            return True
+
+    elif rule == "nest":
+        # ネストにおいて上下要素関係の場合のみ　N:1結合は許容しない
+        if d3 < threshold:
+            return True
+    elif rule == "child":
+        # ネストにおいて子要素関係の場合のみ。1:1結合は許容しない
+        hard = (
+            point_distance((ax1, ay2), (bx1, by1)) < threshold
+            and point_distance((ax2, ay2), (bx2, by1)) < threshold
+        )
+
+        nest = d3 < threshold
+
+        if not hard and nest:
             return True
 
     return False

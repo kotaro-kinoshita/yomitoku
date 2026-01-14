@@ -1,9 +1,22 @@
 from .schemas.table_semantic_parser import (
     KvItemSchema,
-    TableGridCell,
-    TableGridRow,
     TableGridSchema,
 )
+
+from collections import defaultdict
+
+
+def make_unique_tuples(lst):
+    cnt = defaultdict(int)
+    out = []
+    for t in lst:
+        cnt[t] += 1
+        if cnt[t] == 1:
+            out.append(t)
+        else:
+            # 2回目以降はユニークになるよう印を付ける
+            out.append(t + (f"__dup{cnt[t]}",))
+    return out
 
 
 def walk_to_terminal_by_edge_type_bbox_axis(
@@ -155,7 +168,7 @@ def _calc_kv_items(dag, match, groups, scanned_nodes):
                 dag,
                 cell,
                 edge_attr="dir",
-                edge_value="L",
+                edge_value="KVL",
                 axis="y",
                 use="center",
             )
@@ -213,6 +226,64 @@ def _calc_kv_items(dag, match, groups, scanned_nodes):
     return kv_items
 
 
+# def correct_header_to_cell(dag, row):
+#    """
+#    先頭以外に存在するヘッダーをセルに置き換える
+#    基準列の先頭以外にヘッダーが存在することは通常ないため
+#    """#
+
+#    exist_cell = False
+#    for cell_id in row:
+#        node = dag.nodes[cell_id]
+#        if node["role"] in ["cell", "empty"]:
+#            exist_cell = True#
+
+#        if exist_cell:
+#            if node["role"] == "header":
+#                print("Correct header to cell:", node["id"])
+#                node["role"] = "cell"
+
+
+def uniquify_empty_tuples(cols):
+    EMPTY = object()  # 衝突しないマーカー
+    out = []
+    k = 0
+    for t in cols:
+        if t == ():
+            out.append((EMPTY, k))  # () をユニークなtupleに変換
+            k += 1
+        else:
+            out.append(t)
+    return out
+
+
+def expand_values_fill_prev(max_col, col, value):
+    # () をユニーク化
+    max_col_u = uniquify_empty_tuples(max_col)
+    print(max_col_u)
+    col = col
+
+    # col内の各tupleの出現位置
+    pos_map = defaultdict(list)
+    for i, t in enumerate(col):
+        pos_map[t].append(i)
+
+    used = defaultdict(int)
+    out = []
+    prev_v = None
+
+    for t in max_col_u:
+        if t in pos_map and used[t] < len(pos_map[t]):
+            v = value[pos_map[t][used[t]]]
+            used[t] += 1
+        else:
+            v = prev_v  # 欠損は直前valueで埋める
+        out.append(v)
+        prev_v = v
+
+    return out
+
+
 def _calc_grids(dag, match, grid_regions, scanned_nodes):
     """
     基準列のセルから左右に走査して行全体を取得し、各セルから上方向に辿って列ヘッダーを取得
@@ -224,7 +295,6 @@ def _calc_grids(dag, match, grid_regions, scanned_nodes):
         n_rows, base_cols = _get_grid_n_rows(dag, match, grid_region)
         base_cols = sorted(base_cols, key=lambda x: dag.nodes[x]["bbox"][1])
         rows = []
-
         for cell in base_cols:
             # 基準列のセルから左右に辿って行全体を取得
             search_right = walk_to_terminal_by_edge_type_bbox_axis(
@@ -244,94 +314,152 @@ def _calc_grids(dag, match, grid_regions, scanned_nodes):
                 axis="y",
                 use="center",
             )
+
             row_cells = set(search_right) | set(search_left)
             row_cells = sorted(row_cells, key=lambda x: dag.nodes[x]["bbox"][0])
 
-            row_header = [
-                node for node in row_cells if dag.nodes[node]["role"] == "header"
-            ]
+            # row_headerもすべてセルに変更
+            for rc in row_cells:
+                dag.nodes[rc]["role"] = "cell"
 
-            row_value = [
-                node
-                for node in row_cells
-                if dag.nodes[node]["role"] in ["cell", "empty"]
-            ]
+            rows.append(list(row_cells))
 
-            col_headers = []
+            for v in row_cells:
+                scanned_nodes[v] = True
 
-            # 各セルから上方向に辿って列ヘッダーを取得
-            for value in row_value:
-                search_top = walk_to_terminal_by_edge_type_bbox_axis(
+        # 最下部の行から上方向に辿って列ヘッダーを取得
+        col_headers_each_rows = []
+
+        for row in rows:
+            row_col_headers = []
+            for v in row:
+                search_up = walk_to_terminal_by_edge_type_bbox_axis(
                     dag,
-                    value,
+                    v,
                     edge_attr="dir",
                     edge_value="U",
                     axis="x",
-                    use="min",
+                    use="center",
                 )
 
-                col_header = [
-                    node for node in search_top if dag.nodes[node]["role"] == "header"
-                ]
+                col_headers = []
+                for node in search_up:
+                    if dag.nodes[node]["role"] == "header":
+                        col_headers.append(node)
 
-                col_headers.append(
-                    sorted(
-                        col_header,
-                        key=lambda x: dag.nodes[x]["bbox"][1],
-                    )
-                )
+                col_headers = sorted(col_headers, key=lambda x: dag.nodes[x]["bbox"][1])
+                # 仮の列ヘッダーを設定
+                if len(col_headers) == 0:
+                    col_headers = []
 
-            row = []
-            for col_header, v in zip(col_headers, row_value):
-                col_header = [dag.nodes[h]["id"] for h in col_header]
-                row_header = [dag.nodes[h]["id"] for h in row_header]
-                row.append(
-                    TableGridCell(
-                        row_keys=row_header,
-                        col_keys=col_header,
-                        value=dag.nodes[v]["id"],
-                    )
-                )
+                row_col_headers.append(tuple(col_headers))
 
-                scanned_nodes[v] = True
+                # grid_col_headers.append(tuple(col_headers))
+            col_headers_each_rows.append(row_col_headers)
+        max_col_headers = max(col_headers_each_rows, key=lambda x: len(x))
 
-            rows.append(TableGridRow(cells=row, id=f"r{str(len(rows))}"))
-        grids.append(TableGridSchema(rows=rows, id=None))
+        # 列が足りない行を補完
+        expanded_rows = []
+        for i, row in enumerate(rows):
+            expanded_row = expand_values_fill_prev(
+                max_col_headers,
+                col_headers_each_rows[i],
+                row,
+            )
+
+            if expanded_row is not None:
+                expanded_rows.append(expanded_row)
+            else:
+                for cell in row:
+                    scanned_nodes[cell] = False
+
+        max_col_headers = [list(t) for t in max_col_headers]
+
+        print("Grid detected: n_row =", n_rows, ", n_col =", len(max_col_headers))
+        print("Col headers:", max_col_headers)
+        print("Data:", expanded_rows)
+
+        grids.append(
+            TableGridSchema(
+                id=f"g{j}",
+                n_row=n_rows,
+                n_col=len(max_col_headers),
+                col_headers=max_col_headers,
+                data=expanded_rows,
+            )
+        )
+
     return grids, scanned_nodes
 
 
-def _convert_grid_to_kv_items(grids, kv_items):
+def _convert_grid_to_kv_items(table_id, dag, grids):
     """一行のみもしくは一列のみのグリッドをKVアイテムに変換"""
 
     kept_grids = []
+    kv_items = []
     for grid in grids:
-        if len(grid.rows) == 1:
-            row = grid.rows[0]
-            for cell in row.cells:
-                kv_items.append(
-                    KvItemSchema(
-                        key=cell.row_keys + cell.col_keys,
-                        value=[cell.value],
+        if grid.n_row == 1:
+            for cell in grid.data[0]:
+                node = dag.nodes[cell]
+                if node["role"] == "cell":
+                    left_search = walk_to_terminal_by_edge_type_bbox_axis(
+                        dag,
+                        cell,
+                        edge_attr="dir",
+                        edge_value="KVL",
+                        axis="y",
+                        use="center",
                     )
-                )
-            continue
 
-        is_single_col = True
-        for row in grid.rows:
-            if len(row.cells) > 1:
-                is_single_col = False
-                break
+                    up_search = walk_to_terminal_by_edge_type_bbox_axis(
+                        dag,
+                        cell,
+                        edge_attr="dir",
+                        edge_value="U",
+                        axis="x",
+                        use="center",
+                    )
 
-        if is_single_col:
-            for row in grid.rows:
-                for cell in row.cells:
+                    keys = []
+                    left_search = list(reversed(up_search))
+                    left_search.remove(cell)
+
+                    for id in left_search:
+                        dag.nodes[id]["role"] = "header"
+                        keys.append(id)
+
                     kv_items.append(
                         KvItemSchema(
-                            key=cell.row_keys + cell.col_keys,
-                            value=[cell.value],
+                            key=keys,
+                            value=[cell],
                         )
                     )
+
+            # for cell, col_header in zip(grid.data[0], grid.col_headers):
+            #    kv_items.append(
+            #        KvItemSchema(
+            #            key=col_header,
+            #            value=[cell],
+            #        )
+            #    )
             continue
+
+        # is_single_col = True
+        # for row in grid.rows:
+        #    if len(row.cells) > 1:
+        #        is_single_col = False
+        #        break
+
+        # if is_single_col:
+        #    for row in grid.rows:
+        #        for cell in row.cells:
+        #            kv_items.append(
+        #                KvItemSchema(
+        #                    key=cell.row_keys + cell.col_keys,
+        #                    value=[cell.value],
+        #                )
+        #            )
+        #    continue
 
         grid.id = f"g{str(len(kept_grids))}"
         kept_grids.append(grid)
@@ -340,7 +468,7 @@ def _convert_grid_to_kv_items(grids, kv_items):
 
 
 def parse_semantic_table_information(
-    cell_relation_dag, match, nodes, grid_regions, group_direction
+    table_id, cell_relation_dag, match, nodes, grid_regions, group_direction
 ):
     scanned_nodes = {n.id: False for n in nodes["cell"] + nodes["empty"]}
 
@@ -349,9 +477,8 @@ def parse_semantic_table_information(
     )
 
     kv_items_groups = _get_kv_items_groups(match, nodes, group_direction)
+    grids, kv_items = _convert_grid_to_kv_items(table_id, cell_relation_dag, grids)
 
     kv_items = _calc_kv_items(cell_relation_dag, match, kv_items_groups, scanned_nodes)
-
-    grids, kv_items = _convert_grid_to_kv_items(grids, kv_items)
 
     return grids, kv_items
