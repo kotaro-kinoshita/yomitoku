@@ -122,6 +122,10 @@ class CellDetectorSchema(BaseSchema):
 
 
 class KvItemSchema(BaseSchema):
+    id: Union[str, None] = Field(
+        ...,
+        description="Unique identifier of the key-value item",
+    )
     key: Union[str, List[str]] = Field(..., description="Key cell id(s)")
     value: str = Field(..., description="Value cell id")
 
@@ -153,25 +157,14 @@ class TableGridCell(BaseSchema):
         return v
 
 
-class TableGridRow(BaseSchema):
-    id: Union[str, None] = Field(
-        ...,
-        description="Unique identifier of the table grid row",
-    )
-    row: int = Field(
-        ...,
-        description="Row index of the table grid row",
-    )
-    cells: List[TableGridCell] = Field(
-        ...,
-        description="List of cells in the table grid row",
-    )
-
-
 class TableGridSchema(BaseSchema):
     id: Union[str, None] = Field(
         ...,
         description="Unique identifier of the table grid",
+    )
+    box: conlist(int, min_length=4, max_length=4) = Field(
+        ...,
+        description="Bounding box of the table grid in the format [x1, y1, x2, y2]",
     )
     n_row: int = Field(
         ...,

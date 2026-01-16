@@ -3,8 +3,10 @@ import math
 
 from typing import List, Tuple, Dict, Any
 
-
 import numpy as np
+import networkx as nx
+
+from collections import deque
 
 Point = Tuple[float, float]
 Poly = List[Point]
@@ -674,3 +676,24 @@ def build_text_detector_schema_from_split_words_rotated_quad(
             scores.append(w.get("score", 1.0))
 
     return {"points": points, "scores": scores}
+
+
+def get_line_with_head(dag: nx.DiGraph, head: str, dir_value: str) -> List[str]:
+    """
+    head から辿れるノードを dir_value エッジで取得
+    """
+    line_nodes = []
+    queue = deque([head])
+
+    while queue:
+        u = queue.popleft()
+        if u not in dag.nodes:
+            continue
+
+        line_nodes.append(u)
+
+        for v in dag.successors(u):
+            if dag[u][v].get("dir") == dir_value:
+                queue.append(v)
+
+    return line_nodes
