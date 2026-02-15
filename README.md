@@ -102,6 +102,61 @@ yomitoku --help
 - YomiToku は文書 OCR 向けに最適化されており、情景 OCR(看板など紙以外にプリントされた文字の読み取り)向けには最適化されていません。
 - AI-OCR の識別精度を高めるために、入力画像の解像度が重要です。低解像度画像では識別精度が低下します。最低でも画像の短辺を 720px 以上の画像で推論することをお勧めします。
 
+## 📋 Extractor（構造化データ抽出）
+
+YomiToku Extractorは、帳票画像やPDFからYAMLスキーマに基づいて構造化データを抽出する機能です。OCR・レイアウト解析の結果から、指定したフィールドの値を自動で抽出しJSONとして出力します。
+
+### 抽出方式
+
+| コマンド | 方式 | 特徴 |
+| :--- | :--- | :--- |
+| `yomitoku_extract` | ルールベース | LLM不要。KV検索・グリッド照合・正規表現で高速に抽出 |
+| `yomitoku_extract_with_llm` | LLMベース | vLLM等のLLMサーバーを利用してより柔軟に抽出 |
+
+- **ルールベース**: 定型帳票（申請書、報告書、伝票など）に適しています。抽出対象の位置やテキストパターンが決まっている場合に高速かつ高精度に抽出できます。
+- **LLMベース**: 非定型帳票（名刺、レシート、請求書など）に適しています。レイアウトや値のパターンが不定の場合でも、文脈を理解して柔軟に抽出できます。
+
+### インストール
+
+```bash
+pip install yomitoku[extract]
+```
+
+### スキーマ定義例
+
+```yaml
+fields:
+  - name: phone_number
+    description: 電話番号
+    type: string
+    normalize: phone_jp
+
+  - name: invoice_number
+    regex: 'T\d{13}'
+    type: string
+
+  - name: order_items
+    structure: table
+    columns:
+      - name: product
+        description: 商品名
+      - name: price
+        description: 金額
+        normalize: numeric
+```
+
+### 実行例
+
+```bash
+# ルールベース抽出
+yomitoku_extract input.jpg -s schema.yaml -o results -v
+
+# LLMベース抽出（vLLMサーバー使用）
+yomitoku_extract_with_llm input.jpg -s schema.yaml -m Qwen/Qwen3-8B-Instruct
+```
+
+詳細は[Extractor ドキュメント](https://kotaro-kinoshita.github.io/yomitoku/extractor/)を参照してください。
+
 ## 📝 ドキュメント
 
 パッケージの詳細は[ドキュメント](https://kotaro-kinoshita.github.io/yomitoku/)を確認してください。

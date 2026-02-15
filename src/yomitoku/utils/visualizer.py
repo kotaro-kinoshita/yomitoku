@@ -151,6 +151,52 @@ def table_visualizer(img, table):
     return out
 
 
+def cell_detector_visualizer(img1, img2, cells):
+    out1 = img1.copy()
+    out2 = img2.copy()
+
+    fill = np.full_like(img1, 255)
+    colors = {
+        "cell": (255, 128, 0),
+        "empty": (255, 0, 255),
+        "header": (0, 255, 0),
+        "group": (255, 255, 0),
+    }
+
+    for i, cell in enumerate(cells):
+        box = cell.box
+        role = cell.role
+        color = colors.get(role, (200, 200, 200))
+
+        if role in ["cell", "empty", "header"]:
+            x1, y1, x2, y2 = map(int, box)
+            fill = cv2.rectangle(fill, (x1, y1), (x2, y2), color, -1)
+            out1 = cv2.rectangle(out1, (x1, y1), (x2, y2), color, 2)
+
+    out1 = np.where(
+        fill == 255,
+        img1.copy(),
+        cv2.addWeighted(img1.copy(), 0.7, fill, 0.3, 0),
+    )
+
+    for c in cells:
+        box = c.box
+
+        x1, y1, x2, y2 = map(int, box)
+        target = out1 if c.role != "group" else out2
+        target = cv2.putText(
+            target,
+            c.id,
+            (int((x1 + x2) / 2), int((y1 + y2) / 2)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,
+            (0, 0, 255),
+            2,
+        )
+
+    return out1, out2
+
+
 def rec_visualizer(
     img,
     outputs,
