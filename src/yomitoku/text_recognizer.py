@@ -127,7 +127,7 @@ class TextRecognizer(BaseModule):
             self.model,
             input,
             path_onnx,
-            opset_version=14,
+            opset_version=16,
             input_names=["input"],
             output_names=["output"],
             do_constant_folding=True,
