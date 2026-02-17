@@ -238,7 +238,6 @@ def build_messages(
 ) -> List[Dict[str, str]]:
     paragraphs_section = _build_paragraphs_section(semantic_info)
     tables_section = _build_tables_section(semantic_info.tables, table_id)
-    words_section = _build_words_section(semantic_info)
     schema_section = _build_schema_section(schema)
     response_format = _build_response_format(schema)
 
@@ -248,9 +247,6 @@ def build_messages(
 
 ## Tables
 {tables_section}
-
-## Words
-{words_section}
 
 ## Extraction Schema
 {schema_section}

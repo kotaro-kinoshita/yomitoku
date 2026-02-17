@@ -76,14 +76,33 @@ pip install vllm
 #### 2. Start the vLLM Server
 
 ```bash
-vllm serve <model_name> --host 0.0.0.0 --port 8000
+vllm serve <model_name> \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --quantization awq \
+    --dtype float16 \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.5
 ```
 
-Example with Qwen2.5:
+Example with Qwen3-4B-AWQ:
 
 ```bash
-vllm serve Qwen/Qwen2.5-7B-Instruct --host 0.0.0.0 --port 8000
+vllm serve Qwen/Qwen3-4B-AWQ \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --quantization awq \
+    --dtype float16 \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.5
 ```
+
+| Option | Description |
+| :--- | :--- |
+| `--quantization awq` | Enable AWQ quantization |
+| `--dtype float16` | Set the data type to FP16. AWQ quantized models are not compatible with bf16, so `float16` must be specified explicitly |
+| `--max-model-len` | Maximum sequence length. `8192` is sufficient for document extraction. Lower values reduce VRAM consumption |
+| `--gpu-memory-utilization` | Upper limit of GPU memory that vLLM reserves (0.0–1.0). `0.5` limits allocation to 50% of VRAM. If the model does not fit within this limit, vLLM will fail to start. Set lower when sharing the GPU with yomitoku's OCR models |
 
 Once the server is running, the OpenAI-compatible API will be available at `http://localhost:8000/v1`.
 
@@ -96,24 +115,28 @@ The following lightweight models with commercially permissive licenses are suita
 
 | Model | Parameters | License | VRAM (approx.) | Features |
 | :--- | :--- | :--- | :--- | :--- |
-| [Qwen/Qwen3-4B-Instruct](https://huggingface.co/Qwen/Qwen3-4B-Instruct) | 4B | Apache 2.0 | ~8GB | Lightweight with strong Japanese performance. Best cost-performance ratio |
-| [Qwen/Qwen3-8B-Instruct](https://huggingface.co/Qwen/Qwen3-8B-Instruct) | 8B | Apache 2.0 | ~16GB | High accuracy for Japanese document extraction. Recommended |
-| [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | 7B | Apache 2.0 | ~16GB | Stable Japanese performance with a proven track record |
-| [microsoft/Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct) | 3.8B | MIT | ~8GB | Extremely lightweight. Primarily English but with multilingual support |
-| [Qwen/Qwen3-1.7B-Instruct](https://huggingface.co/Qwen/Qwen3-1.7B-Instruct) | 1.7B | Apache 2.0 | ~4GB | For minimal configurations. Accuracy is limited |
+| [Qwen/Qwen3-4B-AWQ](https://huggingface.co/Qwen/Qwen3-4B-AWQ) | 4B (4-bit quantized) | Apache 2.0 | ~8GB | Low VRAM via AWQ quantization. Best balance of accuracy and efficiency. **Recommended** |
+| [Qwen/Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B) | 4B | Apache 2.0 | ~15GB | Full-precision version. Highest accuracy but higher VRAM consumption |
+| [Qwen/Qwen3-1.7B](https://huggingface.co/Qwen/Qwen3-1.7B) | 1.7B | Apache 2.0 | ~5–7GB | For minimal configurations. Low VRAM consumption but accuracy is limited |
 
 !!! tip "Model Selection Guide"
-    - **Accuracy-focused**: Qwen3-8B-Instruct is recommended. High extraction accuracy for Japanese documents and forms
-    - **Cost/Speed-focused**: Qwen3-4B-Instruct offers the best balance of accuracy and speed
-    - **Minimal setup**: Qwen3-1.7B-Instruct or Phi-4-mini-instruct. For environments with limited GPU VRAM
+    - **Recommended**: Qwen3-4B-AWQ. AWQ quantization delivers high accuracy with low VRAM, making it easy to share the GPU with yomitoku's OCR models
+    - **Accuracy-focused**: Qwen3-4B (full-precision). For environments with ample VRAM
+    - **Minimal setup**: Qwen3-1.7B. For environments with limited GPU VRAM
 
 !!! warning "License Notice"
     All models listed above are licensed for commercial use. However, please review the license terms of each model before use. The Qwen3 series uses Apache 2.0 and Phi-4 uses the MIT license, both with no restrictions on commercial use.
 
-Startup example (Qwen3-8B):
+Startup example (Qwen3-4B-AWQ):
 
 ```bash
-vllm serve Qwen/Qwen3-8B-Instruct --host 0.0.0.0 --port 8000
+vllm serve Qwen/Qwen3-4B-AWQ \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --quantization awq \
+    --dtype float16 \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.5
 ```
 
 ---
@@ -481,10 +504,10 @@ As with rule-based extraction, `input` accepts an image file, PDF file, or direc
 
 ```bash
 # Extract using vLLM server
-yomitoku_extract_with_llm input.jpg -s schema.yaml -m Qwen/Qwen2.5-7B-Instruct
+yomitoku_extract_with_llm input.jpg -s schema.yaml -m Qwen/Qwen3-4B-AWQ
 
 # Batch process all files in a directory
-yomitoku_extract_with_llm ./documents/ -s schema.yaml -m Qwen/Qwen2.5-7B-Instruct
+yomitoku_extract_with_llm ./documents/ -s schema.yaml -m Qwen/Qwen3-4B-AWQ
 
 # Specify API base URL and key
 yomitoku_extract_with_llm input.jpg -s schema.yaml -m gpt-4o \

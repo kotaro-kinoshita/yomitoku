@@ -76,14 +76,33 @@ pip install vllm
 #### 2. vLLMサーバーの起動
 
 ```bash
-vllm serve <model_name> --host 0.0.0.0 --port 8000
+vllm serve <model_name> \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --quantization awq \
+    --dtype float16 \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.5
 ```
 
-例: Qwen2.5を使用する場合
+例: Qwen3-4B-AWQを使用する場合
 
 ```bash
-vllm serve Qwen/Qwen2.5-7B-Instruct --host 0.0.0.0 --port 8000
+vllm serve Qwen/Qwen3-4B-AWQ \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --quantization awq \
+    --dtype float16 \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.5
 ```
+
+| オプション | 説明 |
+| :--- | :--- |
+| `--quantization awq` | AWQ量子化を有効にする |
+| `--dtype float16` | データ型を FP16 に指定する。AWQ量子化モデルは bf16 非対応のため `float16` を明示する |
+| `--max-model-len` | 最大シーケンス長。帳票抽出では `8192` で十分。小さくするとVRAM消費を削減できる |
+| `--gpu-memory-utilization` | vLLMが確保するGPUメモリの上限割合（0.0〜1.0）。`0.5` でVRAMの50%までに制限する。収まらない場合は起動エラーになる。yomitokuのOCRモデルと同一GPUで動かす場合は低めに設定する |
 
 サーバーが起動したら `http://localhost:8000/v1` でOpenAI互換APIが利用可能になります。
 
@@ -96,24 +115,28 @@ vllm serve Qwen/Qwen2.5-7B-Instruct --host 0.0.0.0 --port 8000
 
 | モデル | パラメータ数 | ライセンス | VRAM目安 | 特徴 |
 | :--- | :--- | :--- | :--- | :--- |
-| [Qwen/Qwen3-4B-Instruct](https://huggingface.co/Qwen/Qwen3-4B-Instruct) | 4B | Apache 2.0 | 約8GB | 軽量ながら日本語性能が高い。コストパフォーマンスに優れる |
-| [Qwen/Qwen3-8B-Instruct](https://huggingface.co/Qwen/Qwen3-8B-Instruct) | 8B | Apache 2.0 | 約16GB | 日本語の帳票抽出に高い精度。推奨 |
-| [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | 7B | Apache 2.0 | 約16GB | 安定した日本語性能。実績が豊富 |
-| [microsoft/Phi-4-mini-instruct](https://huggingface.co/microsoft/Phi-4-mini-instruct) | 3.8B | MIT | 約8GB | 極めて軽量。英語中心だが多言語対応 |
-| [Qwen/Qwen3-1.7B-Instruct](https://huggingface.co/Qwen/Qwen3-1.7B-Instruct) | 1.7B | Apache 2.0 | 約4GB | 最小構成向け。精度は限定的 |
+| [Qwen/Qwen3-4B-AWQ](https://huggingface.co/Qwen/Qwen3-4B-AWQ) | 4B (4bit量子化) | Apache 2.0 | 約8GB | AWQ量子化により省VRAM。精度と速度のバランスに優れる。**推奨** |
+| [Qwen/Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B) | 4B | Apache 2.0 | 約15GB | 非量子化版。精度は最も高いがVRAM消費が大きい |
+| [Qwen/Qwen3-1.7B](https://huggingface.co/Qwen/Qwen3-1.7B) | 1.7B | Apache 2.0 | 約5〜7GB | 最小構成向け。VRAM消費は小さいが精度は限定的 |
 
 !!! tip "モデル選定の指針"
-    - **精度重視**: Qwen3-8B-Instruct を推奨。日本語の帳票・書類からの抽出精度が高い
-    - **コスト・速度重視**: Qwen3-4B-Instruct が精度と速度のバランスに優れる
-    - **最小構成**: Qwen3-1.7B-Instruct または Phi-4-mini-instruct。GPU VRAMが限られる環境向け
+    - **推奨**: Qwen3-4B-AWQ。AWQ量子化により少ないVRAMで高い精度を実現。yomitokuのOCRモデルとGPUを共有しやすい
+    - **精度重視**: Qwen3-4B（非量子化）。VRAMに余裕がある環境向け
+    - **最小構成**: Qwen3-1.7B。GPU VRAMが限られる環境向け
 
 !!! warning "ライセンスに関する注意"
     上記モデルはいずれも商用利用が許可されたライセンスです。ただし、利用前に各モデルのライセンス条項を必ず確認してください。特に Qwen3 シリーズは Apache 2.0、Phi-4 は MIT ライセンスで、いずれも商用利用に制限はありません。
 
-起動例（Qwen3-8B）:
+起動例（Qwen3-4B-AWQ）:
 
 ```bash
-vllm serve Qwen/Qwen3-8B-Instruct --host 0.0.0.0 --port 8000
+vllm serve Qwen/Qwen3-4B-AWQ \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --quantization awq \
+    --dtype float16 \
+    --max-model-len 8192 \
+    --gpu-memory-utilization 0.5
 ```
 
 ---
@@ -481,10 +504,10 @@ yomitoku_extract_with_llm <input> -s <schema.yaml> -m <model_name> [options]
 
 ```bash
 # vLLMサーバーを使用した抽出
-yomitoku_extract_with_llm input.jpg -s schema.yaml -m Qwen/Qwen2.5-7B-Instruct
+yomitoku_extract_with_llm input.jpg -s schema.yaml -m Qwen/Qwen3-4B-AWQ
 
 # ディレクトリ内の全ファイルを一括処理
-yomitoku_extract_with_llm ./documents/ -s schema.yaml -m Qwen/Qwen2.5-7B-Instruct
+yomitoku_extract_with_llm ./documents/ -s schema.yaml -m Qwen/Qwen3-4B-AWQ
 
 # APIベースURLとキーを指定
 yomitoku_extract_with_llm input.jpg -s schema.yaml -m gpt-4o \
