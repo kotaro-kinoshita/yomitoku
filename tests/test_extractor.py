@@ -1321,7 +1321,6 @@ class TestBuildMessages:
         user = messages[1]["content"]
         assert "## Paragraphs" in user
         assert "## Tables" in user
-        assert "## Words" in user
         assert "## Extraction Schema" in user
         assert "## Response Format" in user
 
@@ -1339,7 +1338,6 @@ class TestBuildMessages:
         user = messages[1]["content"]
         assert "test_value" in user
         assert "paragraph text" in user
-        assert "word_text" in user
         assert "test_field" in user
 
     def test_response_format_uses_actual_field_names(self):
