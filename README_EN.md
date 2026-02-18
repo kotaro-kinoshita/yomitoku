@@ -98,6 +98,61 @@ yomitoku --help
 - YomiToku is optimized for document OCR and is not designed for scene OCR (e.g., text printed on non-paper surfaces like signs).
 - The resolution of input images is critical for improving the accuracy of AI-OCR recognition. Low-resolution images may lead to reduced recognition accuracy. It is recommended to use images with a minimum short side resolution of 720px for inference.
 
+## 📋 Extractor (Structured Data Extraction)
+
+YomiToku Extractor extracts structured data from document images and PDFs based on a YAML schema. It automatically extracts field values from OCR and layout analysis results and outputs them as JSON.
+
+### Extraction Modes
+
+| Command | Mode | Features |
+| :--- | :--- | :--- |
+| `yomitoku_extract` | Rule-based | No LLM required. Fast extraction via KV search, grid matching, and regex |
+| `yomitoku_extract_with_llm` | LLM-based | More flexible extraction using an LLM server such as vLLM |
+
+- **Rule-based**: Best for fixed-format documents (application forms, reports, slips). When the position or text pattern of extraction targets is known, it extracts quickly and accurately.
+- **LLM-based**: Best for variable-format documents (business cards, receipts, invoices). Even when layouts or value patterns vary, it can extract flexibly by understanding context.
+
+### Installation
+
+```bash
+pip install yomitoku[extract]
+```
+
+### Schema Definition Example
+
+```yaml
+fields:
+  - name: phone_number
+    description: Phone Number
+    type: string
+    normalize: phone_jp
+
+  - name: invoice_number
+    regex: 'T\d{13}'
+    type: string
+
+  - name: order_items
+    structure: table
+    columns:
+      - name: product
+        description: Product Name
+      - name: price
+        description: Amount
+        normalize: numeric
+```
+
+### Usage Examples
+
+```bash
+# Rule-based extraction
+yomitoku_extract input.jpg -s schema.yaml -o results -v
+
+# LLM-based extraction (using vLLM server)
+yomitoku_extract_with_llm input.jpg -s schema.yaml -m Qwen/Qwen3-8B-Instruct
+```
+
+For details, see the [Extractor documentation](https://kotaro-kinoshita.github.io/yomitoku/extractor/).
+
 ## 📝 Documents
 
 For more details, please refer to the [documentation](https://kotaro-kinoshita.github.io/yomitoku-dev/)

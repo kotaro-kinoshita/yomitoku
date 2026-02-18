@@ -1,11 +1,16 @@
 from typing import List, Union
+
 from pydantic import conlist, Field
 
-from .base import BaseSchema
-from .export import export_csv, export_html, export_markdown, export_json
+from ..base import BaseSchema
+from ..export import export_csv, export_html, export_markdown, export_json
 
 
 class Element(BaseSchema):
+    id: Union[str, None] = Field(
+        ...,
+        description="Unique identifier of the element",
+    )
     box: conlist(int, min_length=4, max_length=4) = Field(
         ...,
         description="Bounding box of the layout element in the format [x1, y1, x2, y2]",
@@ -17,6 +22,10 @@ class Element(BaseSchema):
     role: Union[str, None] = Field(
         ...,
         description="Role of the element, e.g., ['section_headings', 'page_header', 'page_footer', 'list_item', 'caption', 'inline_formula', 'display_formula', 'index']",
+    )
+    contents: Union[str, None] = Field(
+        ...,
+        description="Text content of the element",
     )
 
 
