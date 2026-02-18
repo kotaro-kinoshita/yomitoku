@@ -1,0 +1,2466 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../module/">
+      
+      
+        <link rel="next" href="../schemas/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="ja">
+        
+          <link rel="alternate" href="../en/table_semantic_parser/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Table Semantic Parser - YomiToku</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/schema_cards_colors.css">
+    
+      <link rel="stylesheet" href="../assets/schema_cards.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#table-semantic-parser" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href=".." title="YomiToku" class="md-header__button md-logo" aria-label="YomiToku" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            YomiToku
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Table Semantic Parser
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../en/table_semantic_parser/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kotaro-kinoshita/yomitoku-dev" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="タブ" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../cli/" class="md-tabs__link">
+          
+  
+  
+  CLI Usage
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../module/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Module Usage
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Table Semantic Parser
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../schemas/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Module Output
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../configuration/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Model Config
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../release_note/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Release Note
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../mcp/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  MCP
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../commercial_use_guideline/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Commercial Use
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="YomiToku" class="md-nav__button md-logo" aria-label="YomiToku" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    YomiToku
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kotaro-kinoshita/yomitoku-dev" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    CLI Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Document Analyzer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extractor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extractor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema_generation_prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema Generation Prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Table Semantic Parser
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Table Semantic Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        サンプルデータ
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        サンプルコード
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-semantic-parser_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table Semantic Parser の解析結果の出力
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        解析結果の可視化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2kv_items-grids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ２つの構造化情報の概念：kv_items と grids
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="２つの構造化情報の概念：kv_items と grids">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kv_itemskey-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kv_items（Key-Value）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        grids（格子データ）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cells
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Python API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultsfind_table_by_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.find_table_by_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resultsfind_table_by_position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.find_table_by_position
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        位置情報やセルを起点に情報を取得する（ID / 位置 / 近傍）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="位置情報やセルを起点に情報を取得する（ID / 位置 / 近傍）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 書類全体を探索
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A. 書類全体を探索">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultssearch_words_by_position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.search_words_by_position
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. テーブルを指定して探索（tableオブジェクト）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B. テーブルを指定して探索（tableオブジェクト）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tablefind_cell_by_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.find_cell_by_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablesearch_cells_by_query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.search_cells_by_query
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablesearch_cells_right_of_key_text-below_key_text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.search_cells_right_of_key_text / below_key_text
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kv_items-grids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        意味構造を起点に情報を抽出する（kv_items / grids）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="意味構造を起点に情報を抽出する（kv_items / grids）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 全体を探索（テーブル非指定）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A. 全体を探索（テーブル非指定）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultssearch_kv_items_by_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.search_kv_items_by_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-table_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. テーブルを指定して探索（tableオブジェクト）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B. テーブルを指定して探索（tableオブジェクト）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tablesearch_kv_items_by_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.search_kv_items_by_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tableviewkv_items_to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.view.kv_items_to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tableviewgrids_to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.view.grids_to_dict()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#json-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        構造化データをエクスポートする（JSON / CSV）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="構造化データをエクスポートする（JSON / CSV）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 書類全体の情報を出力する
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A. 書類全体の情報を出力する">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultsto_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.to_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablesemanticparserschemaload_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TableSemanticParserSchema.load_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resultsto_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. テーブル単位で情報を出力する
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B. テーブル単位で情報を出力する">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tablekv_items_to_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.kv_items_to_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablegrids_to_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.grids_to_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablegrids_to_csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.grids_to_csv
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../release_note/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Note
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commercial_use_guideline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commercial Use
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        サンプルデータ
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        サンプルコード
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-semantic-parser_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table Semantic Parser の解析結果の出力
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        解析結果の可視化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2kv_items-grids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ２つの構造化情報の概念：kv_items と grids
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="２つの構造化情報の概念：kv_items と grids">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kv_itemskey-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kv_items（Key-Value）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        grids（格子データ）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cells
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#python-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Python API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultsfind_table_by_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.find_table_by_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resultsfind_table_by_position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.find_table_by_position
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        位置情報やセルを起点に情報を取得する（ID / 位置 / 近傍）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="位置情報やセルを起点に情報を取得する（ID / 位置 / 近傍）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 書類全体を探索
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A. 書類全体を探索">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultssearch_words_by_position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.search_words_by_position
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. テーブルを指定して探索（tableオブジェクト）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B. テーブルを指定して探索（tableオブジェクト）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tablefind_cell_by_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.find_cell_by_id
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablesearch_cells_by_query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.search_cells_by_query
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablesearch_cells_right_of_key_text-below_key_text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.search_cells_right_of_key_text / below_key_text
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kv_items-grids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        意味構造を起点に情報を抽出する（kv_items / grids）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="意味構造を起点に情報を抽出する（kv_items / grids）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 全体を探索（テーブル非指定）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A. 全体を探索（テーブル非指定）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultssearch_kv_items_by_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.search_kv_items_by_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-table_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. テーブルを指定して探索（tableオブジェクト）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B. テーブルを指定して探索（tableオブジェクト）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tablesearch_kv_items_by_key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.search_kv_items_by_key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tableviewkv_items_to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.view.kv_items_to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tableviewgrids_to_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.view.grids_to_dict()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#json-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        構造化データをエクスポートする（JSON / CSV）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="構造化データをエクスポートする（JSON / CSV）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A. 書類全体の情報を出力する
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A. 書類全体の情報を出力する">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resultsto_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.to_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablesemanticparserschemaload_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TableSemanticParserSchema.load_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resultsto_dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        results.to_dict
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B. テーブル単位で情報を出力する
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B. テーブル単位で情報を出力する">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tablekv_items_to_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.kv_items_to_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablegrids_to_json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.grids_to_json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tablegrids_to_csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        table.grids_to_csv
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="table-semantic-parser">Table Semantic Parser の利用<a class="headerlink" href="#table-semantic-parser" title="Permanent link">&para;</a></h1>
+<p><code>TableSemanticParser</code> は、帳票やドキュメント画像から <strong>「表（table）」を検出して構造化</strong>し、さらに <strong>セルの意味（header / cell など）</strong> や <strong>Key-Value（項目名→値）</strong> といった形で意味構造を自動で推定、解析するモジュールです。</p>
+<p><strong>機能概要</strong></p>
+<ul>
+<li>表領域の検出</li>
+<li>セル分割（セル境界の推定）</li>
+<li>OCR（セル内テキストの読み取り）</li>
+<li>セル役割推定（ヘッダー／値）</li>
+<li>Key-Value 推定（KeyとValueの一対一の関連で表されるデータ）</li>
+<li>Grid構造 推定（行列で表される格子状のデータ）</li>
+<li>表IDごとの検索・エクスポート（t0, t1 ...）</li>
+</ul>
+<p>これらの処理を一気通貫で行います。</p>
+<p>以下で実際に機能について、ソースコードと例を提示しながら説明します。</p>
+<p><strong>区切り罫線が存在する帳票のみ</strong>をサポートしており、区切り罫線が存在しない表はサポートしていない点についてご了承ください。</p>
+<hr />
+<h2 id="_1">サンプルデータ<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p><img alt="サンプルデータ" src="../assets/table.jpg" /></p>
+<h2 id="_2">サンプルコード<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">demo/simple_table_semantic_analysis.py</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pprint</span><span class="w"> </span><span class="kn">import</span> <span class="n">pprint</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">yomitoku.table_semantic_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">TableSemanticParser</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">yomitoku.data.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_image</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">path_img</span> <span class="o">=</span> <span class="s2">&quot;demo/samples/table.jpg&quot;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TableSemanticParser</span><span class="p">(</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">visualize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">imgs</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">path_img</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">results</span><span class="p">,</span> <span class="n">vis_layout</span><span class="p">,</span> <span class="n">vis_ocr</span> <span class="o">=</span> <span class="n">analyzer</span><span class="p">(</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">imgs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="p">)</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1"># 解析結果をJSONで保存</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">results</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="s2">&quot;result.json&quot;</span><span class="p">)</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1"># OCRの読み取り結果を可視化</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s2">&quot;vis_ocr.jpg&quot;</span><span class="p">,</span> <span class="n">vis_ocr</span><span class="p">)</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># セル検出結果を可視化</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="n">cv2</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s2">&quot;vis_cell.jpg&quot;</span><span class="p">,</span> <span class="n">vis_layout</span><span class="p">)</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="c1"># 利用情報を表示</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="c1"># t0というIDのテーブルを取得</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="n">table_id</span><span class="o">=</span><span class="s2">&quot;t0&quot;</span><span class="p">)</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="c1"># テーブルのすべてのスキーマを表示</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">kv_items_to_dict</span><span class="p">())</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="sd">&gt;&gt;{&#39;利用目的&#39;: &#39;セミナー&#39;, &#39;実施内容&#39;: &#39;YomiTokuの利用方法に関する説明会&#39;, &#39;施設名称&#39;: &#39;MLism株式会社&#39;}</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">grids_to_dict</span><span class="p">())</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="sd">&gt;&gt;[{&#39;id&#39;: &#39;g0&#39;,</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="sd">&gt;&gt;  &#39;rows&#39;: [{&#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;日付&#39;: &#39;2025年01月30日(月曜日)&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;},</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;日付&#39;: &#39;2025年02月1日(火曜日)&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;},</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;}]</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="sd">&gt;&gt;}]</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>
+</span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a><span class="c1"># 解析結果から団体名を検索して表示</span>
+</span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="n">table_id</span><span class="o">=</span><span class="s2">&quot;t1&quot;</span><span class="p">)</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;団体名&quot;</span><span class="p">))</span>
+</span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a><span class="sd">&gt;&gt; [{&#39;key&#39;: [CellSchema(meta={}, contents=&#39;団 体 名&#39;, role=&#39;header&#39;, id=&#39;c1&#39;, box=[149, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],</span>
+</span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="sd">&gt;&gt;  &#39;value&#39;: CellSchema(meta={}, contents=&#39;エムリズムカブシキガイシャ&#39;, role=&#39;cell&#39;, id=&#39;c2&#39;, box=[365, 1393, 1498, 1444], row=None, col=None, row_span=None, col_span=None)},</span>
+</span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="sd">&gt;&gt; {&#39;key&#39;: [CellSchema(meta={}, contents=&#39;団 体 名&#39;, role=&#39;header&#39;, id=&#39;c1&#39;, box=[149, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],</span>
+</span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="sd">&gt;&gt;  &#39;value&#39;: CellSchema(meta={}, contents=&#39;MLism 株式会社&#39;, role=&#39;cell&#39;, id=&#39;c3&#39;, box=[365, 1444, 1498, 1539], row=None, col=None, row_span=None, col_span=None)}]</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>
+</span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>
+</span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a><span class="c1"># 解析結果から住所を検索して表示</span>
+</span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;住所&quot;</span><span class="p">))</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a><span class="sd">[{&#39;key&#39;: [CellSchema(meta={}, contents=&#39;住 所&#39;, role=&#39;header&#39;, id=&#39;c7&#39;, box=[149, 1686, 364, 1788], row=None, col=None, row_span=None, col_span=None)],</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="sd">  &#39;value&#39;: CellSchema(meta={}, contents=&#39;〒277-8520千葉県柏市若柴 178 番地 4 柏の葉キャンパス 148 街区 2 ショップ&amp;オフィス棟 6F&#39;, role=&#39;cell&#39;, id=&#39;c8&#39;, box=[365, 1686, 1498, 1788], row=None, col=None, row_span=None, col_span=None)}]</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a><span class="sd">&quot;&quot;&quot;</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="table-semantic-parser_1">Table Semantic Parser の解析結果の出力<a class="headerlink" href="#table-semantic-parser_1" title="Permanent link">&para;</a></h2>
+<p>詳細は<img alt="スキーマ" src="../schemas/" />を参照してください。</p>
+<ul>
+<li><code>paragraphs</code> : 文章内の段落やタイトルなどの文章の構成要素の情報。文字列やレイアウト内の文字列の情報を持ちます。</li>
+<li><code>tables</code>: 文書内の一つの表の領域全体です。内部に<code>cells</code>や<code>kv_items</code>, <code>grids</code>といった情報を保持します。<ul>
+<li><code>cells</code> : テーブル内の情報は各セル情報を保持し、セルの内部の文字列情報、<code>header</code>か<code>cell</code>かといったセルの役割の情報を保持します。</li>
+<li><code>kv_items</code>, <code>grids</code>: テーブル内の情報を意味的に構造化した情報です。詳細は後段で解説します。</li>
+</ul>
+</li>
+<li><code>words</code>: 文書内の文字列情報を保持します。文字列検出モデルで取得した情報で位置情報や領域内の文字列情報を保持します。</li>
+</ul>
+<h2 id="_3">解析結果の可視化<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p><img alt="解析結果の例" src="../assets/vis_cell.jpg" /></p>
+<h2 id="2kv_items-grids">２つの構造化情報の概念：kv_items と grids<a class="headerlink" href="#2kv_items-grids" title="Permanent link">&para;</a></h2>
+<p>Table Semantic Parser は、表を「セルの集合」として復元するだけでなく、表が持つ <strong>意味構造</strong> を推定して出力します。
+その際に重要になる概念が <strong>kv_items</strong> と <strong>grids</strong> です。</p>
+<h3 id="kv_itemskey-value">kv_items（Key-Value）<a class="headerlink" href="#kv_itemskey-value" title="Permanent link">&para;</a></h3>
+<p><strong>kv_items</strong> は、表の中で <strong>ヘッダー（項目名）</strong> と <strong>値</strong> が <strong>1:1</strong> で対応する情報を指します。</p>
+<p>たとえば、サンプル帳票では次のような要素が <code>kv_items</code> に該当します。（可視化結果で赤枠で囲われている領域です。）</p>
+<ul>
+<li><code>利用目的</code> → <code>セミナー</code></li>
+<li><code>施設名称</code> → <code>MLism株式会社</code></li>
+<li><code>実施内容</code> → <code>YomiTokuの利用方法に関する説明会</code></li>
+</ul>
+<p>このように、項目名と値がペアとして意味的に結びつき、<strong>辞書（Key-Value）として扱うのが自然</strong>なデータを <code>kv_items</code> と定義します。</p>
+<h3 id="grids">grids（格子データ）<a class="headerlink" href="#grids" title="Permanent link">&para;</a></h3>
+<p><strong>grids</strong> は、表の情報が <strong>行・列の格子（グリッド）構造</strong> で表され、データが <strong>行列関係</strong> として解釈できるものを指します。（可視化結果で青枠で囲われている領域です。）</p>
+<p>たとえば、サンプル帳票の「利用希望日」は、次のような列（例：<code>日付</code>, <code>入室時刻</code>, <code>退室時刻</code>）を持つ繰り返し行として表現でき、<code>grid</code> に該当します。</p>
+<ul>
+<li><code>2025年01月30日(月曜日)</code> / <code>10時00分</code> / <code>17時00分</code></li>
+<li><code>2025年02月1日(火曜日)</code> / <code>10時00分</code> / <code>17時00分</code></li>
+<li>……</li>
+</ul>
+<p>このように、<strong>行がレコードが複数存在し、列が属性</strong>として定義できる格子状のデータを <code>grids</code> と定義します。</p>
+<h3 id="cells">Cells<a class="headerlink" href="#cells" title="Permanent link">&para;</a></h3>
+<p>各テーブル内のセルは<code>cells</code>と呼ばれるスキーマに情報が保持されます。これらのにはテーブルごとに固有識別子<code>id</code>(c0など)が付与されます。
+<code>kv_items</code>や<code>grids</code>はセルのidの情報が格納されており、idを参照して、セル情報の詳細情報にアクセスすることができます。また、<code>kv_items</code>や<code>grids</code>などの構造化された情報を用いる以外にも、セルの<code>id</code>を参照したり、セルの位置関係から特定のセル情報を参照するためのAPIが用意されています。</p>
+<h2 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h2>
+<p>Table Semantic Parserで解析した結果はAPIを介して、IDや文字列、Keyを検索することで、情報を取得したり、構造化情報に変換、出力することが可能です。
+それぞれのAPIは書類全体の情報に対して適用する場合と指定したテーブル単位に適用するケースがあります。
+わかりやすさのため、書類全体に適用する関数は<code>results.</code>をテーブル単位で適用する関数は<code>table.</code>を関数の接頭辞をドキュメントに記載しています。</p>
+<p>特定のテーブル情報に絞って、処理を適用する場合は事前に以下の２つの関数のどちらかを用いて、テーブル情報を取得します。</p>
+<p>テーブル情報の指定の方法はIDによる指定と位置による指定のにパターンが用意されています。テーブル情報を取得したあとセルの情報を指定したり、意味情報を利用して特定のセルの情報を抽出可能です。</p>
+<hr />
+<h4 id="resultsfind_table_by_id">results.find_table_by_id<a class="headerlink" href="#resultsfind_table_by_id" title="Permanent link">&para;</a></h4>
+<p>IDによって指定した特定のテーブル情報を取得します。<code>table_id</code>はJSONや可視化画像から特定できます。ソートやIDを付与する順番は位置情報から一意の順序で割り当てているため、同じフォーマットであれば、同じIDが付与される可能性が高いです。過検知や検知ミスによってIDが変わる可能性があります。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>table_id : str</code>: 取得したいテーブルのID</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>TableSemanticContentsSchema</code>: 特定のテーブルに対する構造化情報を保持します。</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="s2">&quot;t0&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h4 id="resultsfind_table_by_position">results.find_table_by_position<a class="headerlink" href="#resultsfind_table_by_position" title="Permanent link">&para;</a></h4>
+<p>位置を指定し、その領域に重複するテーブル情報を取得します。過検知や検知ミスによって、IDで指定が安定しない場合に用いることができます。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>box: List[int]</code>：<code>[x1, y1, x2, y2]</code> 
+矩形領域は左上（x1, y1）と右下（x2, y2）の2点で定義されます。x1, y1 は領域の左上の点の座標（x, y）、x2, y2 は領域の右下の点の座標（x, y）です。</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>TableSemanticContentsSchema</code>: 特定のテーブルに対する構造化情報を保持します。</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_position</span><span class="p">([</span><span class="mi">149</span><span class="p">,</span><span class="mi">498</span><span class="p">,</span><span class="mi">1503</span><span class="p">,</span><span class="mi">1293</span><span class="p">])</span>
+</span></code></pre></div></p>
+<hr />
+<h2 id="id">位置情報やセルを起点に情報を取得する（ID / 位置 / 近傍）<a class="headerlink" href="#id" title="Permanent link">&para;</a></h2>
+<h3 id="a">A. 書類全体を探索<a class="headerlink" href="#a" title="Permanent link">&para;</a></h3>
+<p>テーブルを特定せず、書類全体のテーブルに対して、情報の取得を行います。</p>
+<h4 id="resultssearch_words_by_position">results.search_words_by_position<a class="headerlink" href="#resultssearch_words_by_position" title="Permanent link">&para;</a></h4>
+<p>指定した領域内に含まれる <code>words</code> を取得し、OCR文字列を確認する。取得したい文字列が、特定の位置にあることが事前にわかっている場合にその領域の文字情報を取得したい場合などに便利です。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>box: List[int]</code>：<code>[x1, y1, x2, y2]</code> 
+矩形領域は左上（x1, y1）と右下（x2, y2）の2点で定義されます。x1, y1 は領域の左上の点の座標（x, y）、x2, y2 は領域の右下の点の座標（x, y）です。</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>str</code>：領域に含まれる文字列情報</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">word</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search_words_by_position</span><span class="p">([</span><span class="mi">365</span><span class="p">,</span> <span class="mi">1444</span><span class="p">,</span> <span class="mi">1498</span><span class="p">,</span> <span class="mi">1539</span><span class="p">])</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>MLism 株式会社
+</span></code></pre></div>
+<hr />
+<h3 id="b-table">B. テーブルを指定して探索（tableオブジェクト）<a class="headerlink" href="#b-table" title="Permanent link">&para;</a></h3>
+<h4 id="tablefind_cell_by_id">table.find_cell_by_id<a class="headerlink" href="#tablefind_cell_by_id" title="Permanent link">&para;</a></h4>
+<p>テーブル内のセルの特定の<code>cell_id</code>を持つデータを取得します。ソートやIDを付与する順番は位置情報から一意の順序で割り当てているため、同じフォーマットであれば、同じIDが付与される可能性が高いです。</p>
+<p>過検知や検知ミスによってIDが変わる可能性があります。IDが変わってしまう場合は正しく情報を抽出できないため、セルの相対位置や意味構造を用いた抽出方法をお試しください。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>cell_id: str</code>：テーブルID（例：<code>"c0"</code>）</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>CellSchema</code>: セルのID、文字情報、位置情報、行列番号などのセルの詳細情報を保持します。</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">cell</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">find_cell_by_id</span><span class="p">(</span><span class="s2">&quot;c0&quot;</span><span class="p">)</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">contents</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">box</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong>
+サンプルコードはセルidとセル内の文字列、セルの位置情報を出力しています。
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>c0 利用情報 [149, 498, 1501, 550]
+</span></code></pre></div></p>
+<hr />
+<h4 id="tablesearch_cells_by_query">table.search_cells_by_query<a class="headerlink" href="#tablesearch_cells_by_query" title="Permanent link">&para;</a></h4>
+<p>テーブル内のセルの文字列情報に部分一致するセルを列挙します。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>query: str</code>: 検索したい文字列情報</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>List[CellSchema]</code>: セル情報のリストを返却します。</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">cells</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">search_cells_by_query</span><span class="p">(</span><span class="s2">&quot;2025&quot;</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cells</span><span class="p">:</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">contents</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">box</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong>
+サンプルコードはセルidとセル内の文字列、セルの位置情報を出力しています。</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>c11 2025年 01月 30日(月 曜日) [365, 888, 946, 968]
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>c14 2025年 02月 1日(火 曜日) [365, 968, 946, 1049]
+</span></code></pre></div>
+<p><strong>ユースケース</strong>
+- 指定した文字列が含まれるセル情報を抽出したい場合
+- 指定した文字列が含まれるセルの位置情報を取得したい場合</p>
+<hr />
+<h4 id="tablesearch_cells_right_of_key_text-below_key_text">table.search_cells_right_of_key_text / below_key_text<a class="headerlink" href="#tablesearch_cells_right_of_key_text-below_key_text" title="Permanent link">&para;</a></h4>
+<p>「キー文字列を含むセル」の右（または下）にある近傍セルを取得します。</p>
+<p>日本語の帳票の多くは特定のKeyをもち、Keyから見たときの相対的な位置に取得したい情報を持つケースがあります。
+この性質を利用して、検索したいキー文字列を指定して、右や下にある近傍セルの情報を取得します。キー文字列は部分一致で判定されます。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>key: str</code>（部分一致）</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>List[CellSchema]</code>: セル情報のリストを返却します。</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># 実施内容というセルの右の近傍セルの情報を取得</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">vals</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">search_cells_right_of_key_text</span><span class="p">(</span><span class="s2">&quot;実施内容&quot;</span><span class="p">)</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">contents</span><span class="p">)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># 実施内容というセルの直下にあるセルの情報を取得</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="n">vals</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">search_cells_below_key_text</span><span class="p">(</span><span class="s2">&quot;実施内容&quot;</span><span class="p">)</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">contents</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>c6 YomiToku の利用方法に関する説明会
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>c7 利用希望日
+</span></code></pre></div>
+<hr />
+<h2 id="kv_items-grids">意味構造を起点に情報を抽出する（kv_items / grids）<a class="headerlink" href="#kv_items-grids" title="Permanent link">&para;</a></h2>
+<p>意味構造起点の取得方法は、<strong>キーから値の対応（kv_items）</strong> や <strong>行列構造（grids）</strong> を利用します。書類のフォーマットゆれなど軽微な変更に頑健な特性があります。構造化は自動で推定するため、解析に失敗するケースもあります。うまく取得できない場合はセルIDやセルの相対位置で取得する方法をご利用ください。</p>
+<hr />
+<h3 id="a_1">A. 全体を探索（テーブル非指定）<a class="headerlink" href="#a_1" title="Permanent link">&para;</a></h3>
+<h4 id="resultssearch_kv_items_by_key">results.search_kv_items_by_key<a class="headerlink" href="#resultssearch_kv_items_by_key" title="Permanent link">&para;</a></h4>
+<p>解析結果全体（複数テーブルを含む）から、キーに部分一致する <code>kv_items</code> を探索する。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>key: str</code>：検索キー（部分一致）</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>List[dict]</code>：各要素が <code>{"key": [CellSchema, ...], "value": [CellSchema, ...]}</code></li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">kv_items</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;団体名&quot;</span><span class="p">)</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">for</span> <span class="n">kv</span> <span class="ow">in</span> <span class="n">kv_items</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">keys</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">k</span><span class="o">.</span><span class="n">contents</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kv</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]])</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">val</span> <span class="o">=</span> <span class="n">kv</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">contents</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong>
+ここではKeyとValueに含まれるセルのテキスト情報を取得しています。</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>団 体 名 エムリズムカブシキガイシャ
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>団 体 名 MLism 株式会社
+</span></code></pre></div>
+<blockquote>
+<p>備考
+セルがネスト構造になっている場合に複数のKeyを持つ可能性があるため<code>key</code> のみ複数形のリストになっています。
+検索したときに複数のvalueが存在する場合があるため、リストで返却されます。</p>
+</blockquote>
+<hr />
+<h3 id="b-table_1">B. テーブルを指定して探索（tableオブジェクト）<a class="headerlink" href="#b-table_1" title="Permanent link">&para;</a></h3>
+<h4 id="tablesearch_kv_items_by_key">table.search_kv_items_by_key<a class="headerlink" href="#tablesearch_kv_items_by_key" title="Permanent link">&para;</a></h4>
+<p>テーブル <code>t0</code> 内だけに限定して、キー部分一致のkv_itemsを探索する。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>key: str</code></li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>List[dict]</code>：<code>{"key": [CellSchema], "value": [CellSchema]}</code> 形式</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">hits</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;利用目的&quot;</span><span class="p">)</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">[</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="p">{</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="p">[</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>            <span class="n">CellSchema</span><span class="p">(</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>                <span class="n">meta</span><span class="o">=</span><span class="p">{},</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>                <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;利 用 目 的&#39;</span><span class="p">,</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>                <span class="n">role</span><span class="o">=</span><span class="s1">&#39;header&#39;</span><span class="p">,</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>                <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;c3&#39;</span><span class="p">,</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>                <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">149</span><span class="p">,</span> <span class="mi">645</span><span class="p">,</span> <span class="mi">364</span><span class="p">,</span> <span class="mi">741</span><span class="p">],</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>                <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>                <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>                <span class="n">row_span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>                <span class="n">col_span</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>            <span class="p">)</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="p">],</span> 
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">CellSchema</span><span class="p">(</span>
+</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>            <span class="n">meta</span><span class="o">=</span><span class="p">{},</span> 
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>            <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;セミナー&#39;</span><span class="p">,</span> 
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>            <span class="n">role</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span> 
+</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;c4&#39;</span><span class="p">,</span> 
+</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>            <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">365</span><span class="p">,</span> <span class="mi">645</span><span class="p">,</span> <span class="mi">1498</span><span class="p">,</span> <span class="mi">741</span><span class="p">],</span> 
+</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>            <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>            <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>            <span class="n">row_span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+</span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>            <span class="n">col_span</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>        <span class="p">)</span>
+</span><span id="__span-14-27"><a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a>    <span class="p">}</span>
+</span><span id="__span-14-28"><a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a><span class="p">]</span>
+</span></code></pre></div>
+<hr />
+<h4 id="tableviewkv_items_to_dict">table.view.kv_items_to_dict<a class="headerlink" href="#tableviewkv_items_to_dict" title="Permanent link">&para;</a></h4>
+<p>kv_items のセル参照を展開し、<strong>辞書（key文字列 → value文字列）</strong>として扱える形に変換します。</p>
+<p><strong>戻り値</strong></p>
+<p>dict[str, str]</p>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">kv</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">kv_items_to_dict</span><span class="p">()</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">kv</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;利用目的&quot;</span><span class="p">))</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>{
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>  &quot;施設名称&quot;: &quot;MLism株式会社&quot;,
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>  &quot;利用目的&quot;: &quot;セミナー&quot;,
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>  &quot;実施内容&quot;: &quot;YomiTokuの利用方法に関する説明会&quot;
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>}
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>セミナー
+</span></code></pre></div></p>
+<hr />
+<h4 id="tableviewgrids_to_dict">table.view.grids_to_dict()<a class="headerlink" href="#tableviewgrids_to_dict" title="Permanent link">&para;</a></h4>
+<p><code>grid</code>の構造化情報をレコード列(辞書)に変換する</p>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>list[dict]</code>：<code>[{ "id": grid_id, "rows": [ {...}, ...]}]</code></li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">grids</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">grids_to_dict</span><span class="p">()</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">grids</span><span class="p">:</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;grid:&quot;</span><span class="p">,</span> <span class="n">g</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">g</span><span class="p">[</span><span class="s2">&quot;rows&quot;</span><span class="p">]:</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>        <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong>
+gridの情報が辞書形式のレコードのリストとして取得されます。また、テーブル内に複数のgridが含まれる場合もあるため、それぞれ識別するためのidが付与されています。</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>grid: g0
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>{&#39;日付&#39;: &#39;2025年01月30日(月曜日)&#39;, &#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;}
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>{&#39;日付&#39;: &#39;2025年02月1日(火曜日)&#39;, &#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;}
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>{&#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;入室時刻&#39;: &#39;時分&#39;, &#39;退室時刻&#39;: &#39;時分&#39;}
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>{&#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;入室時刻&#39;: &#39;時分&#39;, &#39;退室時刻&#39;: &#39;時分&#39;}
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>{&#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;入室時刻&#39;: &#39;時分&#39;, &#39;退室時刻&#39;: &#39;時分&#39;}
+</span></code></pre></div>
+<hr />
+<h2 id="json-csv">構造化データをエクスポートする（JSON / CSV）<a class="headerlink" href="#json-csv" title="Permanent link">&para;</a></h2>
+<p>エクスポートは、意味解析の結果をJSONやCSV形式でエクスポートし、システム間の連携を行うことが可能です。
+書類全体の情報を出力する、特定のテーブル指定してエクスポートすることが可能です。</p>
+<h3 id="a_2">A. 書類全体の情報を出力する<a class="headerlink" href="#a_2" title="Permanent link">&para;</a></h3>
+<h4 id="resultsto_json">results.to_json<a class="headerlink" href="#resultsto_json" title="Permanent link">&para;</a></h4>
+<p>書類全体の解析結果をJSONで保存します。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>out_path: str</code>: 出力先のJSONファイルのパス</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">analyzer</span> <span class="o">=</span> <span class="n">TableSemanticParser</span><span class="p">(</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">visualize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="p">)</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="n">imgs</span> <span class="o">=</span> <span class="n">load_pdf</span><span class="p">(</span><span class="n">path_img</span><span class="p">)</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="n">results</span><span class="p">,</span> <span class="n">vis_layout</span><span class="p">,</span> <span class="n">vis_ocr</span> <span class="o">=</span> <span class="n">analyzer</span><span class="p">(</span><span class="n">imgs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="c1"># 書類の解析結果をJSONで保存する</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="n">results</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="s2">&quot;out/result.json&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h4 id="tablesemanticparserschemaload_json">TableSemanticParserSchema.load_json<a class="headerlink" href="#tablesemanticparserschemaload_json" title="Permanent link">&para;</a></h4>
+<p>load_json は 「解析結果を保存したJSONを読み込み、TableSemanticParserSchema（= results）として復元する」ためのユーティリティです。AIによる再処理を行わずに後段の抽出処理の再実行が可能です。処理枚数のカウントはAIを呼び出した場合のみ実施されます。そのため、<code>load_json</code>で読み込んだ結果に対して、抽出処理を実行しても処理枚数のカウントは行われません。</p>
+<p>開発、検証段階、処理時間を削減したい場合などは<code>to_json</code>で一度、保存し、再度、<code>load_json</code>で呼び出すことをおすすめします。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>json_path: str</code>: 出力先のJSONファイルのパス</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">yomitoku.schemas.table_semantic_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">TableSemanticParserSchema</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">json_path</span> <span class="o">=</span> <span class="s2">&quot;out/result.json&quot;</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">results</span> <span class="o">=</span> <span class="n">TableSemanticParserSchema</span><span class="o">.</span><span class="n">load_json</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>
+</span></code></pre></div></p>
+<hr />
+<h4 id="resultsto_dict">results.to_dict<a class="headerlink" href="#resultsto_dict" title="Permanent link">&para;</a></h4>
+<p><code>to_dict</code> は、書類全体に含まれる すべてのテーブルについて、
+- kv_items（Key-Value 構造）
+- grids（行列構造）
+をテーブルID単位でまとめ、Python の dict(構造化情報) として返却するユーティリティメソッドです。
+セルの位置情報などの情報を削減し、テキスト情報で構成される構造化データに変換します。</p>
+<p>解析結果を そのままアプリケーションロジックやAPIレスポンスで扱いたい場合、書類全体の構造化情報を生成AIの入力として与えたい場合などに適しています。</p>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pprint</span><span class="w"> </span><span class="kn">import</span> <span class="n">pprint</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">parsed</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="n">pprint</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>{
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    &#39;t0&#39;: {
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>        &#39;grids&#39;: [
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>            {
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>                &#39;id&#39;: &#39;g0&#39;,
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>                &#39;rows&#39;: [
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>                    {&#39;入室時刻&#39;: &#39;10時00分&#39;,&#39;日付&#39;: &#39;2025年01月30日(月曜日)&#39;,&#39;退室時刻&#39;: &#39;17時00分&#39;},
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>                    {&#39;入室時刻&#39;: &#39;10時00分&#39;,&#39;日付&#39;: &#39;2025年02月1日(火曜日)&#39;,&#39;退室時刻&#39;: &#39;17時00分&#39;},
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>                    {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>                    {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>                    {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;}]
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>            }
+</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>        ],
+</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>        &#39;kv_items&#39;: {
+</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>            &#39;利用目的&#39;: &#39;セミナー&#39;,
+</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>            &#39;実施内容&#39;: &#39;YomiTokuの利用方法に関する説明会&#39;,
+</span><span id="__span-22-17"><a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>            &#39;施設名称&#39;: &#39;MLism株式会社&#39;
+</span><span id="__span-22-18"><a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a>        }
+</span><span id="__span-22-19"><a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>    },
+</span><span id="__span-22-20"><a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a>    &#39;t1&#39;: {
+</span><span id="__span-22-21"><a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a>        &#39;grids&#39;: [],
+</span><span id="__span-22-22"><a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a>        &#39;kv_items&#39;: {
+</span><span id="__span-22-23"><a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a>            &#39;代表者_0&#39;: &#39;キノシタコウタロウ&#39;,
+</span><span id="__span-22-24"><a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a>            &#39;代表者_1&#39;: &#39;木之下滉大郎&#39;,
+</span><span id="__span-22-25"><a id="__codelineno-22-25" name="__codelineno-22-25" href="#__codelineno-22-25"></a>            &#39;住所&#39;: &#39;〒277-8520千葉県柏市若柴178番地4柏の葉キャンパス148街区2ショップ&amp;オフィス棟6F&#39;,
+</span><span id="__span-22-26"><a id="__codelineno-22-26" name="__codelineno-22-26" href="#__codelineno-22-26"></a>            &#39;団体名_0&#39;: &#39;エムリズムカブシキガイシャ&#39;,
+</span><span id="__span-22-27"><a id="__codelineno-22-27" name="__codelineno-22-27" href="#__codelineno-22-27"></a>            &#39;団体名_1&#39;: &#39;MLism株式会社&#39;,
+</span><span id="__span-22-28"><a id="__codelineno-22-28" name="__codelineno-22-28" href="#__codelineno-22-28"></a>            &#39;電話番号&#39;: &#39;090-1234-5678&#39;
+</span><span id="__span-22-29"><a id="__codelineno-22-29" name="__codelineno-22-29" href="#__codelineno-22-29"></a>        }
+</span><span id="__span-22-30"><a id="__codelineno-22-30" name="__codelineno-22-30" href="#__codelineno-22-30"></a>    }
+</span><span id="__span-22-31"><a id="__codelineno-22-31" name="__codelineno-22-31" href="#__codelineno-22-31"></a>}
+</span></code></pre></div></p>
+<hr />
+<h3 id="b">B. テーブル単位で情報を出力する<a class="headerlink" href="#b" title="Permanent link">&para;</a></h3>
+<h4 id="tablekv_items_to_json">table.kv_items_to_json<a class="headerlink" href="#tablekv_items_to_json" title="Permanent link">&para;</a></h4>
+<p>テーブル内に含まれる<code>kv_items</code>を一つのJSONにまとめエクスポートします。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>out_path: str</code></li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>dict</code>（ファイル出力に加え、メモリ上の辞書も返る実装）</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="s2">&quot;t0&quot;</span><span class="p">)</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="n">kv</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">kv_items_to_json</span><span class="p">(</span><span class="s2">&quot;out/kv_items.json&quot;</span><span class="p">)</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>{
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>    &quot;施設名称&quot;: &quot;MLism株式会社&quot;,
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    &quot;利用目的&quot;: &quot;セミナー&quot;,
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    &quot;実施内容&quot;: &quot;YomiTokuの利用方法に関する説明会&quot;
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>}
+</span></code></pre></div>
+<hr />
+<h4 id="tablegrids_to_json">table.grids_to_json<a class="headerlink" href="#tablegrids_to_json" title="Permanent link">&para;</a></h4>
+<p>テーブル内に含まれる<code>grids</code>を一つのjsonにまとめエクスポートします。複数の<code>grid</code>が含まれる場合があるため、リスト形式で出力されます。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>out_path: str</code></li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>list[dict]</code>: gridをレコード列に変換した辞書データ</li>
+</ul>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="s2">&quot;t0&quot;</span><span class="p">)</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="n">grids</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">grids_to_json</span><span class="p">(</span><span class="s2">&quot;out/grids.json&quot;</span><span class="p">)</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">grids</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>[
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>    {
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>        &quot;id&quot;: &quot;g0&quot;,
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>        &quot;rows&quot;: [
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>            {
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>                &quot;日付&quot;: &quot;2025年01月30日(月曜日)&quot;,
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>                &quot;入室時刻&quot;: &quot;10時00分&quot;,
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>                &quot;退室時刻&quot;: &quot;17時00分&quot;
+</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>            },
+</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>            {
+</span><span id="__span-26-11"><a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>                &quot;日付&quot;: &quot;2025年02月1日(火曜日)&quot;,
+</span><span id="__span-26-12"><a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>                &quot;入室時刻&quot;: &quot;10時00分&quot;,
+</span><span id="__span-26-13"><a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>                &quot;退室時刻&quot;: &quot;17時00分&quot;
+</span><span id="__span-26-14"><a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>            },
+</span><span id="__span-26-15"><a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a>            {
+</span><span id="__span-26-16"><a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a>                &quot;日付&quot;: &quot;年月日(曜日)&quot;,
+</span><span id="__span-26-17"><a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a>                &quot;入室時刻&quot;: &quot;時分&quot;,
+</span><span id="__span-26-18"><a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a>                &quot;退室時刻&quot;: &quot;時分&quot;
+</span><span id="__span-26-19"><a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a>            },
+</span><span id="__span-26-20"><a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a>            {
+</span><span id="__span-26-21"><a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a>                &quot;日付&quot;: &quot;年月日(曜日)&quot;,
+</span><span id="__span-26-22"><a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a>                &quot;入室時刻&quot;: &quot;時分&quot;,
+</span><span id="__span-26-23"><a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a>                &quot;退室時刻&quot;: &quot;時分&quot;
+</span><span id="__span-26-24"><a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a>            },
+</span><span id="__span-26-25"><a id="__codelineno-26-25" name="__codelineno-26-25" href="#__codelineno-26-25"></a>            {
+</span><span id="__span-26-26"><a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a>                &quot;日付&quot;: &quot;年月日(曜日)&quot;,
+</span><span id="__span-26-27"><a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a>                &quot;入室時刻&quot;: &quot;時分&quot;,
+</span><span id="__span-26-28"><a id="__codelineno-26-28" name="__codelineno-26-28" href="#__codelineno-26-28"></a>                &quot;退室時刻&quot;: &quot;時分&quot;
+</span><span id="__span-26-29"><a id="__codelineno-26-29" name="__codelineno-26-29" href="#__codelineno-26-29"></a>            }
+</span><span id="__span-26-30"><a id="__codelineno-26-30" name="__codelineno-26-30" href="#__codelineno-26-30"></a>        ]
+</span><span id="__span-26-31"><a id="__codelineno-26-31" name="__codelineno-26-31" href="#__codelineno-26-31"></a>    }
+</span><span id="__span-26-32"><a id="__codelineno-26-32" name="__codelineno-26-32" href="#__codelineno-26-32"></a>]
+</span></code></pre></div>
+<hr />
+<h4 id="tablegrids_to_csv">table.grids_to_csv<a class="headerlink" href="#tablegrids_to_csv" title="Permanent link">&para;</a></h4>
+<p>テーブル内に含まれる<code>grids</code>をCSVでエクスポートとします。列名を指定することで特定の情報のみを出力可能です。</p>
+<p><strong>引数</strong></p>
+<ul>
+<li><code>out_path: str</code>: 出力先のCSVファイルのパス</li>
+<li><code>columns: List[str] | None = None</code>: 出力したい列名。列名は部分一致で検索されます。</li>
+<li><code>ignore_space: bool = True</code>: スペースを除去して出力を行うか</li>
+</ul>
+<p><strong>戻り値</strong></p>
+<ul>
+<li><code>List[List[str]]</code>（CSVの2次元配列）</li>
+</ul>
+<p>以下の例では列名を指定したパターンです。列名を指定しなかった場合はgrid内のすべての情報が出力されます。</p>
+<p><strong>サンプルコード</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="s2">&quot;t0&quot;</span><span class="p">)</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="n">csvs</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">grids_to_csv</span><span class="p">(</span><span class="s2">&quot;out/grid.csv&quot;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;入室&quot;</span><span class="p">,</span> <span class="s2">&quot;退室&quot;</span><span class="p">])</span>
+</span></code></pre></div></p>
+<p><strong>出力</strong></p>
+<p>入室と退室のみを列に指定して出力</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>入室時刻,退室時刻
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>10時00分,17時00分
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>10時00分,17時00分
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>時分,時分
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>時分,時分
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>時分,時分
+</span></code></pre></div>
+<p><strong>生成されるファイル名</strong></p>
+<ul>
+<li><code>out/grid_0.csv</code> のように grid_id が付与されます。テーブル内に複数のgridsが含まれる場合は<code>out/grid_1.csv</code>のように接尾字が変化します。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
