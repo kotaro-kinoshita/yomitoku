@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.11.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.11.0) (2026-02-18)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.10.3...v0.11.0)
+
+**Implemented enhancements:**
+
+- YmiToku Extractor\(ベータ版の実装\) [\#191](https://github.com/kotaro-kinoshita/yomitoku/pull/191) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+- fix: add MPS device support for Apple Silicon [\#188](https://github.com/kotaro-kinoshita/yomitoku/pull/188) ([serinuntius](https://github.com/serinuntius))
+
 ## [v0.10.3](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.10.3) (2025-12-17)
 
 [Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.10.2...v0.10.3)
