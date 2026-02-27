@@ -158,6 +158,18 @@ yomitoku ${path_data} --disable-rec-orientation-fallback
 
 ```bash
 yomitoku ${path_data} --rec-orientation-fallback-thresh 0.6
+## ふりがな（ルビ）の除外
+
+文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。`--ignore_ruby` オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。
+
+```bash
+yomitoku ${path_data} --ignore_ruby
+```
+
+`--ruby_threshold` オプションで、ルビ判定の閾値を調整できます（デフォルト: 0.5）。値を大きくするとルビと判定される範囲が広がります。
+
+```bash
+yomitoku ${path_data} --ignore_ruby --ruby_threshold 0.6
 ```
 
 ## 読み取り対象ページを指定する
