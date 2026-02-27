@@ -120,9 +120,11 @@ def process_single_file(args, analyzer, path, format):
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
 
-        # cv2.imwrite(
-        #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"), img
-        # )
+        import cv2
+
+        cv2.imwrite(
+            os.path.join(args.outdir, f"{dirname}_{filename}_p{page + 1}.jpg"), img
+        )
 
         if ocr is not None:
             out_path = os.path.join(
@@ -420,6 +422,17 @@ def main():
         default=None,
         help="pages to process, e.g., 1,2,5-10 (default: all pages, starting from 1)",
     )
+    parser.add_argument(
+        "--rec-orientation-fallback",
+        action="store_true",
+        help="if set, retry recognition with 180-degree rotated image when confidence is low",
+    )
+    parser.add_argument(
+        "--rec-orientation-fallback-thresh",
+        type=float,
+        default=0.75,
+        help="confidence threshold for orientation fallback (default: 0.75)",
+    )
     args = parser.parse_args()
 
     path = Path(args.arg1)
@@ -473,6 +486,12 @@ def main():
         # configs["ocr"]["text_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
+
+    if args.rec_orientation_fallback:
+        configs["ocr"]["text_recognizer"]["rec_orientation_fallback"] = True
+        configs["ocr"]["text_recognizer"]["rec_orientation_fallback_thresh"] = (
+            args.rec_orientation_fallback_thresh
+        )
 
     analyzer = DocumentAnalyzer(
         configs=configs,
