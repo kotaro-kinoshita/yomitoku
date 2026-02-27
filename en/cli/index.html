@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -802,6 +802,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#excluding-ruby-furigana-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Excluding Ruby (Furigana) Text
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#specifying-pages-to-process" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1243,6 +1254,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#excluding-ruby-furigana-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Excluding Ruby (Furigana) Text
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#specifying-pages-to-process" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1421,10 +1443,17 @@
 </tr>
 </tbody>
 </table>
+<h2 id="excluding-ruby-furigana-text">Excluding Ruby (Furigana) Text<a class="headerlink" href="#excluding-ruby-furigana-text" title="Permanent link">&para;</a></h2>
+<p>You can exclude ruby (furigana) text from the output. When the <code>--ignore_ruby</code> option is set, text whose line height is below a certain threshold relative to the median line height within each paragraph or cell, and consists solely of hiragana or katakana characters, is identified as ruby and excluded.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
+</span></code></pre></div>
+<p>You can adjust the ruby detection threshold using the <code>--ruby_threshold</code> option (default: 0.5). Increasing the value widens the range of text identified as ruby.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
+</span></code></pre></div>
 <h2 id="specifying-pages-to-process">Specifying Pages to Process<a class="headerlink" href="#specifying-pages-to-process" title="Permanent link">&para;</a></h2>
 <p>You can choose to process only specific pages.
 Pages can be specified either as a comma-separated list or as a range using a hyphen.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
 </span></code></pre></div>
 
 

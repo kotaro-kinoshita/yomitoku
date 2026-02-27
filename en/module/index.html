@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -1188,6 +1188,18 @@
 <td style="text-align: left;"><code>dict</code></td>
 <td style="text-align: left;">Used to set more detailed parameters for module processing.</td>
 <td style="text-align: left;">Refer to <a href="#model-config">Model Detailed Config</a> for details.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ignore_ruby</code></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">Specifies whether to exclude ruby (furigana) text from the output.</td>
+<td style="text-align: left;">Default is <code>False</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ruby_threshold</code></td>
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">Specifies the threshold for ruby detection as a ratio to the median line height. Text consisting solely of hiragana or katakana below this threshold is identified as ruby.</td>
+<td style="text-align: left;">Default is <code>0.5</code>. Only effective when <code>ignore_ruby=True</code>.</td>
 </tr>
 </tbody>
 </table>

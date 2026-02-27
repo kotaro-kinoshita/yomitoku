@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -805,6 +805,17 @@
   <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
+        ふりがな（ルビ）の除外
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         読み取り対象ページを指定する
       
     </span>
@@ -1246,6 +1257,17 @@
   <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
+        ふりがな（ルビ）の除外
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         読み取り対象ページを指定する
       
     </span>
@@ -1421,9 +1443,16 @@
 </tr>
 </tbody>
 </table>
-<h2 id="_12">読み取り対象ページを指定する<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<h2 id="_12">ふりがな（ルビ）の除外<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。<code>--ignore_ruby</code> オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
+</span></code></pre></div>
+<p><code>--ruby_threshold</code> オプションで、ルビ判定の閾値を調整できます（デフォルト: 0.5）。値を大きくするとルビと判定される範囲が広がります。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
+</span></code></pre></div>
+<h2 id="_13">読み取り対象ページを指定する<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
 <p>特定のページのみを対象として処理することが可能です。処理対象のページをコンマ区切り、もしくはハイフンによって連続するページを指定できます。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
 </span></code></pre></div>
 
 

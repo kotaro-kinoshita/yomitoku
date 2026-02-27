@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -1188,6 +1188,18 @@
 <td style="text-align: left;"><code>dict</code></td>
 <td style="text-align: left;">モジュールの処理のより詳細なパラメータを設定するために利用します。</td>
 <td style="text-align: left;">詳細は<a href="#model-config">モデルの詳細設定</a>をご確認ください。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ignore_ruby</code></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">ふりがな（ルビ）テキストを出力から除外するかどうかを指定します。</td>
+<td style="text-align: left;">デフォルトは <code>False</code> です。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ruby_threshold</code></td>
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">ルビ判定の閾値を指定します。行高さの中央値に対する比率で、この閾値未満のひらがな・カタカナのみのテキストをルビとみなします。</td>
+<td style="text-align: left;">デフォルトは <code>0.5</code> です。<code>ignore_ruby=True</code> の場合のみ有効です。</td>
 </tr>
 </tbody>
 </table>
