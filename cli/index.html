@@ -805,7 +805,7 @@
   <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ふりがな（ルビ）の除外
+        認識方向フォールバックの無効化
       
     </span>
   </a>
@@ -1257,7 +1257,7 @@
   <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ふりがな（ルビ）の除外
+        認識方向フォールバックの無効化
       
     </span>
   </a>
@@ -1443,16 +1443,25 @@
 </tr>
 </tbody>
 </table>
-<h2 id="_12">ふりがな（ルビ）の除外<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
-<p>文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。<code>--ignore_ruby</code> オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
+<h2 id="_12">認識方向フォールバックの無効化<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>デフォルトでは、文字認識の信頼度が低い場合にROI画像を180度回転して再認識を行い、信頼度が高い方の結果を採用します。<code>--disable-rec-orientation-fallback</code> オプションを使用することで、この機能を無効化できます。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--disable-rec-orientation-fallback
+</span></code></pre></div>
+<p><code>--rec-orientation-fallback-thresh</code> オプションで、フォールバックを実行する信頼度の閾値を指定できます。（デフォルト: 0.75）</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--rec-orientation-fallback-thresh<span class="w"> </span><span class="m">0</span>.6
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="c1">## ふりがな（ルビ）の除外</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。<span class="sb">`</span>--ignore_ruby<span class="sb">`</span><span class="w"> </span>オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="sb">```</span>bash
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
 </span></code></pre></div>
 <p><code>--ruby_threshold</code> オプションで、ルビ判定の閾値を調整できます（デフォルト: 0.5）。値を大きくするとルビと判定される範囲が広がります。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
 </span></code></pre></div>
 <h2 id="_13">読み取り対象ページを指定する<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
 <p>特定のページのみを対象として処理することが可能です。処理対象のページをコンマ区切り、もしくはハイフンによって連続するページを指定できます。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
 </span></code></pre></div>
 
 
