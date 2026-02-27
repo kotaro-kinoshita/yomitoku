@@ -146,6 +146,18 @@ yomitoku ${path_data} --reading_order left2right
 | `left2right` | 左から右方向 | レシートや保険証など、キーと値が段組みになっているレイアウト |
 | `right2left` | 右から左方向 | 縦書きのドキュメント |
 
+## 認識方向フォールバックの無効化
+
+デフォルトでは、文字認識の信頼度が低い場合にROI画像を180度回転して再認識を行い、信頼度が高い方の結果を採用します。`--disable-rec-orientation-fallback` オプションを使用することで、この機能を無効化できます。
+
+```bash
+yomitoku ${path_data} --disable-rec-orientation-fallback
+```
+
+`--rec-orientation-fallback-thresh` オプションで、フォールバックを実行する信頼度の閾値を指定できます。（デフォルト: 0.75）
+
+```bash
+yomitoku ${path_data} --rec-orientation-fallback-thresh 0.6
 ## ふりがな（ルビ）の除外
 
 文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。`--ignore_ruby` オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。

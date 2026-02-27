@@ -27,7 +27,9 @@ class ParseqDataset(Dataset):
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             data = list(executor.map(self.preprocess, self.quads))
 
-        self.data = [tensor for tensor in data if tensor is not None]
+        self.data = [d[0] for d in data if d is not None]
+        self.roi_images = [d[1] for d in data if d is not None]
+        self.valid_quads = [q for q, d in zip(self.quads, data) if d is not None]
 
     def preprocess(self, quad):
         if validate_quads(self.img, quad) is None:
@@ -41,7 +43,7 @@ class ParseqDataset(Dataset):
         roi_img = rotate_text_image(roi_img, thresh_aspect=2)
         resized = resize_with_padding(roi_img, self.cfg.data.img_size)
 
-        return resized
+        return resized, roi_img
 
     def __len__(self):
         return len(self.data)
