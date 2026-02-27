@@ -423,9 +423,9 @@ def main():
         help="pages to process, e.g., 1,2,5-10 (default: all pages, starting from 1)",
     )
     parser.add_argument(
-        "--rec-orientation-fallback",
+        "--disable-rec-orientation-fallback",
         action="store_true",
-        help="if set, retry recognition with 180-degree rotated image when confidence is low",
+        help="if set, disable orientation fallback for recognition",
     )
     parser.add_argument(
         "--rec-orientation-fallback-thresh",
@@ -487,8 +487,9 @@ def main():
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
 
-    if args.rec_orientation_fallback:
-        configs["ocr"]["text_recognizer"]["rec_orientation_fallback"] = True
+    if args.disable_rec_orientation_fallback:
+        configs["ocr"]["text_recognizer"]["rec_orientation_fallback"] = False
+    else:
         configs["ocr"]["text_recognizer"]["rec_orientation_fallback_thresh"] = (
             args.rec_orientation_fallback_thresh
         )

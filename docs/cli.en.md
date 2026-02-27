@@ -148,6 +148,20 @@ yomitoku ${path_data} --reading_order left2right
 | `left2right` | Left to Right | Layouts where keys and values are in columns (e.g., receipts, insurance cards) |
 | `right2left` | Right to Left | Vertically written documents |
 
+## Disabling Recognition Orientation Fallback
+
+By default, when the confidence score of text recognition is low, the system retries recognition with the ROI image rotated 180 degrees and adopts the result with the higher confidence. You can disable this feature using the `--disable-rec-orientation-fallback` option.
+
+```bash
+yomitoku ${path_data} --disable-rec-orientation-fallback
+```
+
+You can specify the confidence threshold for triggering the fallback using `--rec-orientation-fallback-thresh`. (Default: 0.75)
+
+```bash
+yomitoku ${path_data} --rec-orientation-fallback-thresh 0.6
+```
+
 ## Specifying Pages to Process
 
 You can choose to process only specific pages.

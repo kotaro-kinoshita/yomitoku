@@ -46,7 +46,7 @@ class TextRecognizer(BaseModule):
         visualize=False,
         from_pretrained=True,
         infer_onnx=False,
-        rec_orientation_fallback=False,
+        rec_orientation_fallback=True,
         rec_orientation_fallback_thresh=0.85,
     ):
         super().__init__()

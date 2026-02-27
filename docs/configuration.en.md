@@ -62,18 +62,28 @@ data:
   batch_size: int 
 ```
 
+### Recognition Orientation Fallback
+
+```yaml
+# Whether to retry recognition with a 180-degree rotated ROI image when confidence is low.
+rec_orientation_fallback: bool
+
+# The confidence threshold for triggering the fallback.
+rec_orientation_fallback_thresh: float
+```
+
 ### visualization
 
 ```yaml
 visualize:
   # The path to the font used for visualizing the predicted result strings.
-  font: str 
+  font: str
 
   # The color of the font used for visualizing the predicted result strings.
   color: [BGR]
 
   # The font size of the predicted result strings.
-  font_size: int 
+  font_size: int
 ```
 
 ## Layout Parser
