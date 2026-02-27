@@ -420,6 +420,17 @@ def main():
         default=None,
         help="pages to process, e.g., 1,2,5-10 (default: all pages, starting from 1)",
     )
+    parser.add_argument(
+        "--ignore_ruby",
+        action="store_true",
+        help="if set, ignore ruby (furigana) text in the output",
+    )
+    parser.add_argument(
+        "--ruby_threshold",
+        type=float,
+        default=1.0,
+        help="bimodality separation threshold for ruby detection; higher values require stronger bimodality to use valley split (default: 2.0)",
+    )
     args = parser.parse_args()
 
     path = Path(args.arg1)
@@ -480,6 +491,8 @@ def main():
         device=args.device,
         ignore_meta=args.ignore_meta,
         reading_order=args.reading_order,
+        ignore_ruby=args.ignore_ruby,
+        ruby_threshold=args.ruby_threshold,
     )
 
     os.makedirs(args.outdir, exist_ok=True)

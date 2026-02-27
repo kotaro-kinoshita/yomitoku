@@ -1,4 +1,6 @@
 import asyncio
+import math
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
@@ -64,7 +66,131 @@ def extract_paragraph_within_figure(paragraphs, figures):
     return new_figures, check_list
 
 
-def extract_words_within_element(pred_words, element):
+_RE_HIRAGANA_ONLY = re.compile(r"^[\u3040-\u309F]+$")
+_RE_KATAKANA_ONLY = re.compile(r"^[\u30A0-\u30FF]+$")
+
+
+def _mad_threshold(sizes):
+    """MADベースのロバスト閾値（フォールバック用）。"""
+    sorted_sizes = sorted(sizes)
+    n = len(sorted_sizes)
+    median_s = sorted_sizes[n // 2]
+
+    if median_s == 0:
+        return None
+
+    deviations = sorted(abs(s - median_s) for s in sizes)
+    mad = deviations[n // 2]
+
+    if mad == 0:
+        return None
+
+    threshold = median_s - 2 * mad
+    if threshold <= 0:
+        return None
+
+    return threshold
+
+
+def _compute_ruby_threshold(sizes, k):
+    """サイズ分布からルビ判定しきい値を計算する。
+
+    二峰性が十分（sep >= k）なら valley split、弱ければ MAD フォールバック。
+    """
+    n = len(sizes)
+    if n < 3:
+        return None
+
+    log_sizes = [math.log(s) for s in sizes]
+
+    num_bins = max(8, int(math.sqrt(n)))
+    min_val = min(log_sizes)
+    max_val = max(log_sizes)
+
+    if max_val - min_val < 1e-9:
+        return None
+
+    bin_width = (max_val - min_val) / num_bins
+    hist = [0] * num_bins
+    for v in log_sizes:
+        idx = int((v - min_val) / bin_width)
+        if idx >= num_bins:
+            idx = num_bins - 1
+        hist[idx] += 1
+
+    # 最大ピーク p1
+    p1 = max(range(num_bins), key=lambda i: hist[i])
+
+    # 第2ピーク: p1 から 2bin 以上離れた中で最大
+    p2 = None
+    p2_val = -1
+    for i in range(num_bins):
+        if abs(i - p1) >= 2 and hist[i] > p2_val:
+            p2 = i
+            p2_val = hist[i]
+
+    if p2 is None:
+        return _mad_threshold(sizes)
+
+    lo, hi = min(p1, p2), max(p1, p2)
+    if hi - lo <= 1:
+        return _mad_threshold(sizes)
+
+    # valley: 2ピーク間の最小 bin（同値が複数なら中央を採用）
+    valley_range = range(lo + 1, hi)
+    valley_val = min(hist[i] for i in valley_range)
+    valley_bins = [i for i in valley_range if hist[i] == valley_val]
+    valley = valley_bins[len(valley_bins) // 2]
+
+    # 二峰性の強さ判定
+    sep = (hist[p1] + hist[p2]) / (2 * valley_val + 1e-6)
+
+    if sep >= k:
+        t_log = min_val + (valley + 0.5) * bin_width
+        return math.exp(t_log)
+    else:
+        return _mad_threshold(sizes)
+
+
+def filter_ruby(contained_words, element_direction, ruby_threshold):
+    """ルビと判定されたワードを除外する。
+
+    テキストラインのbbox面積分布を二峰性として扱い、
+    ヒストグラムの谷（valley）で分割点を求める。二峰性が弱い場合は MAD ベースの
+    ロバスト推定にフォールバックする。
+    ruby_threshold は二峰性の強さ判定に使う（sep >= ruby_threshold で valley split 採用）。
+    """
+    if len(contained_words) <= 1:
+        return contained_words
+
+    sizes = []
+    for word in contained_words:
+        x1, y1, x2, y2 = word.box
+        sizes.append(math.sqrt((x2 - x1) * (y2 - y1)))
+
+    # ゼロ・負のノイズ除外してしきい値計算
+    valid_sizes = [s for s in sizes if s > 0]
+    if len(valid_sizes) < 2:
+        return contained_words
+
+    threshold = _compute_ruby_threshold(valid_sizes, ruby_threshold)
+    if threshold is None:
+        return contained_words
+
+    filtered = []
+    for word, s in zip(contained_words, sizes):
+        if s > 0 and s < threshold:
+            text = word.contents.replace(" ", "")
+            if _RE_HIRAGANA_ONLY.match(text) or _RE_KATAKANA_ONLY.match(text):
+                continue
+        filtered.append(word)
+
+    return filtered
+
+
+def extract_words_within_element(
+    pred_words, element, ignore_ruby=False, ruby_threshold=2.0
+):
     contained_words = []
     word_sum_width = 0
     word_sum_height = 0
@@ -94,6 +220,14 @@ def extract_words_within_element(pred_words, element):
     cnt_vertical = word_direction.count("vertical")
 
     element_direction = "horizontal" if cnt_horizontal > cnt_vertical else "vertical"
+
+    if ignore_ruby:
+        contained_words = filter_ruby(
+            contained_words, element_direction, ruby_threshold
+        )
+        if len(contained_words) == 0:
+            return None, None, check_list
+
     order = "left2right" if element_direction == "horizontal" else "right2left"
     prediction_reading_order(contained_words, order)
     contained_words = sorted(contained_words, key=lambda x: x.order)
@@ -298,6 +432,8 @@ class DocumentAnalyzer:
         ignore_meta=False,
         reading_order="auto",
         split_text_across_cells=False,
+        ignore_ruby=False,
+        ruby_threshold=2.0,
     ):
         default_configs = {
             "ocr": {
@@ -345,6 +481,8 @@ class DocumentAnalyzer:
 
         self.ignore_meta = ignore_meta
         self.split_text_across_cells = split_text_across_cells
+        self.ignore_ruby = ignore_ruby
+        self.ruby_threshold = ruby_threshold
 
     def aggregate(self, ocr_res, layout_res):
         paragraphs = []
@@ -352,7 +490,10 @@ class DocumentAnalyzer:
         for table in layout_res.tables:
             for cell in table.cells:
                 words, direction, flags = extract_words_within_element(
-                    ocr_res.words, cell
+                    ocr_res.words,
+                    cell,
+                    ignore_ruby=self.ignore_ruby,
+                    ruby_threshold=self.ruby_threshold,
                 )
 
                 if words is None:
@@ -363,7 +504,10 @@ class DocumentAnalyzer:
 
         for paragraph in layout_res.paragraphs:
             words, direction, flags = extract_words_within_element(
-                ocr_res.words, paragraph
+                ocr_res.words,
+                paragraph,
+                ignore_ruby=self.ignore_ruby,
+                ruby_threshold=self.ruby_threshold,
             )
 
             if words is None:

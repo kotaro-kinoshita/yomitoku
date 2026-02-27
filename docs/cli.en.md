@@ -148,6 +148,20 @@ yomitoku ${path_data} --reading_order left2right
 | `left2right` | Left to Right | Layouts where keys and values are in columns (e.g., receipts, insurance cards) |
 | `right2left` | Right to Left | Vertically written documents |
 
+## Excluding Ruby (Furigana) Text
+
+You can exclude ruby (furigana) text from the output. When the `--ignore_ruby` option is set, text whose line height is below a certain threshold relative to the median line height within each paragraph or cell, and consists solely of hiragana or katakana characters, is identified as ruby and excluded.
+
+```bash
+yomitoku ${path_data} --ignore_ruby
+```
+
+You can adjust the ruby detection threshold using the `--ruby_threshold` option (default: 0.5). Increasing the value widens the range of text identified as ruby.
+
+```bash
+yomitoku ${path_data} --ignore_ruby --ruby_threshold 0.6
+```
+
 ## Specifying Pages to Process
 
 You can choose to process only specific pages.
