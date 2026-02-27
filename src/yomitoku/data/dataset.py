@@ -40,7 +40,7 @@ class ParseqDataset(Dataset):
         if roi_img is None:
             return None
 
-        roi_img = rotate_text_image(roi_img, thresh_aspect=1.5)
+        roi_img = rotate_text_image(roi_img, thresh_aspect=2)
         resized = resize_with_padding(roi_img, self.cfg.data.img_size)
 
         return resized, roi_img
