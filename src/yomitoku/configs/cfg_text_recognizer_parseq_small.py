@@ -43,6 +43,8 @@ class TextRecognizerPARSeqSmallConfig:
     max_label_length: int = 100
     decode_ar: int = 1
     refine_iters: int = 1
+    rec_orientation_fallback: bool = True
+    rec_orientation_fallback_thresh: float = 0.75
 
     data: Data = field(default_factory=Data)
     encoder: Encoder = field(default_factory=Encoder)

@@ -120,9 +120,11 @@ def process_single_file(args, analyzer, path, format):
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
 
-        # cv2.imwrite(
-        #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"), img
-        # )
+        import cv2
+
+        cv2.imwrite(
+            os.path.join(args.outdir, f"{dirname}_{filename}_p{page + 1}.jpg"), img
+        )
 
         if ocr is not None:
             out_path = os.path.join(
@@ -420,6 +422,28 @@ def main():
         default=None,
         help="pages to process, e.g., 1,2,5-10 (default: all pages, starting from 1)",
     )
+    parser.add_argument(
+        "--disable-rec-orientation-fallback",
+        action="store_true",
+        help="if set, disable orientation fallback for recognition",
+    )
+    parser.add_argument(
+        "--rec-orientation-fallback-thresh",
+        type=float,
+        default=0.75,
+        help="confidence threshold for orientation fallback (default: 0.75)",
+    )
+    parser.add_argument(
+        "--ignore_ruby",
+        action="store_true",
+        help="if set, ignore ruby (furigana) text in the output",
+    )
+    parser.add_argument(
+        "--ruby_threshold",
+        type=float,
+        default=1.0,
+        help="bimodality separation threshold for ruby detection; higher values require stronger bimodality to use valley split (default: 2.0)",
+    )
     args = parser.parse_args()
 
     path = Path(args.arg1)
@@ -474,12 +498,21 @@ def main():
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
 
+    if args.disable_rec_orientation_fallback:
+        configs["ocr"]["text_recognizer"]["rec_orientation_fallback"] = False
+    else:
+        configs["ocr"]["text_recognizer"]["rec_orientation_fallback_thresh"] = (
+            args.rec_orientation_fallback_thresh
+        )
+
     analyzer = DocumentAnalyzer(
         configs=configs,
         visualize=args.vis,
         device=args.device,
         ignore_meta=args.ignore_meta,
         reading_order=args.reading_order,
+        ignore_ruby=args.ignore_ruby,
+        ruby_threshold=args.ruby_threshold,
     )
 
     os.makedirs(args.outdir, exist_ok=True)

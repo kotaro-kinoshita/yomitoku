@@ -186,9 +186,11 @@ class LayoutParser(BaseModule):
 
             category_elements[category].append(
                 {
+                    "id": None,
                     "box": box.astype(int).tolist(),
                     "score": float(score),
                     "role": role,
+                    "contents": None,
                 }
             )
 

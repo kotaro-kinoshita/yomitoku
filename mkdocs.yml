@@ -71,8 +71,12 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - CLI Usage: cli.md
+  - CLI Usage:
+    - Document Analyzer: cli.md
+    - Extractor: extractor.md
+    - Schema Generation Prompt: schema_generation_prompt.md
   - Module Usage: module.md
+  - Table Semantic Parser: table_semantic_parser.md
   - Module Output: schemas.md
   - Model Config: configuration.md
   - Release Note: release_note.md
