@@ -13,8 +13,9 @@ from .layout_parser import LayoutParser
 from .table_cell_detector import CellDetector
 from .text_detector import TextDetector
 from .text_recognizer import TextRecognizer
-from .document_analyzer import extract_words_within_element
 from .ocr import OCRSchema, ocr_aggregate
+from .reading_order import prediction_reading_order
+from .schemas.document_analyzer import ParagraphSchema
 
 from .utils.visualizer import (
     cell_detector_visualizer,
@@ -22,6 +23,8 @@ from .utils.visualizer import (
 from .utils.misc import (
     is_right_adjacent,
     is_bottom_adjacent,
+    calc_overlap_ratio,
+    quad_to_xyxy,
 )
 
 from .grid_parser import parse_grid_from_bottom_up
@@ -478,18 +481,55 @@ class TableSemanticParser:
 
         self.visualize = visualize
 
-        self.grid_only = False
         self.merge_same_column_values = False
 
-    def aggregate(self, ocr_res, cells):
+    def aggregate(self, ocr_res, cells, overlap_th=0.2):
+        from collections import defaultdict
+
+        cell_words = defaultdict(list)
+
+        for word in ocr_res.words:
+            word_box = quad_to_xyxy(word.points)
+            best_cell = None
+            best_ratio = 0
+
+            for cell in cells:
+                if cell.role == "group":
+                    continue
+                ratio, _ = calc_overlap_ratio(cell.box, word_box)
+                if ratio > best_ratio:
+                    best_ratio = ratio
+                    best_cell = cell
+
+            if best_cell is None or best_ratio < overlap_th:
+                continue
+
+            word_element = ParagraphSchema(
+                box=word_box,
+                contents=word.content,
+                direction=word.direction,
+                order=0,
+                role=None,
+            )
+            cell_words[best_cell.id].append(word_element)
+
         for cell in cells:
-            words, direction, _ = extract_words_within_element(ocr_res.words, cell)
+            contained = cell_words.get(cell.id, [])
+            if not contained:
+                cell.contents = ""
+                continue
 
-            if words is None:
-                words = ""
-
-            words = words.replace("\n", "").strip()
-            cell.contents = words
+            dirs = [w.direction for w in contained]
+            direction = (
+                "horizontal"
+                if dirs.count("horizontal") >= dirs.count("vertical")
+                else "vertical"
+            )
+            order = "left2right" if direction == "horizontal" else "right2left"
+            prediction_reading_order(contained, order)
+            contained = sorted(contained, key=lambda x: x.order)
+            text = "\n".join([w.contents for w in contained])
+            cell.contents = text.replace("\n", "").strip()
 
     def replace_table_to_paragraphs(self, tables, paragraphs):
         new_table_list = []
@@ -596,7 +636,7 @@ class TableSemanticParser:
 
         return vis_layout
 
-    def __call__(self, img, template=None, id=None):
+    def __call__(self, img, template=None, id=None, grid_only=False, kv_only=False):
         results_ocr, results_table, paragraphs = asyncio.run(self.run_models(img))
 
         semantic_info = []
@@ -638,7 +678,7 @@ class TableSemanticParser:
             if template is None:
                 nodes = _split_nodes_with_role(table.cells)
 
-                if not self.grid_only:
+                if not grid_only:
                     clusters, dag = _weakly_cluster_nodes_with_graph(nodes)
                     cluster_nodes_list = _get_cluster_nodes(clusters, nodes)
 
@@ -647,7 +687,7 @@ class TableSemanticParser:
                     cluster_nodes_list = [nodes]
 
                 for clustered_nodes in cluster_nodes_list:
-                    if is_grid_cluster(clustered_nodes):
+                    if not kv_only and is_grid_cluster(clustered_nodes):
                         grid, grid_cells, dag = parse_grid_from_bottom_up(
                             cells, clustered_nodes, self.merge_same_column_values
                         )
