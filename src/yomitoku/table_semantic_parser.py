@@ -1,50 +1,35 @@
-import cv2
-
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from typing import Tuple
 
+import cv2
 import networkx as nx
-
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, features
 
-from concurrent.futures import ThreadPoolExecutor
-
+from .grid_parser import parse_grid_from_bottom_up
+from .kv_parser import parse_kv_items
 from .layout_parser import LayoutParser
+from .ocr import OCRSchema, ocr_aggregate
+from .reading_order import prediction_reading_order
+from .schemas import Element, TableCellSchema
+from .schemas.document_analyzer import ParagraphSchema
+from .schemas.table_semantic_parser import (
+    CellSchema,
+    TableSemanticContentsSchema,
+    TableSemanticParserSchema,
+)
 from .table_cell_detector import CellDetector
 from .text_detector import TextDetector
 from .text_recognizer import TextRecognizer
-from .ocr import OCRSchema, ocr_aggregate
-from .reading_order import prediction_reading_order
-from .schemas.document_analyzer import ParagraphSchema
-
-from .utils.visualizer import (
-    cell_detector_visualizer,
-)
+from .utils.logger import set_logger
 from .utils.misc import (
-    is_right_adjacent,
-    is_bottom_adjacent,
     calc_overlap_ratio,
+    is_bottom_adjacent,
+    is_right_adjacent,
     quad_to_xyxy,
 )
-
-from .grid_parser import parse_grid_from_bottom_up
-from .kv_parser import parse_kv_items
-from .utils.logger import set_logger
-
-
-from .schemas.table_semantic_parser import (
-    TableSemanticContentsSchema,
-    TableSemanticParserSchema,
-    CellSchema,
-)
-
-from .schemas import TableCellSchema
-
-
-from .schemas import Element
-
-
-from typing import Tuple
+from .utils.visualizer import cell_detector_visualizer
 
 BBox = Tuple[float, float, float, float]
 
@@ -614,15 +599,15 @@ class TableSemanticParser:
                 results_table.cells.values(),
             )
 
-            for kv_item in results_table.kv_items:
-                box = kv_item.box
-                cv2.rectangle(
-                    vis_layout,
-                    (box[0], box[1]),
-                    (box[2], box[3]),
-                    (0, 0, 255),
-                    3,
-                )
+            # for kv_item in results_table.kv_items:
+            #    box = kv_item.box
+            #    cv2.rectangle(
+            #        vis_layout,
+            #        (box[0], box[1]),
+            #        (box[2], box[3]),
+            #        (0, 0, 255),
+            #        3,
+            #    )
 
             for grid in results_table.grids:
                 box = grid.box
@@ -689,7 +674,9 @@ class TableSemanticParser:
                 for clustered_nodes in cluster_nodes_list:
                     if not kv_only and is_grid_cluster(clustered_nodes):
                         grid, grid_cells, dag = parse_grid_from_bottom_up(
-                            cells, clustered_nodes, self.merge_same_column_values
+                            cells,
+                            clustered_nodes,
+                            self.merge_same_column_values,
                         )
 
                         if grid is None:
@@ -697,6 +684,12 @@ class TableSemanticParser:
 
                         table_information["grids"].append(grid)
                         table_information["cells"].update(grid_cells)
+
+                        # For Debugging
+                        vis_layout = dag_visualizer(
+                            dag,
+                            vis_layout,
+                        )
 
                     else:
                         kv_items, dag, kv_cells = parse_kv_items(
@@ -707,6 +700,12 @@ class TableSemanticParser:
 
                         table_information["kv_items"].extend(kv_items)
                         table_information["cells"].update(kv_cells)
+
+                        # For Debugging
+                        vis_layout = dag_visualizer(
+                            dag,
+                            vis_layout,
+                        )
 
             for cell in cells.values():
                 if cell.id not in table_information["cells"]:

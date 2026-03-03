@@ -1,96 +1,92 @@
 import networkx as nx
 
+from .schemas.table_semantic_parser import KvItemSchema
 from .utils.misc import (
-    get_line_with_head,
     calc_overlap_ratio,
+    is_bottom_adjacent,
     is_contained,
     is_right_adjacent,
-    is_bottom_adjacent,
 )
 
+PSEUDO_GROUP_ID = "__unmatched__"
 
-from .schemas.table_semantic_parser import KvItemSchema
 
-
-def _matching_group_and_cells(nodes, groups, th_dist=15):
+def _matching_group_and_cells(nodes, groups):
     """
     グループとヘッダー領域、セル領域のマッチングを行い、セルとグループ、ヘッダーとグループの対応関係を求める
+    ヘッダー・セルともにグループに対してN:1（各ノードは最も重複率の高い1グループに属する）
+    どのグループにも属さないノードは擬似グループにまとめる
     """
 
     match = {
         "header_to_group": {},
         "group_to_cells": {},
-        "cell_to_groups": {},
-        "group_to_header": {},
+        "cell_to_group": {},
+        "group_to_headers": {},
     }
 
     if len(groups) == 0:
         return match
 
-    # セルとグループのマッチング
+    # セルとグループのマッチング（各セルを最も重複率の高い1グループに割り当て）
+    matched_cell_to_group = {}
+    for cell in nodes["cell"] + nodes["empty"]:
+        best_group_id = None
+        best_ratio = 0.0
+        for group in groups:
+            if is_contained(group.box, cell.box, threshold=0.2):
+                ratio = calc_overlap_ratio(cell.box, group.box)[0]
+                if ratio > best_ratio:
+                    best_ratio = ratio
+                    best_group_id = group.id
+        if best_group_id is not None:
+            matched_cell_to_group[cell.id] = best_group_id
+
+    # ヘッダーとグループのマッチング（N:1、各ヘッダーを最も重複率の高いグループに割り当て）
+    matched_header_to_group = {}
+    for header in nodes["header"]:
+        best_group_id = None
+        best_ratio = 0.0
+        for group in groups:
+            if is_contained(group.box, header.box, threshold=0.2):
+                ratio = calc_overlap_ratio(header.box, group.box)[0]
+                if ratio > best_ratio:
+                    best_ratio = ratio
+                    best_group_id = group.id
+        if best_group_id is not None:
+            matched_header_to_group[header.id] = best_group_id
+
+    # どのグループにも属さないheader/cellを擬似グループにまとめる
+    unmatched_cells = [
+        c.id
+        for c in nodes["cell"] + nodes["empty"]
+        if c.id not in matched_cell_to_group
+    ]
+    unmatched_headers = [
+        h.id for h in nodes["header"] if h.id not in matched_header_to_group
+    ]
+
+    if unmatched_cells or unmatched_headers:
+        pseudo_group_id = PSEUDO_GROUP_ID
+        for cell_id in unmatched_cells:
+            matched_cell_to_group[cell_id] = pseudo_group_id
+        for header_id in unmatched_headers:
+            matched_header_to_group[header_id] = pseudo_group_id
+
+    match["cell_to_group"] = matched_cell_to_group
+    match["header_to_group"] = matched_header_to_group
+
+    # group_to_cells: グループ→セルリスト（逆引き）
     matched_group_to_cells = {}
-    matched_cell_to_groups = {}
-    for group in groups:
-        for cell in nodes["cell"] + nodes["empty"]:
-            if is_contained(
-                group.box,
-                cell.box,
-                threshold=0.2,
-            ):
-                matched_group_to_cells.setdefault(group.id, []).append(cell.id)
-
-                if cell.id not in matched_cell_to_groups:
-                    matched_cell_to_groups[cell.id] = []
-
-                matched_cell_to_groups[cell.id].append(group.id)
-
-    match["cell_to_groups"] = matched_cell_to_groups
+    for cell_id, group_id in matched_cell_to_group.items():
+        matched_group_to_cells.setdefault(group_id, []).append(cell_id)
     match["group_to_cells"] = matched_group_to_cells
 
-    B = nx.Graph()
-    U = [header.id for header in nodes["header"]]
-    V = [group.id for group in groups]
-    B.add_nodes_from(U, bipartite=0)
-    B.add_nodes_from(V, bipartite=1)
-
-    # グループとヘッダー領域の重複率で最大重みマッチング
-    for header in nodes["header"]:
-        import math
-
-        for i, group in enumerate(groups):
-            hx1, hy1, hx2, hy2 = header.box
-            gx1, gy1, gx2, gy2 = group.box
-
-            # グループとヘッダーの左上の点が大きく離れている場合はスキップ
-            # 重なっているが、ずれているグループとヘッダーのマッチングを防止
-            dist = math.sqrt((hx1 - gx1) ** 2 + (hy1 - gy1) ** 2)
-
-            if dist > th_dist:
-                continue
-
-            # セルがグループに含まれない場合はスキップ
-            matched_cells = match["group_to_cells"].get(group.id, [])
-            if len(matched_cells) == 0:
-                continue
-
-            ratio = calc_overlap_ratio(header.box, group.box)[0]
-
-            if ratio > 0.0:
-                B.add_edge(header.id, group.id, weight=ratio)
-
-    kv_items = nx.algorithms.matching.max_weight_matching(
-        B, maxcardinality=True, weight="weight"
-    )
-
-    matched_header_to_group = {}
-    for a, b in kv_items:
-        if a in U:
-            matched_header_to_group[a] = b
-        else:
-            matched_header_to_group[b] = a
-
-    match["header_to_group"] = matched_header_to_group
-    match["group_to_header"] = {v: k for k, v in matched_header_to_group.items()}
+    # group_to_headers: グループ→ヘッダーリスト（N:1の逆引き）
+    group_to_headers = {}
+    for header_id, group_id in matched_header_to_group.items():
+        group_to_headers.setdefault(group_id, []).append(header_id)
+    match["group_to_headers"] = group_to_headers
 
     return match
 
@@ -100,39 +96,35 @@ def _calc_adjacent_header_to_cell(dag, match, headers, cells):
     グループ内のヘッダーとセルの隣接関係を計算
     """
 
-    cell_groups = match["cell_to_groups"]
-    header_groups = match["header_to_group"]
+    cell_to_group = match["cell_to_group"]
+    header_to_group = match["header_to_group"]
 
     for header in headers:
+        header_group_id = header_to_group.get(header.id, None)
+        if header_group_id is None:
+            continue
+
         for cell in cells:
+            cell_group_id = cell_to_group.get(cell.id, None)
+            if cell_group_id is None:
+                continue
+
+            if header_group_id != cell_group_id:
+                continue
+
             if is_right_adjacent(header.box, cell.box):
-                header_group_id = header_groups.get(header.id, None)
-                cell_group_ids = cell_groups.get(cell.id, None)
-
-                if header_group_id is None or cell_group_ids is None:
-                    continue
-
-                if header_group_id in cell_group_ids:
-                    dag.add_edge(header.id, cell.id, dir="R")
-                    dag.add_edge(cell.id, header.id, dir="L")
+                dag.add_edge(header.id, cell.id, dir="R")
+                dag.add_edge(cell.id, header.id, dir="L")
 
             if is_bottom_adjacent(header.box, cell.box):
-                header_group_id = header_groups.get(header.id, None)
-                cell_group_ids = cell_groups.get(cell.id, None)
-
-                if header_group_id is None or cell_group_ids is None:
-                    continue
-
-                if header_group_id in cell_group_ids:
-                    dag.add_edge(header.id, cell.id, dir="D")
-                    dag.add_edge(cell.id, header.id, dir="U")
+                dag.add_edge(header.id, cell.id, dir="D")
+                dag.add_edge(cell.id, header.id, dir="U")
 
 
-def _calc_adjacent_header_to_header(dag, match, nodes, group_direction):
+def _calc_adjacent_header_to_header(dag, match, nodes):
     """
     ヘッダーの隣接関係を計算
-    グループの方向情報を利用して隣接関係を追加
-    例えば、あるグループが水平（H）方向であれば、そのグループに属するヘッダー同士は水平方向の隣接関係を持つ可能性があると判断する
+    同じグループに属するヘッダー同士、またはどちらかが未割り当て（擬似グループ）の場合にエッジを追加
     """
 
     header_to_group = match["header_to_group"]
@@ -145,49 +137,16 @@ def _calc_adjacent_header_to_header(dag, match, nodes, group_direction):
             potential_parent_group_id = header_to_group.get(potential_parent.id, None)
             node_group_id = header_to_group.get(node.id, None)
 
-            potential_parent_group_direction = group_direction.get(
-                potential_parent_group_id, None
-            )
-
-            node_group_direction = group_direction.get(node_group_id, None)
-
             if potential_parent_group_id is None or node_group_id is None:
                 continue
 
-            if potential_parent_group_direction == "H" or node_group_direction == "H":
-                # 左右の隣接判定
-                if is_right_adjacent(potential_parent.box, node.box):
-                    dag.add_edge(potential_parent.id, node.id, dir="R")
-                    dag.add_edge(node.id, potential_parent.id, dir="L")
-
-            if "V" in potential_parent_group_direction or "V" in node_group_direction:
-                # 上下の隣接判定
-                if is_bottom_adjacent(potential_parent.box, node.box):
-                    dag.add_edge(potential_parent.id, node.id, dir="D")
-                    dag.add_edge(node.id, potential_parent.id, dir="U")
-
-
-def _calc_adjacent_cell_to_cell(dag, match, nodes):
-    """
-    セルの隣接関係を計算
-    セルが同じグリッド領域 or 同じグループに属している場合のみ隣接関係を追加
-    """
-
-    cell_to_groups = match["cell_to_groups"]
-
-    for node in nodes:
-        for potential_parent in nodes:
-            if node.id == potential_parent.id:
-                continue
-
-            # 同じグループに属しているか判定
-            node_group_id = cell_to_groups.get(node.id, [])
-            potential_parent_id = cell_to_groups.get(potential_parent.id, [])
-
-            if node_group_id is None or potential_parent_id is None:
-                continue
-
-            if set(node_group_id) != set(potential_parent_id):
+            # 同じグループ or どちらかが未割り当ての場合のみ
+            is_same_group = potential_parent_group_id == node_group_id
+            has_unmatched = (
+                potential_parent_group_id == PSEUDO_GROUP_ID
+                or node_group_id == PSEUDO_GROUP_ID
+            )
+            if not is_same_group and not has_unmatched:
                 continue
 
             # 左右の隣接判定
@@ -201,40 +160,40 @@ def _calc_adjacent_cell_to_cell(dag, match, nodes):
                 dag.add_edge(node.id, potential_parent.id, dir="U")
 
 
-def _calc_group_direction(dag, match, groups):
+def _calc_adjacent_cell_to_cell(dag, match, nodes):
     """
-    グループの方向情報を計算
-    セルの隣接関係を利用して、グループの方向情報を推定
+    セルの隣接関係を計算
+    セルが同じグリッド領域 or 同じグループに属している場合のみ隣接関係を追加
     """
 
-    group_direction = {}
-    group_to_cells = match["group_to_cells"]
-    group_to_header = match["group_to_header"]
+    cell_to_group = match["cell_to_group"]
 
-    for group in groups:
-        cells = group_to_cells.get(group.id, [])
-        is_vertical = False
-        for cell_a in cells:
-            header_id = group_to_header.get(group.id, None)
+    for node in nodes:
+        node_group_id = cell_to_group.get(node.id, None)
+        if node_group_id is None:
+            continue
 
-            if header_id is not None:
-                header_box = dag.nodes[header_id]
-                cell_a_box = dag.nodes[cell_a]
+        for potential_parent in nodes:
+            if node.id == potential_parent.id:
+                continue
 
-                if is_bottom_adjacent(header_box["bbox"], cell_a_box["bbox"]):
-                    is_vertical = True
-                    group_direction[group.id] = "V"
-                    break
+            # 同じグループに属しているか判定
+            potential_parent_group_id = cell_to_group.get(potential_parent.id, None)
+            if potential_parent_group_id is None:
+                continue
 
-                if is_right_adjacent(header_box["bbox"], cell_a_box["bbox"]):
-                    is_vertical = False
-                    group_direction[group.id] = "H"
-                    break
+            if node_group_id != potential_parent_group_id:
+                continue
 
-        if not is_vertical:
-            group_direction[group.id] = "H"
+            # 左右の隣接判定
+            if is_right_adjacent(potential_parent.box, node.box):
+                dag.add_edge(potential_parent.id, node.id, dir="R")
+                dag.add_edge(node.id, potential_parent.id, dir="L")
 
-    return group_direction
+            # 上下の隣接判定
+            if is_bottom_adjacent(potential_parent.box, node.box):
+                dag.add_edge(potential_parent.id, node.id, dir="D")
+                dag.add_edge(node.id, potential_parent.id, dir="U")
 
 
 def get_kv_items_dag(nodes, groups):
@@ -250,8 +209,6 @@ def get_kv_items_dag(nodes, groups):
             contents=node.contents,
         )
 
-    group_direction = _calc_group_direction(dag, match, groups)
-
     _calc_adjacent_header_to_cell(
         dag,
         match,
@@ -266,7 +223,7 @@ def get_kv_items_dag(nodes, groups):
         nodes["empty"],
     )
 
-    _calc_adjacent_header_to_header(dag, match, nodes["header"], group_direction)
+    _calc_adjacent_header_to_header(dag, match, nodes["header"])
     _calc_adjacent_cell_to_cell(dag, match, nodes["cell"])
 
     return dag
@@ -281,53 +238,108 @@ def _merge_bbox(box1, box2):
     return [x1, y1, x2, y2]
 
 
+def _find_root_headers(dag, direction, node_set=None):
+    """DAG内のルートヘッダーを検出する。
+    指定方向のエッジを他のヘッダーから受けないヘッダーがルート。
+    node_setが指定された場合、そのノード集合内のみで判定する。
+    """
+    if node_set is None:
+        node_set = set(dag.nodes)
+    headers = [n for n in node_set if dag.nodes[n]["role"] == "header"]
+    roots = []
+    for h in headers:
+        has_parent_header = False
+        for u in dag.predecessors(h):
+            if u not in node_set:
+                continue
+            if dag.nodes[u]["role"] != "header":
+                continue
+            if dag[u][h].get("dir") == direction:
+                has_parent_header = True
+                break
+        if not has_parent_header:
+            roots.append(h)
+    return roots
+
+
+def _dfs_collect_kv(dag, node_id, key_path, kv_items, cells, kv_cells, allowed_dir):
+    """ルートヘッダーからDFSし、葉(cell/empty)到達時にKvItemを生成する。"""
+    node = dag.nodes[node_id]
+
+    if node["role"] in ("cell", "empty"):
+        keys = list(key_path)
+        box = (
+            _merge_bbox(cells[node_id].box, cells[keys[0]].box)
+            if keys
+            else cells[node_id].box
+        )
+        kv_items.append(KvItemSchema(id=None, key=keys, value=node_id, box=box))
+        kv_cells[node_id] = cells[node_id]
+        for k in keys:
+            kv_cells[k] = cells[k]
+        return
+
+    # headerノード: key_pathに追加して指定方向の子を探索
+    new_key_path = key_path + [node_id]
+    for v in dag.successors(node_id):
+        if v in new_key_path:
+            continue
+        if dag[node_id][v].get("dir") == allowed_dir:
+            _dfs_collect_kv(
+                dag, v, new_key_path, kv_items, cells, kv_cells, allowed_dir
+            )
+
+
 def parse_kv_items(clustered_nodes, nodes, cells):
     dag = get_kv_items_dag(clustered_nodes, nodes["group"])
 
     kv_items = []
     kv_cells = {}
+
+    # 連結クラスタごとに向き推定とDFSを実行
+    for component in nx.weakly_connected_components(dag):
+        node_set = set(component)
+
+        # 水平方向のDFS（R方向）
+        h_root_headers = _find_root_headers(dag, "R", node_set)
+        h_kv_items = []
+        h_kv_cells = {}
+        for root_id in h_root_headers:
+            _dfs_collect_kv(dag, root_id, [], h_kv_items, cells, h_kv_cells, "R")
+
+        # 垂直方向のDFS（D方向）
+        v_root_headers = _find_root_headers(dag, "D", node_set)
+        v_kv_items = []
+        v_kv_cells = {}
+        for root_id in v_root_headers:
+            _dfs_collect_kv(dag, root_id, [], v_kv_items, cells, v_kv_cells, "D")
+
+        # クラスタ内で葉ノード（value）が多い方を採用
+        h_leaves = len({kv.value for kv in h_kv_items})
+        v_leaves = len({kv.value for kv in v_kv_items})
+
+        if v_leaves > h_leaves:
+            kv_items.extend(v_kv_items)
+            kv_cells.update(v_kv_cells)
+            remove_dirs = ("R", "L")
+        else:
+            kv_items.extend(h_kv_items)
+            kv_cells.update(h_kv_cells)
+            remove_dirs = ("D", "U")
+
+        # 採用されなかった方向のエッジをクラスタ内から削除
+        edges_to_remove = [
+            (u, v)
+            for u, v, d in dag.edges(node_set, data=True)
+            if v in node_set and d.get("dir") in remove_dirs
+        ]
+        dag.remove_edges_from(edges_to_remove)
+
+    # DFSで到達できなかったcell/emptyはキーなしで追加
+    visited_values = {kv.value for kv in kv_items}
     for cell in clustered_nodes["cell"] + clustered_nodes["empty"]:
-        kv_items_row = get_line_with_head(dag, cell.id, dir_value="L")
-        kv_items_col = get_line_with_head(dag, cell.id, dir_value="U")
-
-        headers = []
-        headers.extend(
-            sorted(
-                [
-                    dag.nodes[h]
-                    for h in kv_items_row
-                    if dag.nodes[h]["role"] == "header"
-                ],
-                key=lambda n: n["bbox"][0],
-            )
-        )
-
-        headers.extend(
-            sorted(
-                [
-                    dag.nodes[h]
-                    for h in kv_items_col
-                    if dag.nodes[h]["role"] == "header"
-                ],
-                key=lambda n: n["bbox"][1],
-            )
-        )
-
-        keys = [header["id"] for header in headers]
-
-        box = (
-            _merge_bbox(
-                cell.box,
-                headers[0]["bbox"],
-            )
-            if len(headers) > 0
-            else cell.box
-        )
-
-        kv_items.append(KvItemSchema(id=None, key=keys, value=cell.id, box=box))
-
-        kv_cells[cell.id] = cells[cell.id]
-        for header in headers:
-            kv_cells[header["id"]] = cells[header["id"]]
+        if cell.id not in visited_values:
+            kv_items.append(KvItemSchema(id=None, key=[], value=cell.id, box=cell.box))
+            kv_cells[cell.id] = cells[cell.id]
 
     return kv_items, dag, kv_cells
