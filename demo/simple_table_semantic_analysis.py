@@ -1,21 +1,20 @@
-import cv2
 from pprint import pprint
 
-from yomitoku.table_semantic_parser import TableSemanticParser
-from yomitoku.data.functions import load_image
+import cv2
 
-path_img = "demo/samples/table.jpg"
+from yomitoku.data.functions import load_pdf
+from yomitoku.table_semantic_parser import TableSemanticParser
+
+path_img = "dataset/test.pdf"
 
 analyzer = TableSemanticParser(
     device="cuda",
     visualize=True,
 )
 
-imgs = load_image(path_img)
+imgs = load_pdf(path_img)
 
-results, vis_layout, vis_ocr = analyzer(
-    imgs[0],
-)
+results, vis_layout, vis_ocr = analyzer(imgs[0], grid_only=False)
 
 # 解析結果をJSONで保存
 results.to_json("result.json")
@@ -32,7 +31,7 @@ cv2.imwrite("vis_cell.jpg", vis_layout)
 table = results.find_table_by_id(table_id="t0")
 
 # テーブルのすべてのスキーマを表示
-pprint(table.view.kv_items_to_dict())
+pprint(table.view.kv_items_to_dict(merge_values=True))
 """
 >>{'利用目的': 'セミナー', '実施内容': 'YomiTokuの利用方法に関する説明会', '施設名称': 'MLism株式会社'}
 """

@@ -65,6 +65,27 @@ def filter_contained_rectangles_with_category(category_elements, ignore_categori
     return category_elements
 
 
+def filter_contained_groups(category_elements):
+    """別のグループに内包されるグループを除去する（内側を除去）"""
+    groups = category_elements.get("group", [])
+    if len(groups) <= 1:
+        return category_elements
+
+    check_list = [True] * len(groups)
+    for i, gi in enumerate(groups):
+        for j, gj in enumerate(groups):
+            if i == j:
+                continue
+            if gi["box"] == gj["box"]:
+                continue
+            if is_contained(gj["box"], gi["box"], threshold=0.9):
+                check_list[i] = False
+                break
+
+    category_elements["group"] = filter_by_flag(groups, check_list)
+    return category_elements
+
+
 def filter_contained_rectangles_across_categories(category_elements, source, target):
     """sourceカテゴリの矩形がtargetカテゴリの矩形に内包される場合、sourceカテゴリの矩形を除外"""
 
@@ -308,6 +329,7 @@ class CellDetector(BaseModule):
             category_elements,
             ignore_categories=["group"],
         )
+        category_elements = filter_contained_groups(category_elements)
         category_elements = filter_contained_rectangles_across_categories(
             category_elements,
             source="cell",

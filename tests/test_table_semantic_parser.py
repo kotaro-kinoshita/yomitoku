@@ -280,6 +280,88 @@ def test_view_kv_items_to_dict_merges_keys_and_makes_unique():
     assert set(d.values()) == {"123", "456"}  # safe_contents は半角space除去
 
 
+def test_view_kv_items_to_dict_merge_vertical():
+    """同一キーに対して縦方向に並ぶ複数のvalueを結合してソートする"""
+    cells = {
+        "k": mk_cell("k", (0, 0, 100, 30), role="header", contents="住所"),
+        "v1": mk_cell("v1", (100, 0, 300, 30), role="cell", contents="東京都"),
+        "v2": mk_cell("v2", (100, 30, 300, 60), role="cell", contents="新宿区"),
+        "v3": mk_cell("v3", (100, 60, 300, 90), role="cell", contents="1-2-3"),
+    }
+    kv_items = [
+        KvItemSchema(id=None, key=["k"], value="v1"),
+        KvItemSchema(id=None, key=["k"], value="v3"),  # 意図的に順序を入れ替え
+        KvItemSchema(id=None, key=["k"], value="v2"),
+    ]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    # merge_values=False (デフォルト): インデックス付与で個別に返る
+    d_separate = t.view.kv_items_to_dict(merge_values=False)
+    assert len(d_separate) == 3
+
+    # merge_values=True: y座標でソートして結合
+    d_merged = t.view.kv_items_to_dict(merge_values=True)
+    assert len(d_merged) == 1
+    assert "住所" in list(d_merged.keys())[0]
+    assert d_merged["住所"] == "東京都\n新宿区\n1-2-3"
+
+
+def test_view_kv_items_to_dict_merge_horizontal():
+    """同一キーに対して横方向に並ぶ複数のvalueを結合してソートする"""
+    cells = {
+        "k": mk_cell("k", (0, 0, 100, 50), role="header", contents="電話番号"),
+        "v1": mk_cell("v1", (100, 0, 200, 50), role="cell", contents="03"),
+        "v2": mk_cell("v2", (200, 0, 300, 50), role="cell", contents="1234"),
+        "v3": mk_cell("v3", (300, 0, 400, 50), role="cell", contents="5678"),
+    }
+    kv_items = [
+        KvItemSchema(id=None, key=["k"], value="v3"),  # 意図的に順序を入れ替え
+        KvItemSchema(id=None, key=["k"], value="v1"),
+        KvItemSchema(id=None, key=["k"], value="v2"),
+    ]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    # merge_values=True, separator="-": x座標でソートして結合
+    d_merged = t.view.kv_items_to_dict(merge_values=True, separator="-")
+    assert len(d_merged) == 1
+    assert d_merged["電話番号"] == "03-1234-5678"
+
+
+def test_view_kv_items_to_dict_merge_single_value():
+    """同一キーに1つのvalueしかない場合はそのまま返す"""
+    cells = {
+        "k": mk_cell("k", (0, 0, 100, 30), role="header", contents="名前"),
+        "v": mk_cell("v", (100, 0, 300, 30), role="cell", contents="太郎"),
+    }
+    kv_items = [KvItemSchema(id=None, key=["k"], value="v")]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    d = t.view.kv_items_to_dict(merge_values=True)
+    assert d == {"名前": "太郎"}
+
+
+def test_view_kv_items_to_dict_merge_mixed_keys():
+    """異なるキーが混在する場合、それぞれ個別にマージされる"""
+    cells = {
+        "k1": mk_cell("k1", (0, 0, 100, 30), role="header", contents="名前"),
+        "k2": mk_cell("k2", (0, 30, 100, 60), role="header", contents="住所"),
+        "v1": mk_cell("v1", (100, 0, 300, 30), role="cell", contents="太郎"),
+        "v2": mk_cell("v2", (100, 30, 300, 60), role="cell", contents="東京都"),
+        "v3": mk_cell("v3", (100, 60, 300, 90), role="cell", contents="新宿区"),
+    }
+    kv_items = [
+        KvItemSchema(id=None, key=["k1"], value="v1"),
+        KvItemSchema(id=None, key=["k2"], value="v2"),
+        KvItemSchema(id=None, key=["k2"], value="v3"),
+    ]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    d = t.view.kv_items_to_dict(merge_values=True)
+    assert len(d) == 2
+    assert d["名前"] == "太郎"
+    assert d["住所"] == "東京都\n新宿区"
+
+
 # -------------------------
 # TableSemanticContentsView.grids_to_dicts
 # -------------------------

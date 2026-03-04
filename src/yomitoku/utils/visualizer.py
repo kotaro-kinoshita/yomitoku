@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, features
+
 from ..constants import PALETTE
 from .logger import set_logger
 
@@ -184,6 +185,11 @@ def cell_detector_visualizer(img1, img2, cells):
 
         x1, y1, x2, y2 = map(int, box)
         target = out1 if c.role != "group" else out2
+
+        target = cv2.rectangle(
+            target, (x1, y1), (x2, y2), colors.get(c.role, (200, 200, 200)), 2
+        )
+
         target = cv2.putText(
             target,
             c.id,
@@ -240,4 +246,5 @@ def rec_visualizer(
             )
 
     out = np.array(pillow_img)
+    return out
     return out
