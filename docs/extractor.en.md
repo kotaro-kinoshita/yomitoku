@@ -181,6 +181,8 @@ fields:
 | `type` | string | - | `"string"` | Value type: `string`, `number`, `date` |
 | `structure` | string | - | `"scalar"` | Data structure: `scalar`, `kv` (both KV format), or `table` |
 | `normalize` | string | - | `null` | Normalization rule name |
+| `merge_values` | bool | - | `false` | Merge multiple values for the same key into one string (KV fields only) |
+| `separator` | string | - | `"\n"` | Separator used when `merge_values: true` |
 | `columns` | list | - | `null` | Column definitions (for table-structure fields) |
 
 ---
@@ -276,6 +278,29 @@ fields:
     type: number
     normalize: numeric
 ```
+
+#### merge_values (Merging Multiple Values)
+
+In KV fields, a single key may be associated with multiple value cells (e.g., when an address spans multiple rows). By default, only the first value is extracted. Setting `merge_values: true` collects all values, sorts them by position, and joins them with the specified `separator`.
+
+```yaml
+fields:
+  # Address split across multiple cells — merge into one string
+  - name: address
+    structure: kv
+    description: Address
+    type: string
+    merge_values: true
+    separator: ""          # No separator (default is newline)
+
+  # Name is a single cell — no merging needed (default behavior)
+  - name: full_name
+    structure: kv
+    description: Full Name
+    type: string
+```
+
+Sort order is automatically determined by the positions of the value cells. If the vertical spread (Y) is greater than or equal to the horizontal spread (X), values are sorted top-to-bottom; otherwise, left-to-right.
 
 **Search order in rule-based extraction:**
 

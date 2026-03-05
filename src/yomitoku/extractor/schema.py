@@ -38,6 +38,11 @@ class FieldSchema(BaseModel):
     normalize: Optional[str] = Field(
         None, description="Normalization rule name (for scalar fields)"
     )
+    merge_values: bool = Field(
+        False,
+        description="If True, merge multiple values for the same key into one string",
+    )
+    separator: str = Field("\n", description="Separator used when merge_values is True")
     columns: Optional[List[ColumnSchema]] = Field(
         None, description="Column definitions (for table fields)"
     )

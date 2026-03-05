@@ -152,24 +152,58 @@ def _extract_scalar_field(semantic_info, field_schema):
     if field_schema.description:
         kv_results = semantic_info.search_kv_items_by_key(field_schema.description)
         if kv_results:
-            kv = kv_results[0]
-            value_cell = kv["value"]
-            if value_cell is not None:
-                contents = value_cell.contents or ""
-                return ResolvedField(
-                    name=field_schema.name,
-                    value=contents,
-                    raw_text=contents,
-                    elements=[
-                        ResolvedElement(
-                            id=value_cell.id,
-                            box=list(value_cell.box),
-                            contents=contents,
-                        )
-                    ],
-                    confidence="high",
-                    source="kv",
-                )
+            if getattr(field_schema, "merge_values", False) and len(kv_results) > 1:
+                # 複数valueを結合
+                value_cells = [
+                    kv["value"] for kv in kv_results if kv["value"] is not None
+                ]
+                if value_cells:
+                    # 位置でソート（Y方向の広がり >= X方向ならY順、そうでなければX順）
+                    boxes = [cell.box for cell in value_cells]
+                    x_spread = max(b[0] for b in boxes) - min(b[0] for b in boxes)
+                    y_spread = max(b[1] for b in boxes) - min(b[1] for b in boxes)
+                    if y_spread >= x_spread:
+                        value_cells.sort(key=lambda c: c.box[1])
+                    else:
+                        value_cells.sort(key=lambda c: c.box[0])
+
+                    sep = field_schema.separator
+                    contents = sep.join(c.contents or "" for c in value_cells)
+                    raw_text = sep.join(c.contents or "" for c in value_cells)
+                    return ResolvedField(
+                        name=field_schema.name,
+                        value=contents,
+                        raw_text=raw_text,
+                        elements=[
+                            ResolvedElement(
+                                id=c.id,
+                                box=list(c.box),
+                                contents=c.contents or "",
+                            )
+                            for c in value_cells
+                        ],
+                        confidence="high",
+                        source="kv",
+                    )
+            else:
+                kv = kv_results[0]
+                value_cell = kv["value"]
+                if value_cell is not None:
+                    contents = value_cell.contents or ""
+                    return ResolvedField(
+                        name=field_schema.name,
+                        value=contents,
+                        raw_text=contents,
+                        elements=[
+                            ResolvedElement(
+                                id=value_cell.id,
+                                box=list(value_cell.box),
+                                contents=contents,
+                            )
+                        ],
+                        confidence="high",
+                        source="kv",
+                    )
 
     if field_schema.description:
         for table in semantic_info.tables:
