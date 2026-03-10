@@ -181,6 +181,8 @@ fields:
 | `type` | string | - | `"string"` | 値の型。`string`, `number`, `date` |
 | `structure` | string | - | `"scalar"` | データ構造。`scalar`、`kv`（いずれもKV形式）、または `table` |
 | `normalize` | string | - | `null` | 正規化ルール名 |
+| `merge_values` | bool | - | `false` | 同一キーに複数のvalueがある場合に結合する（KVフィールドのみ） |
+| `separator` | string | - | `"\n"` | `merge_values: true` 時のvalue結合セパレータ |
 | `columns` | list | - | `null` | テーブル構造の場合の列定義 |
 
 ---
@@ -276,6 +278,29 @@ fields:
     type: number
     normalize: numeric
 ```
+
+#### merge_values（複数値の結合）
+
+KVフィールドにおいて、同一のキーに複数のvalue（値セル）が紐づく場合があります（例: 住所が複数行に分かれている場合）。デフォルトでは最初の1件のみが抽出されますが、`merge_values: true` を指定することで、すべてのvalueを位置順にソートして `separator` で結合した結果を取得できます。
+
+```yaml
+fields:
+  # 住所が複数セルに分かれている場合、結合して取得
+  - name: address
+    structure: kv
+    description: 住所
+    type: string
+    merge_values: true
+    separator: ""          # セパレータなしで結合（デフォルトは改行）
+
+  # 氏名は1セルなので結合不要（デフォルト動作）
+  - name: full_name
+    structure: kv
+    description: 氏名
+    type: string
+```
+
+ソート順は値セルの位置に基づいて自動判定されます。Y方向の広がりがX方向以上の場合は上から下へ、それ以外は左から右へソートされます。
 
 **ルールベース抽出での検索順序:**
 
