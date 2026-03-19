@@ -47,7 +47,7 @@ class TextRecognizer(BaseModule):
         from_pretrained=True,
         infer_onnx=False,
         rec_orientation_fallback=True,
-        rec_orientation_fallback_thresh=0.85,
+        rec_orientation_fallback_thresh=0.75,
     ):
         super().__init__()
         self.load_model(
@@ -214,7 +214,10 @@ class TextRecognizer(BaseModule):
         )
 
         for j, idx in enumerate(retry_indices):
-            if retry_scores[j] > scores[idx]:
+            if (
+                retry_scores[j] > scores[idx]
+                and retry_scores[j] >= self.rec_orientation_fallback_thresh
+            ):
                 preds[idx] = retry_preds[j]
                 scores[idx] = retry_scores[j]
                 directions[idx] = retry_directions[j]
