@@ -122,6 +122,20 @@ If the PDF contains multiple pages, you can export them as a single file.
 yomitoku ${path_data} -f md --combine
 ```
 
+## PDF Output Image Quality
+
+You can specify the image quality preset for searchable PDF output using `--pdf_quality`. The default is `high`.
+
+| Preset | Max Long Side | JPEG Quality | Description |
+| :--- | :--- | :--- | :--- |
+| `high` | No limit | 85 | High quality (default). Preserves the original image resolution. |
+| `middle` | 2000px | 80 | Medium quality. Balances file size and image quality. |
+| `low` | 1500px | 60 | Low quality. Minimizes file size. |
+
+```bash
+yomitoku ${path_data} -f pdf --pdf_quality middle
+```
+
 ## Setting the PDF Reading Resolution
 
 Specifies the resolution (DPI) when reading a PDF (default DPI = 200). Increasing the DPI value may improve recognition accuracy when dealing with fine text or small details within the PDF.

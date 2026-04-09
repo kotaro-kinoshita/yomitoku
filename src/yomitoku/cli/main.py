@@ -75,6 +75,7 @@ def save_merged_file(out_path, args, out, imgs):
             out,
             output_path=out_path,
             font_path=args.font_path,
+            image_quality=args.pdf_quality,
         )
 
 
@@ -271,6 +272,7 @@ def process_single_file(args, analyzer, path, format):
                     [result],
                     output_path=out_path,
                     font_path=args.font_path,
+                    image_quality=args.pdf_quality,
                 )
 
             format_results.append(
@@ -409,6 +411,13 @@ def main():
         default=None,
         type=str,
         help="Path to the font file(.ttf) for PDF output",
+    )
+    parser.add_argument(
+        "--pdf_quality",
+        type=str,
+        default="high",
+        choices=["high", "middle", "low"],
+        help="Image quality preset for PDF output (default: high)",
     )
     parser.add_argument(
         "--dpi",
