@@ -102,6 +102,46 @@ class PdfPageIterator:
     def __len__(self):
         return self.total_pages
 
+    def _render_page(self, doc, index: int) -> np.ndarray:
+        page = doc[index]
+        bitmap = page.render(scale=self._dpi / 72)
+        pil_image = bitmap.to_pil()
+        return np.array(pil_image.convert("RGB"))[:, :, ::-1]
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            indices = range(*index.indices(self.total_pages))
+            try:
+                doc = pypdfium2.PdfDocument(self._pdf_path)
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to open the PDF file: {self._pdf_path}"
+                ) from e
+            try:
+                return [self._render_page(doc, i) for i in indices]
+            finally:
+                doc.close()
+
+        if isinstance(index, int):
+            if index < 0:
+                index += self.total_pages
+            if not (0 <= index < self.total_pages):
+                raise IndexError(f"page index {index} out of range")
+            try:
+                doc = pypdfium2.PdfDocument(self._pdf_path)
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to open the PDF file: {self._pdf_path}"
+                ) from e
+            try:
+                return self._render_page(doc, index)
+            finally:
+                doc.close()
+
+        raise TypeError(
+            f"indices must be integers or slices, not {type(index).__name__}"
+        )
+
     def __iter__(self):
         try:
             doc = pypdfium2.PdfDocument(self._pdf_path)
@@ -110,11 +150,7 @@ class PdfPageIterator:
 
         try:
             for i in range(self.total_pages):
-                page = doc[i]
-                bitmap = page.render(scale=self._dpi / 72)
-                pil_image = bitmap.to_pil()
-                img = np.array(pil_image.convert("RGB"))[:, :, ::-1]
-                yield img
+                yield self._render_page(doc, i)
         finally:
             doc.close()
 
