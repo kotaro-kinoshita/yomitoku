@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD)
 
-[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.0...HEAD)
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.11.2...HEAD)
+
+**Merged pull requests:**
+
+- docs: Update CHANGELOG [\#209](https://github.com/kotaro-kinoshita/yomitoku/pull/209) ([github-actions[bot]](https://github.com/apps/github-actions))
+
+## [v0.11.2](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.11.2) (2026-04-09)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.0...v0.11.2)
 
 **Implemented enhancements:**
 
