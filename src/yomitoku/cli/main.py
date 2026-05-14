@@ -121,12 +121,6 @@ def process_single_file(args, analyzer, path, format):
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
 
-        import cv2
-
-        cv2.imwrite(
-            os.path.join(args.outdir, f"{dirname}_{filename}_p{page + 1}.jpg"), img
-        )
-
         if ocr is not None:
             out_path = os.path.join(
                 args.outdir, f"{dirname}_{filename}_p{page + 1}_ocr.jpg"
@@ -358,6 +352,18 @@ def main():
         help="path of table structure recognizer config file",
     )
     parser.add_argument(
+        "--tr_name",
+        type=str,
+        default="parseq-large-v4_1",
+        help="name of text recognizer model (default: parseq-large-v4_1)",
+    )
+    parser.add_argument(
+        "--td_name",
+        type=str,
+        default="dbnetv2_1",
+        help="name of text detector model (default: dbnetv2_1)",
+    )
+    parser.add_argument(
         "--ignore_line_break",
         action="store_true",
         help="if set, ignore line break in the output",
@@ -506,6 +512,9 @@ def main():
         # configs["ocr"]["text_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
+    else:
+        configs["ocr"]["text_recognizer"]["model_name"] = args.tr_name
+        configs["ocr"]["text_detector"]["model_name"] = args.td_name
 
     if args.enable_rec_orientation_fallback:
         configs["ocr"]["text_recognizer"]["rec_orientation_fallback"] = True

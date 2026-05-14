@@ -9,6 +9,7 @@ from .configs import (
     TextRecognizerPARSeqSmallConfig,
     TextRecognizerPARSeqV2Config,
     TextRecognizerPARSeqTinyConfig,
+    TextRecognizerPARSeqLargeV41Config,
 )
 import cv2
 
@@ -33,6 +34,7 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
         self.register("parseqv2", TextRecognizerPARSeqV2Config, PARSeq)
         self.register("parseq-small", TextRecognizerPARSeqSmallConfig, PARSeq)
         self.register("parseq-tiny", TextRecognizerPARSeqTinyConfig, PARSeq)
+        self.register("parseq-large-v4_1", TextRecognizerPARSeqLargeV41Config, PARSeq)
 
 
 class TextRecognizer(BaseModule):
@@ -40,7 +42,7 @@ class TextRecognizer(BaseModule):
 
     def __init__(
         self,
-        model_name="parseqv2",
+        model_name="parseq-large-v4_1",
         path_cfg=None,
         device="cuda",
         visualize=False,

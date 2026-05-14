@@ -1,0 +1,25 @@
+hf_hub_repo: KotaroKinoshita/yomitoku-text-recognizer-parseq-large-v4_1
+num_tokens: 7121
+max_label_length: 100
+decode_ar: 1
+refine_iters: 1
+rec_orientation_fallback: false
+rec_orientation_fallback_thresh: 0.75
+data:
+  num_workers: 4
+  batch_size: 128
+  img_size: [32, 800]
+encoder:
+  patch_size: [8, 8]
+  num_heads: 8
+  embed_dim: 768
+  mlp_ratio: 4
+  depth: 12
+decoder:
+  embed_dim: 768
+  num_heads: 8
+  mlp_ratio: 4
+  depth: 1
+visualize:
+  font_size: 18
+  color: [0, 0, 255]
