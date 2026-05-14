@@ -2,7 +2,23 @@
 
 ## [Unreleased](https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD)
 
-[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.0...HEAD)
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.1...HEAD)
+
+**Implemented enhancements:**
+
+- 検出モデル及び手書き文字の認識モデルの強化 [\#212](https://github.com/kotaro-kinoshita/yomitoku/pull/212) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+## [v0.12.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.12.1) (2026-04-09)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.11.2...v0.12.1)
+
+**Merged pull requests:**
+
+- docs: Update CHANGELOG [\#209](https://github.com/kotaro-kinoshita/yomitoku/pull/209) ([github-actions[bot]](https://github.com/apps/github-actions))
+
+## [v0.11.2](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.11.2) (2026-04-09)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.0...v0.11.2)
 
 **Implemented enhancements:**
 
