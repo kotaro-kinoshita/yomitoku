@@ -16,7 +16,6 @@ class ParseqDataset(Dataset):
         self.img = img[:, :, ::-1]
         self.quads = quads
         self.cfg = cfg
-        self.img = img
         self.transform = T.Compose(
             [
                 T.ToTensor(),
