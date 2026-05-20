@@ -146,7 +146,7 @@ class TextRecognizer(BaseModule):
             opset_version=16,
             input_names=["input"],
             output_names=["output"],
-            do_constant_folding=True,
+            do_constant_folding=False,
             dynamic_axes=dynamic_axes,
         )
 
