@@ -9,6 +9,10 @@
 - fix: バッチサイズの動的化のため PARSeq ONNX エクスポートの定数畳み込みを無効化 [\#215](https://github.com/kotaro-kinoshita/yomitoku/pull/215) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - fix: BGR画像でテキスト認識処理を実施するバグを修正 [\#214](https://github.com/kotaro-kinoshita/yomitoku/pull/214) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
+**Merged pull requests:**
+
+- docs: Update CHANGELOG [\#217](https://github.com/kotaro-kinoshita/yomitoku/pull/217) ([github-actions[bot]](https://github.com/apps/github-actions))
+
 ## [v0.13.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.0) (2026-05-14)
 
 [Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.1...v0.13.0)
