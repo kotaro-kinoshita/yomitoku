@@ -118,25 +118,44 @@ Examples include:
 
 ---
 
-## **3. Practical Criteria for Determining Commercial Use**
+## **3. Prohibited Use: Development of Competing Models**
+
+!!!warning
+    **Important: Use for developing competing models is not permitted, regardless of the form of use**
+
+YomiToku is an engine designed to support the analysis and structuring of business documents.
+However, using this Software or its outputs for the **development, training, evaluation, or distillation of competing document analysis models or OCR models is not permitted.**
+
+Examples include:
+
+* Using outputs of the Software as **training data** for other OCR or document analysis models
+* **Model distillation (knowledge distillation)** using outputs of the Software
+* Using the Software for **accuracy evaluation or benchmarking** aimed at developing competing products or models
+* Analyzing the Software's models or algorithms and **reusing them for the development of competing models**
+
+→ These activities are **prohibited regardless of whether the use is non-commercial or commercial**.
+
+---
+
+## **4. Practical Criteria for Determining Commercial Use**
 
 If any of the following conditions apply, the use is **highly likely to be commercial**:
 
-### ✔ **3-1. Is monetary compensation involved?**
+### ✔ **4-1. Is monetary compensation involved?**
 
 → If yes, commercial.
 
-### ✔ **3-2. Does the use create business value (revenue or cost reduction)?**
+### ✔ **4-2. Does the use create business value (revenue or cost reduction)?**
 
 → If yes, commercial.
 
-### ✔ **3-3. Are outputs delivered to external parties?**
+### ✔ **4-3. Are outputs delivered to external parties?**
 
 → Once outputs are provided, it is commercial.
 
 ---
 
-## **4. When the Guideline Does Not Clarify Your Case**
+## **5. When the Guideline Does Not Clarify Your Case**
 
 If your use case is not clearly covered by this guideline,
 please contact us for clarification:
