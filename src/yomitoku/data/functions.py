@@ -350,6 +350,32 @@ def rotate_text_image(img, thresh_aspect=2):
     return img
 
 
+def calc_resize_without_padding(img, target_size):
+    """
+    Calculate the resized size of the image without padding.
+    The image is only downscaled (never upscaled) to fit within target_size.
+
+    Args:
+        img (np.ndarray): target image
+        target_size (int, int): target size (height, width)
+
+    Returns:
+        Tuple[int, int]: resized size (height, width)
+    """
+    h, w = img.shape[:2]
+    scale_w = 1.0
+    scale_h = 1.0
+    if w > target_size[1]:
+        scale_w = target_size[1] / w
+    if h > target_size[0]:
+        scale_h = target_size[0] / h
+
+    new_w = max(1, int(w * min(scale_w, scale_h)))
+    new_h = max(1, int(h * min(scale_w, scale_h)))
+
+    return new_h, new_w
+
+
 def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
     """
     Resize the image with padding.
@@ -362,16 +388,7 @@ def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
     Returns:
         np.ndarray: resized image
     """
-    h, w = img.shape[:2]
-    scale_w = 1.0
-    scale_h = 1.0
-    if w > target_size[1]:
-        scale_w = target_size[1] / w
-    if h > target_size[0]:
-        scale_h = target_size[0] / h
-
-    new_w = int(w * min(scale_w, scale_h))
-    new_h = int(h * min(scale_w, scale_h))
+    new_h, new_w = calc_resize_without_padding(img, target_size)
 
     resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
 

@@ -50,6 +50,7 @@ class TextRecognizer(BaseModule):
         infer_onnx=False,
         rec_orientation_fallback=False,
         rec_orientation_fallback_thresh=0.75,
+        batch_bucketing=False,
     ):
         super().__init__()
         self.load_model(
@@ -70,6 +71,7 @@ class TextRecognizer(BaseModule):
         self.infer_onnx = infer_onnx
         self.rec_orientation_fallback = rec_orientation_fallback
         self.rec_orientation_fallback_thresh = rec_orientation_fallback_thresh
+        self.batch_bucketing = batch_bucketing
 
         if infer_onnx:
             name = self._cfg.hf_hub_repo.split("/")[-1]
@@ -103,23 +105,31 @@ class TextRecognizer(BaseModule):
             ]
 
         dataset = ParseqDataset(self._cfg, img, polygons)
-        dataloader = self._make_mini_batch(dataset)
 
-        return dataloader, polygons, dataset
+        order = None
+        if self.batch_bucketing and len(dataset) == len(polygons) and len(dataset) > 1:
+            # Group crops with similar content widths (a proxy for text
+            # length) into the same batch, so the autoregressive decoding
+            # loop is not gated by one long line per batch.
+            order = np.argsort(dataset.content_widths).tolist()
 
-    def _make_mini_batch(self, dataset):
+        dataloader = self._make_mini_batch(dataset, order)
+
+        return dataloader, polygons, dataset, order
+
+    def _make_mini_batch(self, dataset, order=None):
+        indices = order if order is not None else range(len(dataset))
         mini_batches = []
         mini_batch = []
-        for data in dataset:
-            data = torch.unsqueeze(data, 0)
-            mini_batch.append(data)
+        for idx in indices:
+            mini_batch.append(dataset[idx])
 
             if len(mini_batch) == self._cfg.data.batch_size:
-                mini_batches.append(torch.cat(mini_batch, 0))
+                mini_batches.append(torch.stack(mini_batch, 0))
                 mini_batch = []
         else:
             if len(mini_batch) > 0:
-                mini_batches.append(torch.cat(mini_batch, 0))
+                mini_batches.append(torch.stack(mini_batch, 0))
 
         return mini_batches
 
@@ -234,8 +244,20 @@ class TextRecognizer(BaseModule):
             vis (np.ndarray, optional): rendering image. Defaults to None.
         """
 
-        dataloader, points, dataset = self.preprocess(img, points)
-        preds, scores, directions = self._run_batch_inference(dataloader, points)
+        dataloader, points, dataset, order = self.preprocess(img, points)
+
+        if order is not None:
+            sorted_points = [points[i] for i in order]
+            preds, scores, directions = self._run_batch_inference(
+                dataloader, sorted_points
+            )
+            # Restore the original (detection) order of the results.
+            inverse = np.argsort(order)
+            preds = [preds[i] for i in inverse]
+            scores = [scores[i] for i in inverse]
+            directions = [directions[i] for i in inverse]
+        else:
+            preds, scores, directions = self._run_batch_inference(dataloader, points)
 
         if self.rec_orientation_fallback:
             self._apply_orientation_fallback(dataset, points, preds, scores, directions)

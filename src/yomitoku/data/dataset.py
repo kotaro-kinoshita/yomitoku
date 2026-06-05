@@ -2,6 +2,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms as T
 
 from .functions import (
+    calc_resize_without_padding,
     extract_roi_with_perspective,
     resize_with_padding,
     rotate_text_image,
@@ -28,6 +29,7 @@ class ParseqDataset(Dataset):
 
         self.data = [d[0] for d in data if d is not None]
         self.roi_images = [d[1] for d in data if d is not None]
+        self.content_widths = [d[2] for d in data if d is not None]
         self.valid_quads = [q for q, d in zip(self.quads, data) if d is not None]
 
     def preprocess(self, quad):
@@ -42,7 +44,11 @@ class ParseqDataset(Dataset):
         roi_img = rotate_text_image(roi_img, thresh_aspect=2)
         resized = resize_with_padding(roi_img, self.cfg.data.img_size)
 
-        return resized, roi_img
+        # Content width before padding; used as a text-length proxy for
+        # width bucketing in TextRecognizer.
+        _, content_width = calc_resize_without_padding(roi_img, self.cfg.data.img_size)
+
+        return resized, roi_img, content_width
 
     def __len__(self):
         return len(self.data)
