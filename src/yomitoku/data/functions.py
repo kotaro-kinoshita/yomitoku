@@ -401,18 +401,26 @@ def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
     return canvas
 
 
-def resize_with_dynamic_padding(img, target_size, align=8, background_color=(0, 0, 0)):
+def resize_with_dynamic_padding(
+    img, target_size, align=8, margin=64, background_color=(0, 0, 0)
+):
     """
     Resize the image with padding, keeping the canvas width to the
-    actual content width rounded up to a multiple of `align` instead of
-    padding to the full target width. The canvas height is fixed to
-    target_size[0]. Scaling is identical to `resize_with_padding`.
+    actual content width (plus a trailing margin) rounded up to a
+    multiple of `align` instead of padding to the full target width.
+    The canvas height is fixed to target_size[0]. Scaling is identical
+    to `resize_with_padding`.
 
     Args:
         img (np.ndarray): target image
         target_size (int, int): target size (height, width)
         align (int): the canvas width is rounded up to a multiple of this
             value (should match the encoder patch width)
+        margin (int): minimum trailing background width after the content.
+            The recognizer was trained on canvases padded to the full
+            target width, and it relies on trailing background as the
+            end-of-text cue; with no margin it tends to hallucinate
+            continuations of the text.
         background_color (Tuple[int, int, int]): background color
 
     Returns:
@@ -422,7 +430,7 @@ def resize_with_dynamic_padding(img, target_size, align=8, background_color=(0, 
 
     resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
-    canvas_w = min(target_size[1], ((new_w + align - 1) // align) * align)
+    canvas_w = min(target_size[1], ((new_w + margin + align - 1) // align) * align)
     canvas = np.zeros((target_size[0], canvas_w, 3), dtype=np.uint8)
     canvas[:, :] = background_color
 
