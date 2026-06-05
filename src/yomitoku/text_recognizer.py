@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
 import os
 import unicodedata
 
@@ -50,6 +51,8 @@ class TextRecognizer(BaseModule):
         infer_onnx=False,
         rec_orientation_fallback=False,
         rec_orientation_fallback_thresh=0.75,
+        batch_bucketing=False,
+        dynamic_width=False,
     ):
         super().__init__()
         self.load_model(
@@ -70,6 +73,10 @@ class TextRecognizer(BaseModule):
         self.infer_onnx = infer_onnx
         self.rec_orientation_fallback = rec_orientation_fallback
         self.rec_orientation_fallback_thresh = rec_orientation_fallback_thresh
+        self.batch_bucketing = batch_bucketing
+        # The ONNX model is exported with a fixed input shape, so
+        # dynamic-width batching is only available on the PyTorch path.
+        self.dynamic_width = dynamic_width and not infer_onnx
 
         if infer_onnx:
             name = self._cfg.hf_hub_repo.split("/")[-1]
@@ -102,24 +109,46 @@ class TextRecognizer(BaseModule):
                 ]
             ]
 
-        dataset = ParseqDataset(self._cfg, img, polygons)
-        dataloader = self._make_mini_batch(dataset)
+        dataset = ParseqDataset(
+            self._cfg, img, polygons, dynamic_width=self.dynamic_width
+        )
 
-        return dataloader, polygons, dataset
+        order = None
+        if self.batch_bucketing and len(dataset) == len(polygons) and len(dataset) > 1:
+            # Group crops with similar content widths (a proxy for text
+            # length) into the same batch, so the AR decoding loop is not
+            # gated by one long line per batch.
+            order = np.argsort(dataset.content_widths).tolist()
 
-    def _make_mini_batch(self, dataset):
+        dataloader = self._make_mini_batch(dataset, order)
+
+        return dataloader, polygons, dataset, order
+
+    def _collate(self, mini_batch):
+        if self.dynamic_width:
+            # Pad each crop to the widest crop in the batch. The padding
+            # value -1.0 matches the normalized black padding used at
+            # training time ((0 - 0.5) / 0.5).
+            max_w = max(data.shape[-1] for data in mini_batch)
+            mini_batch = [
+                F.pad(data, (0, max_w - data.shape[-1]), value=-1.0)
+                for data in mini_batch
+            ]
+        return torch.stack(mini_batch, 0)
+
+    def _make_mini_batch(self, dataset, order=None):
+        indices = order if order is not None else range(len(dataset))
         mini_batches = []
         mini_batch = []
-        for data in dataset:
-            data = torch.unsqueeze(data, 0)
-            mini_batch.append(data)
+        for idx in indices:
+            mini_batch.append(dataset[idx])
 
             if len(mini_batch) == self._cfg.data.batch_size:
-                mini_batches.append(torch.cat(mini_batch, 0))
+                mini_batches.append(self._collate(mini_batch))
                 mini_batch = []
         else:
             if len(mini_batch) > 0:
-                mini_batches.append(torch.cat(mini_batch, 0))
+                mini_batches.append(self._collate(mini_batch))
 
         return mini_batches
 
@@ -234,8 +263,20 @@ class TextRecognizer(BaseModule):
             vis (np.ndarray, optional): rendering image. Defaults to None.
         """
 
-        dataloader, points, dataset = self.preprocess(img, points)
-        preds, scores, directions = self._run_batch_inference(dataloader, points)
+        dataloader, points, dataset, order = self.preprocess(img, points)
+
+        if order is not None:
+            sorted_points = [points[i] for i in order]
+            preds, scores, directions = self._run_batch_inference(
+                dataloader, sorted_points
+            )
+            # Restore the original (detection) order of the results.
+            inverse = np.argsort(order)
+            preds = [preds[i] for i in inverse]
+            scores = [scores[i] for i in inverse]
+            directions = [directions[i] for i in inverse]
+        else:
+            preds, scores, directions = self._run_batch_inference(dataloader, points)
 
         if self.rec_orientation_fallback:
             self._apply_orientation_fallback(dataset, points, preds, scores, directions)
