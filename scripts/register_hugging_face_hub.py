@@ -42,11 +42,13 @@ def get_module(module_name, model_name, device):
 def main(args):
     module = get_module(args.module, args.model_name, args.device)
     module.model.load_state_dict(
-        torch.load(args.checkpoint, map_location="cpu")["model"]
+        torch.load(args.checkpoint, map_location="cpu", weights_only=False)["model"]
     )
 
     module.model.save_pretrained(args.name)
-    module.model.push_to_hub(f"{args.owner}/{args.name}", token=args.token)
+    # Local trial: save_pretrained writes a HF-format dir that from_pretrained
+    # can load directly. Skip the upload to keep the model local-only.
+    # module.model.push_to_hub(f"{args.owner}/{args.name}", token=args.token)
 
 
 if __name__ == "__main__":
