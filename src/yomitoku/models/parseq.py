@@ -83,6 +83,18 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
 
         self.export_onnx = False
 
+        # Decode-time repetition early-stop. When the AR decoder enters a
+        # degenerate loop (a period-p token unit repeated many times, the
+        # "EOS-hallucination" failure mode), detect it online, collapse the
+        # repeated run to a single unit and force-stop that sequence. This
+        # removes the runaway tail at the source and skips the wasted AR
+        # steps. Thresholds are deliberately conservative (period-1 needs a
+        # long run) so genuine text is never truncated. Tunable via config.
+        self.repetition_stop = bool(getattr(self.cfg, "repetition_stop", True))
+        self.rep_period_max = int(getattr(self.cfg, "rep_period_max", 8))
+        self.rep_min_run_p1 = int(getattr(self.cfg, "rep_min_run_p1", 8))
+        self.rep_min_repeats = int(getattr(self.cfg, "rep_min_repeats", 3))
+
     @property
     def _device(self) -> torch.device:
         return next(self.head.parameters(recurse=False)).device
@@ -92,6 +104,28 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         param_names = {"text_embed.embedding.weight", "pos_queries"}
         enc_param_names = {"encoder." + n for n in self.encoder.no_weight_decay()}
         return param_names.union(enc_param_names)
+
+    def _detect_repeat_onset(self, seq):
+        """Detect a trailing periodic loop in a token-id list.
+
+        Returns (onset, period) where ``onset`` is the index of the first
+        token of the repeated run, or None if no qualifying loop is found.
+        A period-1 unit must repeat at least ``rep_min_run_p1`` times; a
+        multi-token unit at least ``rep_min_repeats`` times. The smallest
+        qualifying period wins (the fundamental unit).
+        """
+        n = len(seq)
+        for p in range(1, self.rep_period_max + 1):
+            if n < 2 * p:
+                continue
+            unit = seq[n - p : n]
+            k, t = 1, n - p
+            while t - p >= 0 and seq[t - p : t] == unit:
+                k += 1
+                t -= p
+            if k >= (self.rep_min_run_p1 if p == 1 else self.rep_min_repeats):
+                return t, p  # run starts at index t
+        return None
 
     def encode(self, img: torch.Tensor):
         return self.encoder(img)
@@ -147,6 +181,13 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
             1,
         )
 
+        # Per-sequence repetition early-stop bookkeeping. ``rep_cut`` holds the
+        # truncation position (keep one copy of the repeated unit) for any
+        # sequence detected to be looping; applied to the logits after decoding
+        # (and after refinement) so the runaway tail is removed from the output.
+        rep_on = self.repetition_stop and testing and not self.export_onnx
+        rep_cut = [None] * bs
+
         if self.decode_ar:
             tgt_in = torch.full(
                 (bs, num_steps),
@@ -156,13 +197,17 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
             )
             tgt_in[:, 0] = self.tokenizer.bos_id
 
+            rep_done = [False] * bs
+
             logits = []
             for i in range(num_steps):
                 j = i + 1  # next token index
                 # Efficient decoding:
-                # Input the context up to the ith token. We use only one query (at poad masking effect of the canonical (forward) AR context.
-                # Past tokens have no access to future tokens, hence are fixed once computed.sition = i) at a time.
-                # This works because of the lookahe
+                # Input the context up to the ith token. We use only one query
+                # (at position = i) at a time. This works because of the
+                # lookahead masking effect of the canonical (forward) AR
+                # context. Past tokens have no access to future tokens, hence
+                # are fixed once computed.
                 tgt_out = self.decode(
                     tgt_in[:, :j],
                     memory,
@@ -176,6 +221,22 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                 if j < num_steps:
                     # greedy decode. add the next token index to the target input
                     tgt_in[:, j] = p_i.squeeze().argmax(-1)
+
+                    if rep_on:
+                        # ``i`` is the position of the token just emitted.
+                        for b in range(bs):
+                            if rep_done[b] or int(tgt_in[b, j]) == self.tokenizer.eos_id:
+                                continue
+                            seq = tgt_in[b, 1 : j + 1].tolist()
+                            hit = self._detect_repeat_onset(seq)
+                            if hit is not None:
+                                onset, period = hit
+                                # keep the valid prefix + a single unit
+                                rep_cut[b] = onset + period
+                                rep_done[b] = True
+                                # force EOS context so the batch can finish early
+                                tgt_in[b, j] = self.tokenizer.eos_id
+
                     # Efficient batch decoding: If all output words have at least one EOS token, end decoding.
                     if (
                         not self.export_onnx
@@ -232,5 +293,15 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     query_mask[:, : tgt_in.shape[1]],
                 )
                 logits = self.head(tgt_out)
+
+        if rep_on and any(c is not None for c in rep_cut):
+            # Force EOS at the loop-onset position so the tokenizer truncates
+            # the repeated tail. Done after refinement, which would otherwise
+            # regenerate the run. EOS is class index ``eos_id`` of the head.
+            eos_id = self.tokenizer.eos_id
+            for b, cut in enumerate(rep_cut):
+                if cut is not None and cut < logits.shape[1]:
+                    logits[b, cut, :] = -30.0
+                    logits[b, cut, eos_id] = 30.0
 
         return logits
