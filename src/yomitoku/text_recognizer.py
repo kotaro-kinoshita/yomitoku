@@ -13,6 +13,7 @@ from .configs import (
     TextRecognizerPARSeqLargeV41Config,
     TextRecognizerPARSeqLargeV41DynwConfig,
     TextRecognizerPARSeqMiddleV4DynwConfig,
+    TextRecognizerPARSeqH16LiteDynwConfig,
 )
 import cv2
 
@@ -43,6 +44,9 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
         )
         self.register(
             "parseq-middle-v4-dynw", TextRecognizerPARSeqMiddleV4DynwConfig, PARSeq
+        )
+        self.register(
+            "parseq-h16-lite-dynw", TextRecognizerPARSeqH16LiteDynwConfig, PARSeq
         )
 
 
