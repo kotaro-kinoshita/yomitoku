@@ -176,10 +176,11 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         pos_queries = self.pos_queries[:, :num_steps].expand(bs, -1, -1)
 
         # Special case for the forward permutation. Faster than using `generate_attn_masks()`
-        tgt_mask = query_mask = torch.triu(
+        tgt_mask = torch.triu(
             torch.ones((num_steps, num_steps), dtype=torch.bool, device=self._device),
             1,
         )
+        query_mask = tgt_mask.clone()
 
         # Per-sequence repetition early-stop bookkeeping. ``rep_cut`` holds the
         # truncation position (keep one copy of the repeated unit) for any
@@ -225,7 +226,10 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     if rep_on:
                         # ``i`` is the position of the token just emitted.
                         for b in range(bs):
-                            if rep_done[b] or int(tgt_in[b, j]) == self.tokenizer.eos_id:
+                            if (
+                                rep_done[b]
+                                or int(tgt_in[b, j]) == self.tokenizer.eos_id
+                            ):
                                 continue
                             seq = tgt_in[b, 1 : j + 1].tolist()
                             hit = self._detect_repeat_onset(seq)
