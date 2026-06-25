@@ -77,6 +77,7 @@ def save_merged_file(out_path, args, out, imgs):
             out,
             output_path=out_path,
             font_path=args.font_path,
+            image_quality=args.pdf_quality,
         )
 
 
@@ -148,10 +149,6 @@ def process_single_file(args, analyzer, path, format):
         result, ocr, layout = analyzer(img, pdf_text_words=pdf_text_words)
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
-
-        # cv2.imwrite(
-        #    os.path.join(args.outdir, f"{dirname}_{filename}_p{page+1}.jpg"), img
-        # )
 
         if ocr is not None:
             out_path = os.path.join(
@@ -234,7 +231,7 @@ def process_single_file(args, analyzer, path, format):
                 html, _ = convert_html(
                     result,
                     out_path,
-                    ignore_line_break=args.ignore_line_break,
+                    args.ignore_line_break,
                     img=img,
                     export_figure=args.figure,
                     export_figure_letter=args.figure_letter,
@@ -265,7 +262,7 @@ def process_single_file(args, analyzer, path, format):
                 md, _ = convert_markdown(
                     result,
                     out_path,
-                    ignore_line_break=args.ignore_line_break,
+                    args.ignore_line_break,
                     img=img,
                     export_figure=args.figure,
                     export_figure_letter=args.figure_letter,
@@ -298,6 +295,7 @@ def process_single_file(args, analyzer, path, format):
                     [result],
                     output_path=out_path,
                     font_path=args.font_path,
+                    image_quality=args.pdf_quality,
                 )
 
             format_results.append(
@@ -383,6 +381,18 @@ def main():
         help="path of table structure recognizer config file",
     )
     parser.add_argument(
+        "--tr_name",
+        type=str,
+        default="parseq-large-v4_1",
+        help="name of text recognizer model (default: parseq-large-v4_1)",
+    )
+    parser.add_argument(
+        "--td_name",
+        type=str,
+        default="dbnetv2_1",
+        help="name of text detector model (default: dbnetv2_1)",
+    )
+    parser.add_argument(
         "--ignore_line_break",
         action="store_true",
         help="if set, ignore line break in the output",
@@ -438,6 +448,13 @@ def main():
         help="Path to the font file(.ttf) for PDF output",
     )
     parser.add_argument(
+        "--pdf_quality",
+        type=str,
+        default="high",
+        choices=["high", "middle", "low"],
+        help="Image quality preset for PDF output (default: high)",
+    )
+    parser.add_argument(
         "--dpi",
         type=int,
         default=200,
@@ -453,6 +470,28 @@ def main():
         "--use_pdf_text",
         action="store_true",
         help="if set, use text layer in PDF if available instead of OCR",
+    )
+    parser.add_argument(
+        "--enable-rec-orientation-fallback",
+        action="store_true",
+        help="if set, enable orientation fallback for recognition",
+    )
+    parser.add_argument(
+        "--rec-orientation-fallback-thresh",
+        type=float,
+        default=0.75,
+        help="confidence threshold for orientation fallback (default: 0.75)",
+    )
+    parser.add_argument(
+        "--ignore_ruby",
+        action="store_true",
+        help="if set, ignore ruby (furigana) text in the output",
+    )
+    parser.add_argument(
+        "--ruby_threshold",
+        type=float,
+        default=1.0,
+        help="bimodality separation threshold for ruby detection; higher values require stronger bimodality to use valley split (default: 2.0)",
     )
     args = parser.parse_args()
 
@@ -507,6 +546,15 @@ def main():
         # configs["ocr"]["text_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
+    else:
+        configs["ocr"]["text_recognizer"]["model_name"] = args.tr_name
+        configs["ocr"]["text_detector"]["model_name"] = args.td_name
+
+    if args.enable_rec_orientation_fallback:
+        configs["ocr"]["text_recognizer"]["rec_orientation_fallback"] = True
+        configs["ocr"]["text_recognizer"]["rec_orientation_fallback_thresh"] = (
+            args.rec_orientation_fallback_thresh
+        )
 
     analyzer = DocumentAnalyzer(
         configs=configs,
@@ -514,6 +562,8 @@ def main():
         device=args.device,
         ignore_meta=args.ignore_meta,
         reading_order=args.reading_order,
+        ignore_ruby=args.ignore_ruby,
+        ruby_threshold=args.ruby_threshold,
     )
 
     os.makedirs(args.outdir, exist_ok=True)

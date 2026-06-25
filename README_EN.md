@@ -84,6 +84,8 @@ yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 | `--encoding` | Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (Supported encodings: `utf-8`, `utf-8-sig`, `shift-jis`, `enc-jp`, `cp932`) |
 | `--combine` | When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export. |
 | `--ignore_meta` | Excludes text information such as headers and footers from the output file. |
+| `--ignore_ruby` | Excludes ruby (furigana) text from the output. |
+| `--ruby_threshold` | Specifies the threshold for ruby detection (default: 0.5). Used together with `--ignore_ruby`. |
 
 For other options, please refer to the help documentation.
 
@@ -97,6 +99,61 @@ yomitoku --help
 - In efficient mode, fast inference is possible even on a CPU.
 - YomiToku is optimized for document OCR and is not designed for scene OCR (e.g., text printed on non-paper surfaces like signs).
 - The resolution of input images is critical for improving the accuracy of AI-OCR recognition. Low-resolution images may lead to reduced recognition accuracy. It is recommended to use images with a minimum short side resolution of 720px for inference.
+
+## 📋 Extractor (Structured Data Extraction)
+
+YomiToku Extractor extracts structured data from document images and PDFs based on a YAML schema. It automatically extracts field values from OCR and layout analysis results and outputs them as JSON.
+
+### Extraction Modes
+
+| Command | Mode | Features |
+| :--- | :--- | :--- |
+| `yomitoku_extract` | Rule-based | No LLM required. Fast extraction via KV search, grid matching, and regex |
+| `yomitoku_extract_with_llm` | LLM-based | More flexible extraction using an LLM server such as vLLM |
+
+- **Rule-based**: Best for fixed-format documents (application forms, reports, slips). When the position or text pattern of extraction targets is known, it extracts quickly and accurately.
+- **LLM-based**: Best for variable-format documents (business cards, receipts, invoices). Even when layouts or value patterns vary, it can extract flexibly by understanding context.
+
+### Installation
+
+```bash
+pip install yomitoku[extract]
+```
+
+### Schema Definition Example
+
+```yaml
+fields:
+  - name: phone_number
+    description: Phone Number
+    type: string
+    normalize: phone_jp
+
+  - name: invoice_number
+    regex: 'T\d{13}'
+    type: string
+
+  - name: order_items
+    structure: table
+    columns:
+      - name: product
+        description: Product Name
+      - name: price
+        description: Amount
+        normalize: numeric
+```
+
+### Usage Examples
+
+```bash
+# Rule-based extraction
+yomitoku_extract input.jpg -s schema.yaml -o results -v
+
+# LLM-based extraction (using vLLM server)
+yomitoku_extract_with_llm input.jpg -s schema.yaml -m Qwen/Qwen3-8B-Instruct
+```
+
+For details, see the [Extractor documentation](https://kotaro-kinoshita.github.io/yomitoku/extractor/).
 
 ## 📝 Documents
 

@@ -78,15 +78,101 @@ def load_image(image_path: str) -> np.ndarray:
     return pages
 
 
-def load_pdf(pdf_path: str, dpi=200) -> list[np.ndarray]:
+class PdfPageIterator:
+    """PDF ページを1ページずつ遅延レンダリングするイテレータ。
+
+    全ページを一括でメモリに展開せず、1 ページずつレンダリングして yield
+    することで、数百ページ超の PDF でも OOM を回避する。
+
+    Attributes:
+        total_pages (int): PDF の総ページ数。
     """
-    Open a PDF file.
+
+    def __init__(self, pdf_path: Path, dpi: int = 200):
+        self._pdf_path = pdf_path
+        self._dpi = dpi
+
+        try:
+            doc = pypdfium2.PdfDocument(pdf_path)
+            self.total_pages = len(doc)
+            doc.close()
+        except Exception as e:
+            raise ValueError(f"Failed to open the PDF file: {pdf_path}") from e
+
+    def __len__(self):
+        return self.total_pages
+
+    def _render_page(self, doc, index: int) -> np.ndarray:
+        page = doc[index]
+        bitmap = page.render(scale=self._dpi / 72)
+        pil_image = bitmap.to_pil()
+        return np.array(pil_image.convert("RGB"))[:, :, ::-1]
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            indices = range(*index.indices(self.total_pages))
+            try:
+                doc = pypdfium2.PdfDocument(self._pdf_path)
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to open the PDF file: {self._pdf_path}"
+                ) from e
+            try:
+                return [self._render_page(doc, i) for i in indices]
+            finally:
+                doc.close()
+
+        if isinstance(index, int):
+            if index < 0:
+                index += self.total_pages
+            if not (0 <= index < self.total_pages):
+                raise IndexError(f"page index {index} out of range")
+            try:
+                doc = pypdfium2.PdfDocument(self._pdf_path)
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to open the PDF file: {self._pdf_path}"
+                ) from e
+            try:
+                return self._render_page(doc, index)
+            finally:
+                doc.close()
+
+        raise TypeError(
+            f"indices must be integers or slices, not {type(index).__name__}"
+        )
+
+    def __iter__(self):
+        try:
+            doc = pypdfium2.PdfDocument(self._pdf_path)
+        except Exception as e:
+            raise ValueError(f"Failed to open the PDF file: {self._pdf_path}") from e
+
+        try:
+            for i in range(self.total_pages):
+                yield self._render_page(doc, i)
+        finally:
+            doc.close()
+
+
+def load_pdf(pdf_path: str, dpi=200) -> PdfPageIterator:
+    """
+    Load a PDF file and return an iterator that yields page images in BGR format.
+
+    Pages are rendered lazily one at a time to avoid loading all pages into
+    memory at once, preventing OOM errors for large PDFs with hundreds of pages.
 
     Args:
-        pdf_path (str): path to the PDF file
+        pdf_path (str): The path to the PDF file to be loaded.
+        dpi (int, optional): The resolution for rendering. Defaults to 200.
 
     Returns:
-        list[np.ndarray]: list of image data(BGR)
+        PdfPageIterator: An iterator yielding NumPy arrays (BGR format) for each page.
+            Has a `total_pages` attribute and supports `len()`.
+
+    Raises:
+        FileNotFoundError: If the specified PDF file does not exist.
+        ValueError: If the file format is not supported or not a valid PDF.
     """
 
     pdf_path = Path(pdf_path)
@@ -104,20 +190,7 @@ def load_pdf(pdf_path: str, dpi=200) -> list[np.ndarray]:
             "image file is not supported by load_pdf(). Use load_image() instead."
         )
 
-    try:
-        doc = pypdfium2.PdfDocument(pdf_path)
-        images = []
-        for i in range(len(doc)):
-            page = doc.get_page(i)
-            bitmap = page.render(scale=dpi / 72)
-            pil_image = bitmap.to_pil()
-            images.append(np.array(pil_image.convert("RGB"))[:, :, ::-1])
-            page.close()
-        doc.close()
-    except Exception as e:
-        raise ValueError(f"Failed to open the PDF file: {pdf_path}") from e
-
-    return images
+    return PdfPageIterator(pdf_path, dpi=dpi)
 
 
 def resize_shortest_edge(

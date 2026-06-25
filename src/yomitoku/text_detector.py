@@ -6,6 +6,7 @@ from .base import BaseModelCatalog, BaseModule
 from .configs import (
     TextDetectorDBNetConfig,
     TextDetectorDBNetV2Config,
+    TextDetectorDBNetV2_1Config,
 )
 from .data.functions import (
     array_to_tensor,
@@ -27,6 +28,7 @@ class TextDetectorModelCatalog(BaseModelCatalog):
         super().__init__()
         self.register("dbnet", TextDetectorDBNetConfig, DBNet)
         self.register("dbnetv2", TextDetectorDBNetV2Config, DBNet)
+        self.register("dbnetv2_1", TextDetectorDBNetV2_1Config, DBNet)
 
 
 class TextDetector(BaseModule):
@@ -34,7 +36,7 @@ class TextDetector(BaseModule):
 
     def __init__(
         self,
-        model_name="dbnetv2",
+        model_name="dbnetv2_1",
         path_cfg=None,
         device="cuda",
         visualize=False,

@@ -493,7 +493,13 @@ def test_export(tmp_path):
     with open(out_path, "r", encoding="utf-8") as f:
         assert json.load(f) == ocr.model_dump()
 
-    element = {"box": [0, 0, 10, 10], "score": 0.9, "role": None}
+    element = {
+        "id": None,
+        "box": [0, 0, 10, 10],
+        "score": 0.9,
+        "role": None,
+        "contents": None,
+    }
     element = Element(**element)
     out_path = tmp_path / "element.json"
     element.to_json(out_path)

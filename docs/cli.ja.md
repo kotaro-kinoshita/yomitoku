@@ -119,6 +119,20 @@ PDFに複数ページが含まれる場合に複数ページを一つのファ�
 yomitoku ${path_data} -f md --combine
 ```
 
+## PDF出力の画質設定
+
+サーチャブルPDFを出力する際の画質プリセットを `--pdf_quality` で指定できます。デフォルトは `high` です。
+
+| プリセット | 長辺の最大サイズ | JPEG品質 | 説明 |
+| :--- | :--- | :--- | :--- |
+| `high` | 制限なし | 85 | 高画質（デフォルト）。元画像の解像度を維持します。 |
+| `middle` | 2000px | 80 | 中画質。ファイルサイズと画質のバランスを取ります。 |
+| `low` | 1500px | 60 | 低画質。ファイルサイズを最小限に抑えます。 |
+
+```bash
+yomitoku ${path_data} -f pdf --pdf_quality middle
+```
+
 ## PDFの読み取り解像度の設定
 
 PDFを読み取る際の解像度の大きさを設定します(標準DPI=200)。PDF内の文字が微細な場合など、細部の文字を読み取りたい場合にDPI値を上げることで読み取り精度が向上する場合があります。
@@ -145,6 +159,32 @@ yomitoku ${path_data} --reading_order left2right
 | `top2bottom` | 上から下方向 | 段組みのワードドキュメントなど |
 | `left2right` | 左から右方向 | レシートや保険証など、キーと値が段組みになっているレイアウト |
 | `right2left` | 右から左方向 | 縦書きのドキュメント |
+
+## 認識方向フォールバックの有効化
+
+デフォルトでは、認識方向フォールバックは無効化されています。`--enable-rec-orientation-fallback` オプションを使用することで、文字認識の信頼度が低い場合にROI画像を180度回転して再認識を行い、信頼度が高い方の結果を採用する機能を有効化できます。
+
+```bash
+yomitoku ${path_data} --enable-rec-orientation-fallback
+```
+
+`--rec-orientation-fallback-thresh` オプションで、フォールバックを実行する信頼度の閾値を指定できます。（デフォルト: 0.75）
+
+```bash
+yomitoku ${path_data} --enable-rec-orientation-fallback --rec-orientation-fallback-thresh 0.6
+## ふりがな（ルビ）の除外
+
+文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。`--ignore_ruby` オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。
+
+```bash
+yomitoku ${path_data} --ignore_ruby
+```
+
+`--ruby_threshold` オプションで、ルビ判定の閾値を調整できます（デフォルト: 0.5）。値を大きくするとルビと判定される範囲が広がります。
+
+```bash
+yomitoku ${path_data} --ignore_ruby --ruby_threshold 0.6
+```
 
 ## 読み取り対象ページを指定する
 

@@ -19,6 +19,12 @@ from typing import List, Optional
 
 FONT_PATH = ROOT_DIR + "/resource/MPLUS1p-Medium.ttf"
 
+IMAGE_QUALITY_PRESETS = {
+    "high": {"max_long_side": None, "jpeg_quality": 85},
+    "middle": {"max_long_side": 2000, "jpeg_quality": 80},
+    "low": {"max_long_side": 1500, "jpeg_quality": 60},
+}
+
 
 def _poly2rect(points):
     """
@@ -70,6 +76,7 @@ def create_searchable_pdf(
     docs: List[DocumentAnalyzerSchema],
     output_path: str,
     font_path: Optional[str] = None,
+    image_quality: str = "high",
 ):
     """
     Create a searchable PDF from an image and OCR results.
@@ -89,8 +96,18 @@ def create_searchable_pdf(
     c = canvas.Canvas(packet)
 
     for i, (image, doc) in enumerate(zip(images, docs)):
+        preset = IMAGE_QUALITY_PRESETS.get(image_quality, IMAGE_QUALITY_PRESETS["high"])
+        max_long_side = preset["max_long_side"]
+        jpeg_quality = preset["jpeg_quality"]
+
+        if max_long_side is not None:
+            w, h = image.size
+            if max(w, h) > max_long_side:
+                scale = max_long_side / max(w, h)
+                image = image.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+
         image_path = f"tmp_{i}.png"
-        image.save(image_path, format="JPEG", quality=85)
+        image.save(image_path, format="JPEG", quality=jpeg_quality)
         w, h = image.size
 
         c.setPageSize((w, h))

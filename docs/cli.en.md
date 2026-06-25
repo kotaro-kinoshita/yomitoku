@@ -122,6 +122,20 @@ If the PDF contains multiple pages, you can export them as a single file.
 yomitoku ${path_data} -f md --combine
 ```
 
+## PDF Output Image Quality
+
+You can specify the image quality preset for searchable PDF output using `--pdf_quality`. The default is `high`.
+
+| Preset | Max Long Side | JPEG Quality | Description |
+| :--- | :--- | :--- | :--- |
+| `high` | No limit | 85 | High quality (default). Preserves the original image resolution. |
+| `middle` | 2000px | 80 | Medium quality. Balances file size and image quality. |
+| `low` | 1500px | 60 | Low quality. Minimizes file size. |
+
+```bash
+yomitoku ${path_data} -f pdf --pdf_quality middle
+```
+
 ## Setting the PDF Reading Resolution
 
 Specifies the resolution (DPI) when reading a PDF (default DPI = 200). Increasing the DPI value may improve recognition accuracy when dealing with fine text or small details within the PDF.
@@ -147,6 +161,32 @@ yomitoku ${path_data} --reading_order left2right
 | `top2bottom` | Top to Bottom | Column-formatted Word documents, etc. |
 | `left2right` | Left to Right | Layouts where keys and values are in columns (e.g., receipts, insurance cards) |
 | `right2left` | Right to Left | Vertically written documents |
+
+## Enabling Recognition Orientation Fallback
+
+By default, orientation fallback is disabled. When enabled with `--enable-rec-orientation-fallback`, if the confidence score of text recognition is low, the system retries recognition with the ROI image rotated 180 degrees and adopts the result with the higher confidence.
+
+```bash
+yomitoku ${path_data} --enable-rec-orientation-fallback
+```
+
+You can specify the confidence threshold for triggering the fallback using `--rec-orientation-fallback-thresh`. (Default: 0.75)
+
+```bash
+yomitoku ${path_data} --enable-rec-orientation-fallback --rec-orientation-fallback-thresh 0.6
+## Excluding Ruby (Furigana) Text
+
+You can exclude ruby (furigana) text from the output. When the `--ignore_ruby` option is set, text whose line height is below a certain threshold relative to the median line height within each paragraph or cell, and consists solely of hiragana or katakana characters, is identified as ruby and excluded.
+
+```bash
+yomitoku ${path_data} --ignore_ruby
+```
+
+You can adjust the ruby detection threshold using the `--ruby_threshold` option (default: 0.5). Increasing the value widens the range of text identified as ruby.
+
+```bash
+yomitoku ${path_data} --ignore_ruby --ruby_threshold 0.6
+```
 
 ## Specifying Pages to Process
 

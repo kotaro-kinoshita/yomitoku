@@ -111,6 +111,12 @@ class BaseModule:
             else:
                 self._device = torch.device("cpu")
                 logger.warning("CUDA is not available. Use CPU instead.")
+        elif "mps" in device:
+            if torch.backends.mps.is_available():
+                self._device = torch.device("mps")
+            else:
+                self._device = torch.device("cpu")
+                logger.warning("MPS is not available. Use CPU instead.")
         else:
             self._device = torch.device("cpu")
 

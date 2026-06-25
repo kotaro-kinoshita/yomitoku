@@ -63,15 +63,25 @@ data:
   batch_size: int
 ```
 
+### 認識方向フォールバック
+
+```yaml
+# 信頼度が低い場合にROI画像を180度回転して再認識を行うかどうか
+rec_orientation_fallback: bool
+
+# フォールバックを実行する信頼度の閾値
+rec_orientation_fallback_thresh: float
+```
+
 ### 可視化設定
 
 ```yaml
 visualize:
   # 予測結果文字列の可視化に用いるフォントのパス
-  font: str 
+  font: str
 
   # 予測結果文字列の可視化に用いるフォントの色
-  color: [BGR] 
+  color: [BGR]
 
   # 予測結果文字列のフォントの大きさ
   font_size: int

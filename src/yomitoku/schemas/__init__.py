@@ -1,0 +1,31 @@
+from .document_analyzer import (
+    DocumentAnalyzerSchema,
+    Element,
+    FigureSchema,
+    LayoutAnalyzerSchema,
+    LayoutParserSchema,
+    OCRSchema,
+    ParagraphSchema,
+    TableCellSchema,
+    TableLineSchema,
+    TableStructureRecognizerSchema,
+    TextDetectorSchema,
+    TextRecognizerSchema,
+    WordPrediction,
+)
+
+__all__ = [
+    "DocumentAnalyzerSchema",
+    "Element",
+    "FigureSchema",
+    "LayoutAnalyzerSchema",
+    "LayoutParserSchema",
+    "OCRSchema",
+    "ParagraphSchema",
+    "TableCellSchema",
+    "TableLineSchema",
+    "TableStructureRecognizerSchema",
+    "TextDetectorSchema",
+    "TextRecognizerSchema",
+    "WordPrediction",
+]
