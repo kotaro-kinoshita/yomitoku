@@ -31,6 +31,7 @@ dependencies = [
     "reportlab>=4.4.1",
     "jaconv>=0.4.0",
     "onnxscript>=0.5.4",
+    "networkx>=3.4.2",
 ]
 
 [tool.uv-dynamic-versioning]
@@ -57,7 +58,7 @@ dev-dependencies = [
 torch = [
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
 ]
-torchvision = [
+tonvision = [
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
 ]
 
