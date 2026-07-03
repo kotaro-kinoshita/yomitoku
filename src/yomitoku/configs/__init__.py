@@ -11,18 +11,6 @@ from .cfg_text_recognizer_parseq_small import TextRecognizerPARSeqSmallConfig
 from .cfg_text_recognizer_parseq_tiny import TextRecognizerPARSeqTinyConfig
 from .cfg_text_recognizer_parseq_v2 import TextRecognizerPARSeqV2Config
 from .cfg_text_recognizer_parseq_large_v4_1 import TextRecognizerPARSeqLargeV41Config
-from .cfg_text_recognizer_parseq_large_v4_1_dynw import (
-    TextRecognizerPARSeqLargeV41DynwConfig,
-)
-from .cfg_text_recognizer_parseq_middle_v4_dynw import (
-    TextRecognizerPARSeqMiddleV4DynwConfig,
-)
-from .cfg_text_recognizer_parseq_h16_lite_dynw import (
-    TextRecognizerPARSeqH16LiteDynwConfig,
-)
-from .cfg_text_recognizer_parseq_h32_lite_dynw import (
-    TextRecognizerPARSeqH32LiteDynwConfig,
-)
 from .cfg_text_recognizer_parseq_h32_p4x8_d192_dynw import (
     TextRecognizerPARSeqH32P4x8D192DynwConfig,
 )
@@ -45,10 +33,6 @@ __all__ = [
     "TextRecognizerPARSeqSmallConfig",
     "TextRecognizerPARSeqV2Config",
     "TextRecognizerPARSeqLargeV41Config",
-    "TextRecognizerPARSeqLargeV41DynwConfig",
-    "TextRecognizerPARSeqMiddleV4DynwConfig",
-    "TextRecognizerPARSeqH16LiteDynwConfig",
-    "TextRecognizerPARSeqH32LiteDynwConfig",
     "TextRecognizerPARSeqH32P4x8D192DynwConfig",
     "LayoutParserRTDETRv2Config",
     "LayoutParserRTDETRv2V2Config",

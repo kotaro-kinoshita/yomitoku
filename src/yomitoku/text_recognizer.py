@@ -12,10 +12,6 @@ from .configs import (
     TextRecognizerPARSeqV2Config,
     TextRecognizerPARSeqTinyConfig,
     TextRecognizerPARSeqLargeV41Config,
-    TextRecognizerPARSeqLargeV41DynwConfig,
-    TextRecognizerPARSeqMiddleV4DynwConfig,
-    TextRecognizerPARSeqH16LiteDynwConfig,
-    TextRecognizerPARSeqH32LiteDynwConfig,
     TextRecognizerPARSeqH32P4x8D192DynwConfig,
 )
 import cv2
@@ -42,18 +38,6 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
         self.register("parseq-small", TextRecognizerPARSeqSmallConfig, PARSeq)
         self.register("parseq-tiny", TextRecognizerPARSeqTinyConfig, PARSeq)
         self.register("parseq-large-v4_1", TextRecognizerPARSeqLargeV41Config, PARSeq)
-        self.register(
-            "parseq-large-v4_1-dynw", TextRecognizerPARSeqLargeV41DynwConfig, PARSeq
-        )
-        self.register(
-            "parseq-middle-v4-dynw", TextRecognizerPARSeqMiddleV4DynwConfig, PARSeq
-        )
-        self.register(
-            "parseq-h16-lite-dynw", TextRecognizerPARSeqH16LiteDynwConfig, PARSeq
-        )
-        self.register(
-            "parseq-h32-lite-dynw", TextRecognizerPARSeqH32LiteDynwConfig, PARSeq
-        )
         self.register(
             "parseq-h32-p4x8-d192-dynw",
             TextRecognizerPARSeqH32P4x8D192DynwConfig,
