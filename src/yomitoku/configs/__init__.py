@@ -20,6 +20,12 @@ from .cfg_text_recognizer_parseq_middle_v4_dynw import (
 from .cfg_text_recognizer_parseq_h16_lite_dynw import (
     TextRecognizerPARSeqH16LiteDynwConfig,
 )
+from .cfg_text_recognizer_parseq_h32_lite_dynw import (
+    TextRecognizerPARSeqH32LiteDynwConfig,
+)
+from .cfg_text_recognizer_parseq_h32_p4x8_d192_dynw import (
+    TextRecognizerPARSeqH32P4x8D192DynwConfig,
+)
 from .cfg_table_cell_parser_rtdtrv2_beta import TableCellParserRTDETRv2BetaConfig
 
 DEFAULT_CONFIGS = [
@@ -42,6 +48,8 @@ __all__ = [
     "TextRecognizerPARSeqLargeV41DynwConfig",
     "TextRecognizerPARSeqMiddleV4DynwConfig",
     "TextRecognizerPARSeqH16LiteDynwConfig",
+    "TextRecognizerPARSeqH32LiteDynwConfig",
+    "TextRecognizerPARSeqH32P4x8D192DynwConfig",
     "LayoutParserRTDETRv2Config",
     "LayoutParserRTDETRv2V2Config",
     "TableStructureRecognizerRTDETRv2Config",
