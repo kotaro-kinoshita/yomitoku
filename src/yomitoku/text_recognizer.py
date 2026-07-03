@@ -83,9 +83,9 @@ class TextRecognizer(BaseModule):
         self.rec_orientation_fallback = rec_orientation_fallback
         self.rec_orientation_fallback_thresh = rec_orientation_fallback_thresh
         self.batch_bucketing = batch_bucketing
-        # The ONNX model is exported with a fixed input shape, so
-        # dynamic-width batching is only available on the PyTorch path.
-        self.dynamic_width = dynamic_width and not infer_onnx
+        # Dynamic-width batching is now supported on the ONNX path by exporting
+        # the width dimension as dynamic.
+        self.dynamic_width = dynamic_width
         # Number of mini-batches to run concurrently on CPU (1 = sequential).
         self.num_parallel_batches = num_parallel_batches
         # Downscale high-resolution source images once before cropping,
@@ -102,15 +102,30 @@ class TextRecognizer(BaseModule):
             self.model = None
 
             model = onnx.load(path_onnx)
+            sess_options = self._make_onnx_session_options()
             if torch.cuda.is_available() and device == "cuda":
                 self.sess = onnxruntime.InferenceSession(
-                    model.SerializeToString(), providers=["CUDAExecutionProvider"]
+                    model.SerializeToString(),
+                    sess_options=sess_options,
+                    providers=["CUDAExecutionProvider"],
                 )
             else:
-                self.sess = onnxruntime.InferenceSession(model.SerializeToString())
+                self.sess = onnxruntime.InferenceSession(
+                    model.SerializeToString(),
+                    sess_options=sess_options,
+                )
 
         if self.model is not None:
             self.model.to(self.device)
+
+    def _make_onnx_session_options(self):
+        sess_options = onnxruntime.SessionOptions()
+        if self.device.type == "cpu" and self.num_parallel_batches > 1:
+            n_workers = max(1, int(self.num_parallel_batches))
+            n_cores = os.cpu_count() or 1
+            sess_options.intra_op_num_threads = max(1, n_cores // n_workers)
+            sess_options.inter_op_num_threads = 1
+        return sess_options
 
     def preprocess(self, img, polygons):
         if polygons is None:
@@ -213,7 +228,7 @@ class TextRecognizer(BaseModule):
         img_size = self._cfg.data.img_size
         input = torch.randn(1, 3, *img_size, requires_grad=True)
         dynamic_axes = {
-            "input": {0: "batch_size"},
+            "input": {0: "batch_size", 3: "width"},
             "output": {0: "batch_size"},
         }
 
@@ -228,6 +243,7 @@ class TextRecognizer(BaseModule):
             do_constant_folding=True,
             dynamic_axes=dynamic_axes,
         )
+        self.model.export_onnx = False
 
     def postprocess(self, p, points):
         pred, score = self.tokenizer.decode(p)
@@ -248,7 +264,7 @@ class TextRecognizer(BaseModule):
         if self.infer_onnx:
             input = data.numpy()
             results = self.sess.run(["output"], {"input": input})
-            p = torch.tensor(results[0])
+            p = torch.from_numpy(results[0])
         else:
             with torch.inference_mode():
                 data = data.to(self.device)
@@ -263,8 +279,7 @@ class TextRecognizer(BaseModule):
         if (
             self.num_parallel_batches > 1
             and len(dataloader) > 1
-            and not self.infer_onnx
-            and self.device == "cpu"
+            and self.device.type == "cpu"
         ):
             return self._run_batch_inference_parallel(dataloader, points)
 
@@ -297,15 +312,19 @@ class TextRecognizer(BaseModule):
             p = self._run_inference(data)
             return self.postprocess(p, batch_points)
 
-        # Split the intra-op threads between the workers so the total stays
-        # at the machine's core count; restored afterwards.
-        n_threads = torch.get_num_threads()
-        torch.set_num_threads(max(1, (os.cpu_count() or n_threads) // n_workers))
-        try:
+        if self.infer_onnx:
             with ThreadPoolExecutor(max_workers=n_workers) as executor:
                 results = list(executor.map(work, range(len(dataloader))))
-        finally:
-            torch.set_num_threads(n_threads)
+        else:
+            # Split the intra-op threads between the workers so the total stays
+            # at the machine's core count; restored afterwards.
+            n_threads = torch.get_num_threads()
+            torch.set_num_threads(max(1, (os.cpu_count() or n_threads) // n_workers))
+            try:
+                with ThreadPoolExecutor(max_workers=n_workers) as executor:
+                    results = list(executor.map(work, range(len(dataloader))))
+            finally:
+                torch.set_num_threads(n_threads)
 
         preds = []
         scores = []

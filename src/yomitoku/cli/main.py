@@ -504,13 +504,9 @@ def main():
 
     if args.lite:
         # Lite mode uses the compact 32px, 192-dim, [4, 8]-patch recognizer
-        # (cfg_text_recognizer_parseq_h32_p4x8_d192_dynw) run in PyTorch with
-        # dynamic-width batching. Text crops are mostly narrow (median ~120px),
-        # so padding each batch only to its widest crop (dynamic_width) instead
-        # of to the fixed 800px ONNX canvas is ~15x faster on CPU; batch
-        # bucketing groups similar-width crops to cut padding waste further.
-        # (ONNX cannot do dynamic width here: the decoder's MultiheadAttention
-        # bakes the encoder-memory length at export time.)
+        # (cfg_text_recognizer_parseq_h32_p4x8_d192_dynw). This config supports
+        # dynamic-width batching and can also be exported to ONNX with a
+        # variable width axis.
         configs["ocr"]["text_recognizer"]["model_name"] = "parseq-h32-p4x8-d192-dynw"
         configs["ocr"]["text_recognizer"]["dynamic_width"] = True
         configs["ocr"]["text_recognizer"]["batch_bucketing"] = True
@@ -520,6 +516,7 @@ def main():
 
         if args.device == "cpu" or not torch.cuda.is_available():
             configs["ocr"]["text_detector"]["infer_onnx"] = True
+            configs["ocr"]["text_recognizer"]["infer_onnx"] = True
             # Run recognizer mini-batches concurrently on CPU (batches are
             # independent; outputs verified identical, ~1.3x on the recognizer).
             configs["ocr"]["text_recognizer"]["num_parallel_batches"] = 4

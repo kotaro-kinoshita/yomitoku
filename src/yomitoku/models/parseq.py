@@ -94,6 +94,8 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         return param_names.union(enc_param_names)
 
     def encode(self, img: torch.Tensor):
+        if self.export_onnx:
+            return self.encoder.forward_features_dynamic(img)
         return self.encoder(img)
 
     def decode(
@@ -127,6 +129,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         images: Tensor,
         max_length: Optional[int] = None,
     ) -> Tensor:
+        self.decoder.export_onnx = self.export_onnx
         testing = max_length is None
         max_length = (
             self.max_label_length

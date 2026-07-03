@@ -60,6 +60,7 @@ class DecoderLayer(nn.Module):
         self.dropout3 = nn.Dropout(dropout)
 
         self.activation = transformer._get_activation_fn(activation)
+        self.export_onnx = False
 
     def __setstate__(self, state):
         if "activation" not in state:
@@ -80,16 +81,31 @@ class DecoderLayer(nn.Module):
         Both tgt_kv and memory are expected to be LayerNorm'd too.
         memory is LayerNorm'd by ViT.
         """
-        tgt2, sa_weights = self.self_attn(
-            tgt_norm,
-            tgt_kv,
-            tgt_kv,
-            attn_mask=tgt_mask,
-            key_padding_mask=tgt_key_padding_mask,
-        )
+        if self.export_onnx:
+            tgt2 = self._mha_for_onnx(
+                self.self_attn,
+                tgt_norm,
+                tgt_kv,
+                tgt_kv,
+                attn_mask=tgt_mask,
+                key_padding_mask=tgt_key_padding_mask,
+            )
+            sa_weights = None
+        else:
+            tgt2, sa_weights = self.self_attn(
+                tgt_norm,
+                tgt_kv,
+                tgt_kv,
+                attn_mask=tgt_mask,
+                key_padding_mask=tgt_key_padding_mask,
+            )
         tgt = tgt + self.dropout1(tgt2)
 
-        tgt2, ca_weights = self.cross_attn(self.norm1(tgt), memory, memory)
+        if self.export_onnx:
+            tgt2 = self._mha_for_onnx(self.cross_attn, self.norm1(tgt), memory, memory)
+            ca_weights = None
+        else:
+            tgt2, ca_weights = self.cross_attn(self.norm1(tgt), memory, memory)
         tgt = tgt + self.dropout2(tgt2)
 
         tgt2 = self.linear2(
@@ -97,6 +113,60 @@ class DecoderLayer(nn.Module):
         )
         tgt = tgt + self.dropout3(tgt2)
         return tgt, sa_weights, ca_weights
+
+    def _mha_for_onnx(
+        self,
+        mha: nn.MultiheadAttention,
+        query: Tensor,
+        key: Tensor,
+        value: Tensor,
+        attn_mask: Optional[Tensor] = None,
+        key_padding_mask: Optional[Tensor] = None,
+    ) -> Tensor:
+        """ONNX-friendly equivalent of batch_first MultiheadAttention."""
+        embed_dim = mha.embed_dim
+        num_heads = mha.num_heads
+        head_dim = embed_dim // num_heads
+
+        q_weight = mha.in_proj_weight[:embed_dim]
+        k_weight = mha.in_proj_weight[embed_dim : 2 * embed_dim]
+        v_weight = mha.in_proj_weight[2 * embed_dim :]
+        q_bias = mha.in_proj_bias[:embed_dim] if mha.in_proj_bias is not None else None
+        k_bias = (
+            mha.in_proj_bias[embed_dim : 2 * embed_dim]
+            if mha.in_proj_bias is not None
+            else None
+        )
+        v_bias = (
+            mha.in_proj_bias[2 * embed_dim :] if mha.in_proj_bias is not None else None
+        )
+
+        q = F.linear(query, q_weight, q_bias)
+        k = F.linear(key, k_weight, k_bias)
+        v = F.linear(value, v_weight, v_bias)
+
+        batch_size = query.shape[0]
+        q_len = query.shape[1]
+        k_len = key.shape[1]
+        v_len = value.shape[1]
+
+        q = q.reshape(batch_size, q_len, num_heads, head_dim).transpose(1, 2)
+        k = k.reshape(batch_size, k_len, num_heads, head_dim).transpose(1, 2)
+        v = v.reshape(batch_size, v_len, num_heads, head_dim).transpose(1, 2)
+
+        attn = torch.matmul(q, k.transpose(-2, -1)) * (head_dim**-0.5)
+        if attn_mask is not None:
+            attn = attn.masked_fill(attn_mask.unsqueeze(0).unsqueeze(0), float("-inf"))
+        if key_padding_mask is not None:
+            attn = attn.masked_fill(
+                key_padding_mask.unsqueeze(1).unsqueeze(2), float("-inf")
+            )
+        attn = torch.softmax(attn, dim=-1)
+        attn = F.dropout(attn, p=mha.dropout, training=self.training)
+
+        out = torch.matmul(attn, v)
+        out = out.transpose(1, 2).reshape(batch_size, q_len, embed_dim)
+        return mha.out_proj(out)
 
     def forward(
         self,
@@ -144,6 +214,7 @@ class Decoder(nn.Module):
         self.layers = transformer._get_clones(decoder_layer, cfg.depth)
         self.num_layers = cfg.depth
         self.norm = norm
+        self.export_onnx = False
 
     def forward(
         self,
@@ -154,6 +225,9 @@ class Decoder(nn.Module):
         content_mask: Optional[Tensor] = None,
         content_key_padding_mask: Optional[Tensor] = None,
     ):
+        for mod in self.layers:
+            mod.export_onnx = self.export_onnx
+
         for i, mod in enumerate(self.layers):
             last = i == len(self.layers) - 1
             query, content = mod(
