@@ -4,6 +4,11 @@
 
 [Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.0...HEAD)
 
+**Implemented enhancements:**
+
+- Feature/ar repetition early stop [\#223](https://github.com/kotaro-kinoshita/yomitoku/pull/223) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+- docs: add prohibition on use for developing competing models to usage… [\#220](https://github.com/kotaro-kinoshita/yomitoku/pull/220) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
 **Fixed bugs:**
 
 - fix: バッチサイズの動的化のため PARSeq ONNX エクスポートの定数畳み込みを無効化 [\#215](https://github.com/kotaro-kinoshita/yomitoku/pull/215) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
@@ -20,10 +25,6 @@
 ## [v0.12.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.12.1) (2026-04-09)
 
 [Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.11.2...v0.12.1)
-
-**Merged pull requests:**
-
-- docs: Update CHANGELOG [\#209](https://github.com/kotaro-kinoshita/yomitoku/pull/209) ([github-actions[bot]](https://github.com/apps/github-actions))
 
 ## [v0.11.2](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.11.2) (2026-04-09)
 
@@ -142,21 +143,15 @@
 
 **Merged pull requests:**
 
-- docs: Update CHANGELOG [\#197](https://github.com/kotaro-kinoshita/yomitoku/pull/197) ([github-actions[bot]](https://github.com/apps/github-actions))
-- docs: Update CHANGELOG [\#195](https://github.com/kotaro-kinoshita/yomitoku/pull/195) ([github-actions[bot]](https://github.com/apps/github-actions))
-- docs: Update CHANGELOG [\#192](https://github.com/kotaro-kinoshita/yomitoku/pull/192) ([github-actions[bot]](https://github.com/apps/github-actions))
 - ドキュメントの記述修正とスキーマページの変更 [\#178](https://github.com/kotaro-kinoshita/yomitoku/pull/178) ([m5t0](https://github.com/m5t0))
 - 商用利用判断ガイドラインの追加 [\#177](https://github.com/kotaro-kinoshita/yomitoku/pull/177) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - READMEにライセンス情報の追記 [\#176](https://github.com/kotaro-kinoshita/yomitoku/pull/176) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - READMEに注意事項を加筆 [\#175](https://github.com/kotaro-kinoshita/yomitoku/pull/175) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - バージョン情報の修正 [\#173](https://github.com/kotaro-kinoshita/yomitoku/pull/173) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - Explicitly set file encoding to UTF-8 to prevent UnicodeDecodeError. [\#148](https://github.com/kotaro-kinoshita/yomitoku/pull/148) ([Utakata](https://github.com/Utakata))
-- docs: Update CHANGELOG [\#135](https://github.com/kotaro-kinoshita/yomitoku/pull/135) ([github-actions[bot]](https://github.com/apps/github-actions))
 - 相対パスを利用して対象画像ファイルを指定した際に、resultファイルが隠しファイルになってしまう問題を修正 [\#132](https://github.com/kotaro-kinoshita/yomitoku/pull/132) ([moznion](https://github.com/moznion))
-- docs: Update CHANGELOG [\#130](https://github.com/kotaro-kinoshita/yomitoku/pull/130) ([github-actions[bot]](https://github.com/apps/github-actions))
 - CIの修正 [\#126](https://github.com/kotaro-kinoshita/yomitoku/pull/126) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - CIの修正 [\#124](https://github.com/kotaro-kinoshita/yomitoku/pull/124) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
-- docs: Update CHANGELOG [\#123](https://github.com/kotaro-kinoshita/yomitoku/pull/123) ([github-actions[bot]](https://github.com/apps/github-actions))
 - PRパイプラインのバグ修正 [\#122](https://github.com/kotaro-kinoshita/yomitoku/pull/122) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - PR経由でCHANGELOG.mdをpushすうるように変更 [\#121](https://github.com/kotaro-kinoshita/yomitoku/pull/121) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - CHANGELOGの自動作成CIの修正 [\#120](https://github.com/kotaro-kinoshita/yomitoku/pull/120) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
