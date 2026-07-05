@@ -8,6 +8,10 @@
 ![OS](https://img.shields.io/badge/OS-Linux|Mac|Win-1793D1.svg?&style=fla)
 [![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku-dev/)
 [![PyPI Downloads](https://static.pepy.tech/badge/yomitoku)](https://pepy.tech/projects/yomitoku)
+[![Web Demo](https://img.shields.io/badge/Web%20Demo-YomiToku%20Studio-2188d9)](https://yomitoku-studio.mlism.com)
+
+> 🌐 **Try it in your browser, no install required → [YomiToku Studio](https://yomitoku-studio.mlism.com)**
+> Inference runs entirely in your browser (WebAssembly / WebGPU) — **your images are never uploaded anywhere**. Test it on your own images first.
 
 ## 🌟 Introduction
 
@@ -20,6 +24,8 @@ YomiToku is a Document AI engine specialized in Japanese document image analysis
 - ⚡ Operates efficiently in GPU environments, enabling fast document transcription and analysis. It requires less than 8GB of VRAM, eliminating the need for high-end GPUs.
 
 ## 🖼️ Demo
+
+Before installing, you can try it on your own images in the browser with **[YomiToku Studio](https://yomitoku-studio.mlism.com)** (images are never uploaded).
 
 The verification results for various types of images are also included in [gallery.md](gallery.md)
 

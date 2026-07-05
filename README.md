@@ -8,6 +8,10 @@
 ![OS](https://img.shields.io/badge/OS-Linux|Mac|Win-1793D1.svg?&style=fla)
 [![Document](https://img.shields.io/badge/docs-live-brightgreen)](https://kotaro-kinoshita.github.io/yomitoku/)
 [![PyPI Downloads](https://static.pepy.tech/badge/yomitoku)](https://pepy.tech/projects/yomitoku)
+[![Web Demo](https://img.shields.io/badge/Web%20Demo-YomiToku%20Studio-2188d9)](https://yomitoku-studio.mlism.com)
+
+> 🌐 **インストール不要でブラウザから試せます → [YomiToku Studio](https://yomitoku-studio.mlism.com)**
+> 推論はすべてブラウザ内(WebAssembly / WebGPU)で実行され、**画像はどこにも送信されません**。まずは手元の画像で精度を確かめてみてください。
 
 ## 🌟 概要
 
@@ -20,6 +24,8 @@ YomiToku は日本語に特化した AI 文章画像解析エンジン(Document 
 - ⚡ GPU 環境で高速に動作し、効率的に文書の文字起こし解析が可能です。また、VRAM も 8GB 以内で動作し、ハイエンドな GPU を用意する必要はありません。軽量モデルを用いれば CPU でも高速に推論が可能です。
 
 ## 🖼️ デモ
+
+インストール前に、ブラウザ版 **[YomiToku Studio](https://yomitoku-studio.mlism.com)** で手元の画像を試せます(画像は外部送信されません)。
 
 [gallery.md](gallery.md)にも複数種類の画像の検証結果を掲載しています。
 
