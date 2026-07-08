@@ -600,42 +600,68 @@ class DocumentAnalyzer:
 
         return outputs
 
-    async def run(self, img):
+    async def run(self, img, pdf_text_words=None):
         with ThreadPoolExecutor(max_workers=2) as executor:
             loop = asyncio.get_running_loop()
-            tasks = [
-                # loop.run_in_executor(executor, self.ocr, img),
-                loop.run_in_executor(executor, self.text_detector, img),
-                loop.run_in_executor(executor, self.layout, img),
-            ]
 
-            results = await asyncio.gather(*tasks)
+            if pdf_text_words is not None:
+                tasks = [
+                    loop.run_in_executor(executor, self.layout, img),
+                ]
+                results = await asyncio.gather(*tasks)
+                results_layout, layout = results[0]
 
-            results_det, _ = results[0]
-            results_layout, layout = results[1]
+                # Create an OCRSchema compatible object directly from PDF text words
+                # Note: pdf_text_words is expected to be a list of dicts compatible with OCRSchema's words
+                outputs = {"words": pdf_text_words}
+                results_ocr = OCRSchema(**outputs)
 
-            if self.split_text_across_cells:
-                results_det = _split_text_across_cells(results_det, results_layout)
+                # If needed, we can simulate `ocr` (visualization of OCR results) by visualizing the PDF boxes
+                # But since we skipped detector/recognizer, `ocr` variable usually holding the visualized image is not created.
+                # If visualization is required, we can create it here.
+                ocr = None
+                if self.visualize:
+                    # Need to extract points from words for visualization
+                    points = [w["points"] for w in pdf_text_words]
+                    ocr = det_visualizer(img, points)
 
-            vis_det = None
-            if self.visualize:
-                vis_det = det_visualizer(
-                    img,
-                    results_det.points,
-                )
+                # Proceed to aggregation
+                outputs = self.aggregate(results_ocr, results_layout)
 
-            results_rec, ocr = self.text_recognizer(img, results_det.points, vis_det)
+            else:
+                tasks = [
+                    # loop.run_in_executor(executor, self.ocr, img),
+                    loop.run_in_executor(executor, self.text_detector, img),
+                    loop.run_in_executor(executor, self.layout, img),
+                ]
 
-            outputs = {"words": ocr_aggregate(results_det, results_rec)}
-            results_ocr = OCRSchema(**outputs)
-            outputs = self.aggregate(results_ocr, results_layout)
+                results = await asyncio.gather(*tasks)
+
+                results_det, _ = results[0]
+                results_layout, layout = results[1]
+
+                if self.split_text_across_cells:
+                    results_det = _split_text_across_cells(results_det, results_layout)
+
+                vis_det = None
+                if self.visualize:
+                    vis_det = det_visualizer(
+                        img,
+                        results_det.points,
+                    )
+
+                results_rec, ocr = self.text_recognizer(img, results_det.points, vis_det)
+
+                outputs = {"words": ocr_aggregate(results_det, results_rec)}
+                results_ocr = OCRSchema(**outputs)
+                outputs = self.aggregate(results_ocr, results_layout)
 
         results = DocumentAnalyzerSchema(**outputs)
         return results, ocr, layout
 
-    def __call__(self, img):
+    def __call__(self, img, pdf_text_words=None):
         self.img = img
-        results, ocr, layout = asyncio.run(self.run(img))
+        results, ocr, layout = asyncio.run(self.run(img, pdf_text_words=pdf_text_words))
 
         if self.visualize:
             layout = reading_order_visualizer(layout, results)

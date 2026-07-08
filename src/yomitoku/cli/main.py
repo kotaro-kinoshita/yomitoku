@@ -6,9 +6,11 @@ from pathlib import Path
 
 import torch
 from PIL import Image
+import pypdfium2
 
 from ..constants import SUPPORT_OUTPUT_FORMAT
 from ..data.functions import load_image, load_pdf
+from ..data.pdf_utils import extract_text_from_pdf_page
 from ..document_analyzer import DocumentAnalyzer
 from ..utils.logger import set_logger
 from ..utils.searchable_pdf import create_searchable_pdf
@@ -103,8 +105,13 @@ def parse_pages(pages_str):
 
 
 def process_single_file(args, analyzer, path, format):
+    pdf_doc = None
     if path.suffix[1:].lower() in ["pdf"]:
         imgs = load_pdf(path, dpi=args.dpi)
+        try:
+            pdf_doc = pypdfium2.PdfDocument(path)
+        except Exception as e:
+            logger.warning(f"Failed to open PDF with pypdfium2: {e}")
     else:
         imgs = load_image(path)
 
@@ -117,7 +124,29 @@ def process_single_file(args, analyzer, path, format):
         if (page + 1) not in target_pages:
             continue
 
-        result, ocr, layout = analyzer(img)
+        pdf_text_words = None
+        if pdf_doc is not None and args.use_pdf_text:
+            try:
+                # Check for existing text layer
+                pdf_page = pdf_doc.get_page(page)
+                textpage = pdf_page.get_textpage()
+                char_count = textpage.count_chars()
+
+                # Threshold to consider "valid text" (ignore simple noise/artifacts)
+                # E.g. > 10 chars
+                if char_count > 10:
+                    scale = args.dpi / 72.0
+                    pdf_text_words = extract_text_from_pdf_page(pdf_page, scale=scale)
+                    if pdf_text_words:
+                        logger.info(f"Page {page+1}: Found existing text layer ({len(pdf_text_words)} segments). Using it instead of OCR.")
+
+                # Clean up
+                # textpage.close() # handled by pypdfium2 weakref usually
+                # pdf_page.close()
+            except Exception as e:
+                logger.warning(f"Error extracting text from PDF page {page+1}: {e}")
+
+        result, ocr, layout = analyzer(img, pdf_text_words=pdf_text_words)
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
 
@@ -202,7 +231,7 @@ def process_single_file(args, analyzer, path, format):
                 html, _ = convert_html(
                     result,
                     out_path,
-                    ignore_line_break=args.ignore_line_break,
+                    args.ignore_line_break,
                     img=img,
                     export_figure=args.figure,
                     export_figure_letter=args.figure_letter,
@@ -233,7 +262,7 @@ def process_single_file(args, analyzer, path, format):
                 md, _ = convert_markdown(
                     result,
                     out_path,
-                    ignore_line_break=args.ignore_line_break,
+                    args.ignore_line_break,
                     img=img,
                     export_figure=args.figure,
                     export_figure_letter=args.figure_letter,
@@ -436,6 +465,11 @@ def main():
         type=str,
         default=None,
         help="pages to process, e.g., 1,2,5-10 (default: all pages, starting from 1)",
+    )
+    parser.add_argument(
+        "--use_pdf_text",
+        action="store_true",
+        help="if set, use text layer in PDF if available instead of OCR",
     )
     parser.add_argument(
         "--enable-rec-orientation-fallback",
