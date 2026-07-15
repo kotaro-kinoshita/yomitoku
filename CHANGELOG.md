@@ -16,6 +16,7 @@
 
 **Merged pull requests:**
 
+- docs: Update CHANGELOG [\#227](https://github.com/kotaro-kinoshita/yomitoku/pull/227) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Docs/add yomitoku studio link [\#226](https://github.com/kotaro-kinoshita/yomitoku/pull/226) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
 ## [v0.13.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.0) (2026-05-14)
