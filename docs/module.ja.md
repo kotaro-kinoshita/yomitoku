@@ -93,10 +93,29 @@ Config を与えることで、より細かい振る舞いを調整できます�
 
 | モデルのタイプ | モデル名 |
 | :--- | :--- |
-| Text Recognizer (文字認識) | `"parseq"`, `"parseq-small"`, `"parseq-tiny"` |
-| Text Detector (文字検出) | `"dbnet"` |
+| Text Recognizer (文字認識) | `"parseq-large-v4_1"`（デフォルト）, `"parseq-tiny-dynw-v4"`（軽量）, `"parseq"`, `"parseqv2"`, `"parseq-small"`, `"parseq-tiny"` |
+| Text Detector (文字検出) | `"dbnetv2_1"`（デフォルト）, `"dbnet"`, `"dbnetv2"` |
 | Layout Parser (レイアウト解析) | `"rtdetrv2"` |
 | Table Structure Recognizer (表構造認識) | `"rtdetrv2"` |
+
+`"parseq-tiny-dynw-v4"` は CLI の `--lite` オプションで使用される文字認識モデルです。
+動的幅（dynamic width）モデルのため、高速に推論するには `dynamic_width=True` と
+`batch_bucketing=True` を併用してください。
+
+```python
+from yomitoku import DocumentAnalyzer
+
+configs = {
+    "ocr": {
+        "text_recognizer": {
+            "model_name": "parseq-tiny-dynw-v4",
+            "dynamic_width": True,
+            "batch_bucketing": True,
+        },
+    },
+}
+DocumentAnalyzer(configs=configs)
+```
 
 ### Config の記述方法
 

@@ -41,6 +41,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 
 ## 📣 リリース情報
 
+- 2026 年  7 月 15 日 軽量モデル（`--lite`）が手書き文字の読み取りに対応し、1 行あたりの最大文字列長を 100 文字に拡張
 - 2025 年 11 月  5 日 YomiToku v0.10.1 CPU推論向けに最適化したGPU Free OCRモデルのサポート
 - 2025 年  4 月  4 日 YomiToku v0.8.0 手書き文字認識のサポート
 - 2024 年 11 月 26 日 YomiToku v0.5.1 (beta) を公開
@@ -70,7 +71,60 @@ yomitoku ${path_data} -f md -o results -v --figure
 yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 ```
 
-軽量モデルは１行あたり読み取り可能な最大文字列長が50文字の制限があります。英文や１行あたりの文字数が多い文書は通常モデルを使用することを推奨します。
+#### Python API から軽量モードを利用する
+
+CLI の `--lite` オプションに相当する軽量モードは、`configs` でテキスト認識モデルに `parseq-tiny-dynw-v4` を指定し、`dynamic_width` と `batch_bucketing` を有効化することで Python API からも利用できます。CPU 環境ではテキスト検出を ONNX 推論にすると、さらに高速化できます。
+
+```python
+import cv2
+from yomitoku import DocumentAnalyzer
+
+if __name__ == "__main__":
+    configs = {
+        "ocr": {
+            "text_recognizer": {
+                "model_name": "parseq-tiny-dynw-v4",  # 動的幅対応の軽量モデル
+                "dynamic_width": True,                 # 切り出し画像を実際の幅で処理
+                "batch_bucketing": True,               # 幅の近い画像をまとめてバッチ化
+                "device": "cpu",
+            },
+            "text_detector": {
+                "device": "cpu",
+                "infer_onnx": True,                    # CPU ではテキスト検出を ONNX 化すると高速
+            },
+        },
+    }
+
+    analyzer = DocumentAnalyzer(configs=configs, device="cpu")
+
+    img = cv2.imread("sample.jpg")
+    results, ocr_vis, layout_vis = analyzer(img)
+    results.to_json("output.json")
+```
+
+`OCR` モジュール単体で利用する場合も、同じオプションを `text_recognizer` に渡します。
+
+```python
+import cv2
+from yomitoku import OCR
+
+if __name__ == "__main__":
+    configs = {
+        "text_recognizer": {
+            "model_name": "parseq-tiny-dynw-v4",
+            "dynamic_width": True,
+            "batch_bucketing": True,
+        },
+    }
+
+    ocr = OCR(configs=configs, device="cpu")
+
+    img = cv2.imread("sample.jpg")
+    results, ocr_vis = ocr(img)
+```
+
+> [!NOTE]
+> `parseq-tiny-dynw-v4` は動的幅バッチング推論を前提に学習されたモデルです。`dynamic_width=True`（および `batch_bucketing=True`）と組み合わせて使用してください。ONNX 推論（`infer_onnx=True`）は入力サイズが固定されるため、`dynamic_width` は自動的に無効化されます。
 
 ## コマンドライン引数一覧
 

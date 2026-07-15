@@ -46,23 +46,19 @@ class Visualize:
 
 
 @dataclass
-class TextRecognizerPARSeqH32P4x8D192DynwConfig:
-    """Trial config for the 32px-tall, 192-dim, [4, 8]-patch dynamic-width PARSeq checkpoint.
+class TextRecognizerPARSeqTinyDynwV4Config:
+    """Config for the lite dynamic-width PARSeq recognizer (parseq-tiny-dynw-v4).
 
     A compact recognizer: 32px input height with a [4, 8] patch (8 patch rows
     x 100 columns over a 32x800 canvas), a 192-dim encoder/decoder, and 6
     attention heads. Trained with the dynamic-width recipe (width bucketing +
-    trailing margin) so it is robust to narrow canvases, which unlocks
-    accurate dynamic-width batching at inference time (``dynamic_width=True``).
-    Mirrors parseq-jp config ``train_len100_w800_h32_p4x8_d192_dynw.yaml``.
-    Weights live in a local HF-format directory produced by
-    ``scripts/register_hugging_face_hub.py`` (with the push_to_hub step
-    disabled), so from_pretrained loads them without contacting the Hub.
+    trailing margin) so it stays accurate on narrow canvases, which unlocks
+    dynamic-width batching at inference time (``dynamic_width=True``, paired
+    with ``batch_bucketing=True``). This is the recognizer selected by the CLI
+    ``--lite`` option for fast CPU inference.
     """
 
-    # Local HF-format directory (save_pretrained output), loaded by
-    # from_pretrained without contacting the Hub.
-    hf_hub_repo: str = str(ROOT_DIR + "/local_models/parseq-h32-p4x8-d192-dynw")
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-recognizer-parseq-tiny-dynw-v4"
     charset: str = str(ROOT_DIR + "/resource/charsetv2.txt")
     num_tokens: int = 7121
     max_label_length: int = 100

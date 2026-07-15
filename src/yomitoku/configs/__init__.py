@@ -11,8 +11,8 @@ from .cfg_text_recognizer_parseq_small import TextRecognizerPARSeqSmallConfig
 from .cfg_text_recognizer_parseq_tiny import TextRecognizerPARSeqTinyConfig
 from .cfg_text_recognizer_parseq_v2 import TextRecognizerPARSeqV2Config
 from .cfg_text_recognizer_parseq_large_v4_1 import TextRecognizerPARSeqLargeV41Config
-from .cfg_text_recognizer_parseq_h32_p4x8_d192_dynw import (
-    TextRecognizerPARSeqH32P4x8D192DynwConfig,
+from .cfg_text_recognizer_parseq_tiny_dynw_v4 import (
+    TextRecognizerPARSeqTinyDynwV4Config,
 )
 from .cfg_table_cell_parser_rtdtrv2_beta import TableCellParserRTDETRv2BetaConfig
 
@@ -33,7 +33,7 @@ __all__ = [
     "TextRecognizerPARSeqSmallConfig",
     "TextRecognizerPARSeqV2Config",
     "TextRecognizerPARSeqLargeV41Config",
-    "TextRecognizerPARSeqH32P4x8D192DynwConfig",
+    "TextRecognizerPARSeqTinyDynwV4Config",
     "LayoutParserRTDETRv2Config",
     "LayoutParserRTDETRv2V2Config",
     "TableStructureRecognizerRTDETRv2Config",
