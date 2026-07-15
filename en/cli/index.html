@@ -1366,6 +1366,17 @@
 <p>By using the --lite option, it is possible to perform inference with a lightweight model. This enables faster analysis compared to the standard mode. However, the accuracy of character recognition may decrease.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--lite<span class="w"> </span>-v
 </span></code></pre></div>
+<p>In lightweight mode, the text recognizer is switched to the compact
+<code>parseq-tiny-dynw-v4</code> model (32px input height, 192-dim, <code>[4, 8]</code> patch),
+which is trained for <strong>dynamic-width</strong> inference. Instead of padding every
+text crop to the fixed 800px canvas, each mini-batch is padded only to the
+widest crop it contains, and similar-width crops are grouped together
+(<strong>batch bucketing</strong>). Because most text crops are narrow, this removes a
+large amount of wasted computation and is dramatically faster on CPU. On CPU,
+the text detector additionally runs with the ONNX runtime and recognizer
+mini-batches are executed concurrently.</p>
+<p>The lightweight recognizer is downloaded from Hugging Face Hub
+(<code>KotaroKinoshita/yomitoku-text-recognizer-parseq-tiny-dynw-v4</code>) on first use.</p>
 <h2 id="specifying-output-format">Specifying Output Format<a class="headerlink" href="#specifying-output-format" title="Permanent link">&para;</a></h2>
 <p>You can specify the output format of the analysis results using the --format or -f option. Supported output formats include JSON, CSV, HTML, and MD (Markdown).</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>md

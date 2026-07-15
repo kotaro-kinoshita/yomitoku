@@ -1365,6 +1365,17 @@
 <p><code>--lite</code>オプションを付与することで、軽量モデルを使用して、推論することが可能です。デフォルトより高速に解析が実行可能です。ただし、文字の認識精度が低下する可能性があります。</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--lite<span class="w"> </span>-v
 </span></code></pre></div>
+<p>軽量モードでは、文字認識モデルがコンパクトな <code>parseq-tiny-dynw-v4</code>（入力高さ
+32px、192 次元、<code>[4, 8]</code> パッチ）に切り替わります。このモデルは<strong>動的幅
+（dynamic width）</strong>推論向けに学習されており、すべての文字領域を固定の 800px
+幅にパディングする代わりに、ミニバッチ内で最も幅の広い領域に合わせてのみ
+パディングします。さらに、幅の近い領域をまとめて 1 バッチにする<strong>バケッティング
+（batch bucketing）</strong>を行います。実際の文字領域の多くは幅が狭いため、無駄な計算
+が大幅に削減され、特に CPU で高速になります。CPU 実行時はテキスト検出器を ONNX
+ランタイムで動かし、認識のミニバッチを並列に実行します。</p>
+<p>軽量モデルの重みは初回実行時に Hugging Face Hub
+（<code>KotaroKinoshita/yomitoku-text-recognizer-parseq-tiny-dynw-v4</code>）からダウンロード
+されます。</p>
 <h2 id="_3">出力フォーマットの指定<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <p><code>-f</code>, <code>--format</code> 出力形式のファイルフォーマットを指定します。(json, csv, html, md, pdf(searchable-pdf) をサポート)</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>md
