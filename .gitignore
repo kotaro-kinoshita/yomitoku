@@ -24,3 +24,6 @@ results/
 
 *.onnx
 *.pt
+# Local trial models (e.g. dynw checkpoint converted via register_hugging_face_hub.py)
+src/yomitoku/local_models/
+results_dynw_0p1/

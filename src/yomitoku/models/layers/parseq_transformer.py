@@ -204,8 +204,34 @@ class Encoder(VisionTransformer):
         )
 
     def forward(self, x):
-        # Return all tokens
-        return self.forward_features(x)
+        if x.shape[-2:] == tuple(self.patch_embed.img_size):
+            # Return all tokens
+            return self.forward_features(x)
+        return self.forward_features_dynamic(x)
+
+    def forward_features_dynamic(self, x):
+        """Forward pass for inputs narrower than the training canvas.
+
+        Patchifies directly (bypassing PatchEmbed's strict size check) and
+        adds the learned absolute position embedding cropped to the actual
+        patch grid, so each patch keeps the same position embedding it had
+        at training time.
+        """
+        x = self.patch_embed.proj(x)  # B, D, gh, gw
+        gh, gw = x.shape[-2:]
+        x = x.flatten(2).transpose(1, 2)  # B, N, D
+        x = self.patch_embed.norm(x)
+
+        full_gh, full_gw = self.patch_embed.grid_size
+        pos_embed = self.pos_embed.reshape(1, full_gh, full_gw, -1)[:, :gh, :gw]
+        x = x + pos_embed.reshape(1, gh * gw, -1)
+
+        x = self.pos_drop(x)
+        x = self.patch_drop(x)
+        x = self.norm_pre(x)
+        x = self.blocks(x)
+        x = self.norm(x)
+        return x
 
 
 class TokenEmbedding(nn.Module):

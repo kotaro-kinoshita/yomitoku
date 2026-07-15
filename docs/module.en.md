@@ -94,10 +94,29 @@ The following parameters can be set for the model:
 
 | Model Type | Model Name |
 | :--- | :--- |
-| `TextRecognizer` | `"parseq"`, `"parseq-small"`, `"parseq-tiny"` |
-| `TextDetector` | `"dbnet"` |
+| `TextRecognizer` | `"parseq-large-v4_1"` (default), `"parseq-tiny-dynw-v4"` (lite), `"parseq"`, `"parseqv2"`, `"parseq-small"`, `"parseq-tiny"` |
+| `TextDetector` | `"dbnetv2_1"` (default), `"dbnet"`, `"dbnetv2"` |
 | `LayoutParser` | `"rtdetrv2"` |
 | `TableStructureRecognizer` | `"rtdetrv2"` |
+
+`"parseq-tiny-dynw-v4"` is the recognizer used by the CLI `--lite` option. It is
+a dynamic-width model, so it should be combined with `dynamic_width=True` and
+`batch_bucketing=True` for fast inference:
+
+```python
+from yomitoku import DocumentAnalyzer
+
+configs = {
+    "ocr": {
+        "text_recognizer": {
+            "model_name": "parseq-tiny-dynw-v4",
+            "dynamic_width": True,
+            "batch_bucketing": True,
+        },
+    },
+}
+DocumentAnalyzer(configs=configs)
+```
 
 ### How to Write Config
 
