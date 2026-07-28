@@ -12,6 +12,9 @@ from .cfg_text_recognizer_parseq_tiny import TextRecognizerPARSeqTinyConfig
 from .cfg_text_recognizer_parseq_v2 import TextRecognizerPARSeqV2Config
 from .cfg_text_recognizer_parseq_large_v4_1 import TextRecognizerPARSeqLargeV41Config
 from .cfg_table_cell_parser_rtdtrv2_beta import TableCellParserRTDETRv2BetaConfig
+from .cfg_table_cell_parser_rtdtrv2_beta_960 import (
+    TableCellParserRTDETRv2Beta960Config,
+)
 
 DEFAULT_CONFIGS = [
     TextRecognizerPARSeqLargeV41Config,
@@ -34,4 +37,5 @@ __all__ = [
     "LayoutParserRTDETRv2V2Config",
     "TableStructureRecognizerRTDETRv2Config",
     "TableCellParserRTDETRv2BetaConfig",
+    "TableCellParserRTDETRv2Beta960Config",
 ]

@@ -57,14 +57,22 @@ dev-dependencies = [
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
+    # Blackwell (sm_120) 以降の GPU 対応のため Linux は cu128 ビルドを使う
+    { index = "pytorch-cu128", marker = "platform_system == 'Linux'"},
 ]
 torchvision = [
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
+    { index = "pytorch-cu128", marker = "platform_system == 'Linux'"},
 ]
 
 [[tool.uv.index]]
 name = "pytorch-cuda124"
 url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
 explicit = true
 
 [[tool.uv.index]]

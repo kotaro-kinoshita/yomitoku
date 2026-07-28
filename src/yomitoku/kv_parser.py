@@ -8,108 +8,119 @@ from .utils.misc import (
     is_right_adjacent,
 )
 
-PSEUDO_GROUP_ID = "__unmatched__"
-
-
-def _matching_group_and_cells(nodes, groups):
+def _assign_cells_to_regions(nodes, regions):
     """
-    グループとヘッダー領域、セル領域のマッチングを行い、セルとグループ、ヘッダーとグループの対応関係を求める
-    ヘッダー・セルともにグループに対してN:1（各ノードは最も重複率の高い1グループに属する）
-    どのグループにも属さないノードは擬似グループにまとめる
+    header / cell / empty ノードを、それを内包する領域(kv_item 領域)に割り当てる。
+
+    - cell / empty (値セル) は最も重複率の高い1領域に属する（N:1）。
+    - header (キー) は複数行にまたがる行ヘッダーになり得るため、内包される
+      全領域に属する（N:M）。header_to_regions は header.id -> set(region_id)。
+
+    どの領域にも属さないノードは割り当てず、グラフの構築対象から外す。
     """
 
-    match = {
-        "header_to_group": {},
-        "group_to_cells": {},
-        "cell_to_group": {},
-        "group_to_headers": {},
-    }
+    cell_to_region = {}
+    header_to_regions = {}
 
-    if len(groups) == 0:
-        return match
+    if len(regions) == 0:
+        return cell_to_region, header_to_regions
 
-    # セルとグループのマッチング（各セルを最も重複率の高い1グループに割り当て）
-    matched_cell_to_group = {}
+    # セルと領域のマッチング（各セルを最も重複率の高い1領域に割り当て）
     for cell in nodes["cell"] + nodes["empty"]:
-        best_group_id = None
+        best_region_id = None
         best_ratio = 0.0
-        for group in groups:
-            if is_contained(group.box, cell.box, threshold=0.2):
-                ratio = calc_overlap_ratio(cell.box, group.box)[0]
+        for region in regions:
+            if is_contained(region.box, cell.box, threshold=0.2):
+                ratio = calc_overlap_ratio(cell.box, region.box)[0]
                 if ratio > best_ratio:
                     best_ratio = ratio
-                    best_group_id = group.id
-        if best_group_id is not None:
-            matched_cell_to_group[cell.id] = best_group_id
+                    best_region_id = region.id
+        if best_region_id is not None:
+            cell_to_region[cell.id] = best_region_id
 
-    # ヘッダーとグループのマッチング（N:1、各ヘッダーを最も重複率の高いグループに割り当て）
-    matched_header_to_group = {}
+    # ヘッダーと領域のマッチング（内包される全領域に属する）
     for header in nodes["header"]:
-        best_group_id = None
-        best_ratio = 0.0
-        for group in groups:
-            if is_contained(group.box, header.box, threshold=0.2):
-                ratio = calc_overlap_ratio(header.box, group.box)[0]
-                if ratio > best_ratio:
-                    best_ratio = ratio
-                    best_group_id = group.id
-        if best_group_id is not None:
-            matched_header_to_group[header.id] = best_group_id
+        regs = {
+            region.id
+            for region in regions
+            if is_contained(region.box, header.box, threshold=0.2)
+        }
+        if regs:
+            header_to_regions[header.id] = regs
 
-    # どのグループにも属さないheader/cellを擬似グループにまとめる
-    unmatched_cells = [
-        c.id
-        for c in nodes["cell"] + nodes["empty"]
-        if c.id not in matched_cell_to_group
-    ]
-    unmatched_headers = [
-        h.id for h in nodes["header"] if h.id not in matched_header_to_group
-    ]
-
-    if unmatched_cells or unmatched_headers:
-        pseudo_group_id = PSEUDO_GROUP_ID
-        for cell_id in unmatched_cells:
-            matched_cell_to_group[cell_id] = pseudo_group_id
-        for header_id in unmatched_headers:
-            matched_header_to_group[header_id] = pseudo_group_id
-
-    match["cell_to_group"] = matched_cell_to_group
-    match["header_to_group"] = matched_header_to_group
-
-    # group_to_cells: グループ→セルリスト（逆引き）
-    matched_group_to_cells = {}
-    for cell_id, group_id in matched_cell_to_group.items():
-        matched_group_to_cells.setdefault(group_id, []).append(cell_id)
-    match["group_to_cells"] = matched_group_to_cells
-
-    # group_to_headers: グループ→ヘッダーリスト（N:1の逆引き）
-    group_to_headers = {}
-    for header_id, group_id in matched_header_to_group.items():
-        group_to_headers.setdefault(group_id, []).append(header_id)
-    match["group_to_headers"] = group_to_headers
-
-    return match
+    return cell_to_region, header_to_regions
 
 
-def _calc_adjacent_header_to_cell(dag, match, headers, cells):
+def _attach_left_adjacent_orphan_headers(nodes, header_to_regions):
+    """どのkv領域にも属さないヘッダーを、そのヘッダーが左方に隣接する
+    「領域に属するヘッダー」の領域へ取り込む（先頭キー・行ヘッダーの取りこぼし救済）。
+
+    例1: kv_item のboxが右側のキーしか覆っておらず、左端の上位キー(ヘッダー)が
+    どの領域にも属していない場合に、右隣の領域ヘッダーと同じ領域へ結合する。
+
+    例2: 複数行にまたがる左端の行ヘッダー(例:「控除対象扶養親族等」や行番号)は
+    どの領域ともx方向で重ならず孤児になる。この場合、右隣に接する全ての領域
+    ヘッダーの領域を「すべて」取り込むことで、各行(領域)の子と1:Nで接続できる
+    ようにする。1領域のみへ結合すると1つの子にしか繋がらない不具合を防ぐ。
+
+    orphan → orphan → 領域ヘッダー のような連鎖にも対応するため、
+    変化が無くなるまで繰り返す。
+
+    NOTE: 右隣接ヘッダーの領域は「単調に増える」形で毎パス再計算する。1回目に
+    見つかった領域で固定してしまうと、右隣ヘッダーが後のパスで領域を獲得しても
+    取りこぼす（例: 行ヘッダーが最初に領域を持っていた1つの行番号にしか繋がらない）。
     """
-    グループ内のヘッダーとセルの隣接関係を計算
-    """
+    headers = nodes["header"]
 
-    cell_to_group = match["cell_to_group"]
-    header_to_group = match["header_to_group"]
+    # 直接どの領域にも属さなかったヘッダー(=孤児)のみを成長対象とする。
+    # 直接割当済みヘッダーの領域は変更しない。
+    orphan_ids = {h.id for h in headers if not header_to_regions.get(h.id)}
+
+    updated = True
+    while updated:
+        updated = False
+        for orphan in headers:
+            if orphan.id not in orphan_ids:
+                continue
+
+            # orphan が左方に隣接する「領域に属するヘッダー」の領域を全て集める
+            # (= 領域ヘッダーが orphan の右隣に隣接する)。毎パス全体から再計算し、
+            # 右隣ヘッダーが後から獲得した領域も取り込めるようにする。
+            attached = set(header_to_regions.get(orphan.id, set()))
+            for other in headers:
+                if other.id == orphan.id:
+                    continue
+                other_regions = header_to_regions.get(other.id)
+                if not other_regions:
+                    continue
+                if is_right_adjacent(orphan.box, other.box):
+                    attached |= other_regions
+
+            if attached and attached != header_to_regions.get(orphan.id):
+                header_to_regions[orphan.id] = attached
+                updated = True
+
+    return header_to_regions
+
+
+def _calc_adjacent_header_to_cell(
+    dag, cell_to_region, header_to_regions, headers, cells
+):
+    """
+    同一領域内のヘッダーとセルの隣接関係を計算
+    """
 
     for header in headers:
-        header_group_id = header_to_group.get(header.id, None)
-        if header_group_id is None:
+        header_regions = header_to_regions.get(header.id)
+        if not header_regions:
             continue
 
         for cell in cells:
-            cell_group_id = cell_to_group.get(cell.id, None)
-            if cell_group_id is None:
+            cell_region_id = cell_to_region.get(cell.id, None)
+            if cell_region_id is None:
                 continue
 
-            if header_group_id != cell_group_id:
+            if cell_region_id not in header_regions:
                 continue
 
             if is_right_adjacent(header.box, cell.box):
@@ -121,32 +132,24 @@ def _calc_adjacent_header_to_cell(dag, match, headers, cells):
                 dag.add_edge(cell.id, header.id, dir="U")
 
 
-def _calc_adjacent_header_to_header(dag, match, nodes):
+def _calc_adjacent_header_to_header(dag, header_to_regions, nodes):
     """
-    ヘッダーの隣接関係を計算
-    同じグループに属するヘッダー同士、またはどちらかが未割り当て（擬似グループ）の場合にエッジを追加
+    同一領域内のヘッダー同士の隣接関係を計算
     """
-
-    header_to_group = match["header_to_group"]
 
     for node in nodes:
         for potential_parent in nodes:
             if node.id == potential_parent.id:
                 continue
 
-            potential_parent_group_id = header_to_group.get(potential_parent.id, None)
-            node_group_id = header_to_group.get(node.id, None)
+            potential_parent_regions = header_to_regions.get(potential_parent.id)
+            node_regions = header_to_regions.get(node.id)
 
-            if potential_parent_group_id is None or node_group_id is None:
+            if not potential_parent_regions or not node_regions:
                 continue
 
-            # 同じグループ or どちらかが未割り当ての場合のみ
-            is_same_group = potential_parent_group_id == node_group_id
-            has_unmatched = (
-                potential_parent_group_id == PSEUDO_GROUP_ID
-                or node_group_id == PSEUDO_GROUP_ID
-            )
-            if not is_same_group and not has_unmatched:
+            # 領域を1つでも共有していれば同一グループとみなす
+            if not (potential_parent_regions & node_regions):
                 continue
 
             # 左右の隣接判定
@@ -160,29 +163,25 @@ def _calc_adjacent_header_to_header(dag, match, nodes):
                 dag.add_edge(node.id, potential_parent.id, dir="U")
 
 
-def _calc_adjacent_cell_to_cell(dag, match, nodes):
+def _calc_adjacent_cell_to_cell(dag, cell_to_region, nodes):
     """
-    セルの隣接関係を計算
-    セルが同じグリッド領域 or 同じグループに属している場合のみ隣接関係を追加
+    同一領域内のセル同士の隣接関係を計算
     """
-
-    cell_to_group = match["cell_to_group"]
 
     for node in nodes:
-        node_group_id = cell_to_group.get(node.id, None)
-        if node_group_id is None:
+        node_region_id = cell_to_region.get(node.id, None)
+        if node_region_id is None:
             continue
 
         for potential_parent in nodes:
             if node.id == potential_parent.id:
                 continue
 
-            # 同じグループに属しているか判定
-            potential_parent_group_id = cell_to_group.get(potential_parent.id, None)
-            if potential_parent_group_id is None:
+            potential_parent_region_id = cell_to_region.get(potential_parent.id, None)
+            if potential_parent_region_id is None:
                 continue
 
-            if node_group_id != potential_parent_group_id:
+            if node_region_id != potential_parent_region_id:
                 continue
 
             # 左右の隣接判定
@@ -196,8 +195,12 @@ def _calc_adjacent_cell_to_cell(dag, match, nodes):
                 dag.add_edge(node.id, potential_parent.id, dir="U")
 
 
-def get_kv_items_dag(nodes, groups):
-    match = _matching_group_and_cells(nodes, groups)
+def get_kv_items_dag(nodes, regions):
+    cell_to_region, header_to_regions = _assign_cells_to_regions(nodes, regions)
+
+    # どの領域にも属さないヘッダーを、左方に隣接する領域ヘッダーの領域へ取り込む
+    header_to_regions = _attach_left_adjacent_orphan_headers(nodes, header_to_regions)
+
     dag = nx.DiGraph()
 
     for node in nodes["header"] + nodes["cell"] + nodes["empty"]:
@@ -211,20 +214,22 @@ def get_kv_items_dag(nodes, groups):
 
     _calc_adjacent_header_to_cell(
         dag,
-        match,
+        cell_to_region,
+        header_to_regions,
         nodes["header"],
         nodes["cell"],
     )
 
     _calc_adjacent_header_to_cell(
         dag,
-        match,
+        cell_to_region,
+        header_to_regions,
         nodes["header"],
         nodes["empty"],
     )
 
-    _calc_adjacent_header_to_header(dag, match, nodes["header"])
-    _calc_adjacent_cell_to_cell(dag, match, nodes["cell"])
+    _calc_adjacent_header_to_header(dag, header_to_regions, nodes["header"])
+    _calc_adjacent_cell_to_cell(dag, cell_to_region, nodes["cell"])
 
     return dag
 
@@ -290,8 +295,8 @@ def _dfs_collect_kv(dag, node_id, key_path, kv_items, cells, kv_cells, allowed_d
             )
 
 
-def parse_kv_items(clustered_nodes, nodes, cells):
-    dag = get_kv_items_dag(clustered_nodes, nodes["group"])
+def parse_kv_items(nodes, cells, regions):
+    dag = get_kv_items_dag(nodes, regions)
 
     kv_items = []
     kv_cells = {}
@@ -337,7 +342,7 @@ def parse_kv_items(clustered_nodes, nodes, cells):
 
     # DFSで到達できなかったcell/emptyはキーなしで追加
     visited_values = {kv.value for kv in kv_items}
-    for cell in clustered_nodes["cell"] + clustered_nodes["empty"]:
+    for cell in nodes["cell"] + nodes["empty"]:
         if cell.id not in visited_values:
             kv_items.append(KvItemSchema(id=None, key=[], value=cell.id, box=cell.box))
             kv_cells[cell.id] = cells[cell.id]

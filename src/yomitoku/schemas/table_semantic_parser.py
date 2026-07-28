@@ -95,6 +95,17 @@ class CellSchema(BaseSchema):
     )
 
 
+class RegionSchema(BaseSchema):
+    """モデルが直接予測する領域 (kv_item / grid) の生の矩形。"""
+
+    id: Union[str, None] = Field(None, description="Region id")
+    box: conlist(int, min_length=4, max_length=4) = Field(
+        ..., description="Bounding box [x1, y1, x2, y2]"
+    )
+    role: str = Field(..., description="Region role, e.g., ['kv_item', 'grid']")
+    score: float = Field(1.0, description="Detection score")
+
+
 class TableDetectorSchema(BaseSchema):
     id: Union[str, None] = Field(
         ...,
@@ -111,6 +122,15 @@ class TableDetectorSchema(BaseSchema):
     cells: List[CellSchema] = Field(
         ...,
         description="List of detected table cells",
+    )
+    # モデルが直接予測した kv_item / grid 領域 (beta)
+    kv_regions: List[RegionSchema] = Field(
+        default_factory=list,
+        description="Model-predicted key-value item regions",
+    )
+    grid_regions: List[RegionSchema] = Field(
+        default_factory=list,
+        description="Model-predicted grid regions",
     )
 
 

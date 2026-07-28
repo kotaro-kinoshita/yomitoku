@@ -26,6 +26,7 @@ from .utils.logger import set_logger
 from .utils.misc import (
     calc_overlap_ratio,
     is_bottom_adjacent,
+    is_contained,
     is_right_adjacent,
     quad_to_xyxy,
 )
@@ -43,7 +44,6 @@ def _split_nodes_with_role(cells):
 
     nodes = {
         "header": [],
-        "group": [],
         "cell": [],
         "empty": [],
     }
@@ -185,6 +185,65 @@ def _weakly_cluster_nodes_with_graph(nodes):
                 dag.add_edge(empty.id, header.id, dir="D")
 
     return list(nx.weakly_connected_components(dag)), dag
+
+
+def _region_cell_ids(region, cells, threshold=0.5):
+    """領域 region に内包されるセルの id 集合を返す。"""
+    ids = set()
+    for cell in cells:
+        if is_contained(region.box, cell.box, threshold=threshold):
+            ids.add(cell.id)
+    return ids
+
+
+def _resolve_overlapping_regions(
+    grid_regions,
+    kv_regions,
+    value_cells,
+    conflict_ratio_th=0.5,
+):
+    """モデルが kv_item と grid を重複して予測した場合の優先度を解決する。
+
+    領域内のセル網羅度（内包するセル数）を基準に、競合する領域の一方を採用する。
+    - 2領域が共有するセルが、いずれかの領域の保持セルの大半 (>= conflict_ratio_th)
+      を占める場合に「競合」とみなす。
+    - 競合時はセル網羅度が高い方を優先し、同数なら grid を優先する。
+
+    NOTE: 細部のルール（面積比・行列構造の妥当性など）は今後詰める。
+    """
+    grid_cellsets = [_region_cell_ids(g, value_cells) for g in grid_regions]
+    kv_cellsets = [_region_cell_ids(k, value_cells) for k in kv_regions]
+
+    drop_grid = set()
+    drop_kv = set()
+
+    for gi in range(len(grid_regions)):
+        for ki in range(len(kv_regions)):
+            if gi in drop_grid or ki in drop_kv:
+                continue
+
+            inter = grid_cellsets[gi] & kv_cellsets[ki]
+            if not inter:
+                continue
+
+            g_cov = len(grid_cellsets[gi])
+            k_cov = len(kv_cellsets[ki])
+            denom = min(g_cov, k_cov)
+            if denom == 0:
+                continue
+
+            if len(inter) / denom < conflict_ratio_th:
+                continue
+
+            # セル網羅度が高い方を優先（同数なら grid 優先）
+            if g_cov >= k_cov:
+                drop_kv.add(ki)
+            else:
+                drop_grid.add(gi)
+
+    grids = [g for i, g in enumerate(grid_regions) if i not in drop_grid]
+    kvs = [k for i, k in enumerate(kv_regions) if i not in drop_kv]
+    return grids, kvs
 
 
 def is_grid_cluster(nodes):
@@ -392,10 +451,32 @@ def dag_visualizer(dag, img):
     for u, v, attrs in dag.edges(data=True):
         if attrs["dir"] in ["L", "U"]:
             continue
-        cx1 = (dag.nodes[u]["bbox"][0] + dag.nodes[u]["bbox"][2]) / 2
-        cy1 = (dag.nodes[u]["bbox"][1] + dag.nodes[u]["bbox"][3]) / 2
-        cx2 = (dag.nodes[v]["bbox"][0] + dag.nodes[v]["bbox"][2]) / 2
-        cy2 = (dag.nodes[v]["bbox"][1] + dag.nodes[v]["bbox"][3]) / 2
+        bu = dag.nodes[u]["bbox"]
+        bv = dag.nodes[v]["bbox"]
+        cx1 = (bu[0] + bu[2]) / 2
+        cy1 = (bu[1] + bu[3]) / 2
+        cx2 = (bv[0] + bv[2]) / 2
+        cy2 = (bv[1] + bv[3]) / 2
+
+        # 片方がスパンセルだと中心同士を結ぶ線は斜めになり実際の接続位置と
+        # ずれるため、隣接方向と直交する軸は「両セルの重なり帯の中点」に
+        # 揃えて水平/垂直に描画する（重なりが無い異常エッジは中心のまま
+        # 斜めに描画され、目視で検出できる）
+        if attrs["dir"] == "R":
+            lo = max(bu[1], bv[1])
+            hi = min(bu[3], bv[3])
+            if lo < hi:
+                cy1 = cy2 = (lo + hi) / 2
+        elif attrs["dir"] == "D":
+            lo = max(bu[0], bv[0])
+            hi = min(bu[2], bv[2])
+            if lo < hi:
+                cx1 = cx2 = (lo + hi) / 2
+
+        # 矢印チップは線長比だと長いエッジで巨大化するため、絶対長で揃える
+        length = max(1.0, ((cx2 - cx1) ** 2 + (cy2 - cy1) ** 2) ** 0.5)
+        tip_length = min(0.2, 12.0 / length)
+
         color = (0, 255, 0) if attrs["dir"] == "R" else (255, 0, 0)
         img = cv2.arrowedLine(
             img,
@@ -403,6 +484,7 @@ def dag_visualizer(dag, img):
             (int(cx2), int(cy2)),
             color,
             2,
+            tipLength=tip_length,
         )
 
     return img
@@ -496,10 +578,13 @@ class TableSemanticParser:
                 order=0,
                 role=None,
             )
-            cell_words[best_cell.id].append(word_element)
+            # 段落要素は id が未採番(None)のまま渡されるため、cell.id を
+            # キーにすると全要素が同一キーに集約され、全単語が全段落に
+            # 割り当たってしまう。オブジェクト同一性をキーにする。
+            cell_words[id(best_cell)].append(word_element)
 
         for cell in cells:
-            contained = cell_words.get(cell.id, [])
+            contained = cell_words.get(id(cell), [])
             if not contained:
                 cell.contents = ""
                 continue
@@ -633,6 +718,9 @@ class TableSemanticParser:
         vis_layout = img.copy()
         vis_ocr = img.copy()
 
+        # テーブル構造のグラフ (DAG) を最後にまとめて上描きするため保持する
+        dags = []
+
         cell_offset = 0
         for i, table in enumerate(results_table):
             cells = {}
@@ -661,51 +749,76 @@ class TableSemanticParser:
                 "grids": [],
             }
             if template is None:
-                nodes = _split_nodes_with_role(table.cells)
+                # モデルが直接予測した grid / kv_item 領域を利用する
+                value_cells = [
+                    c for c in table.cells if c.role in ("cell", "header", "empty")
+                ]
 
-                if not grid_only:
-                    clusters, dag = _weakly_cluster_nodes_with_graph(nodes)
-                    cluster_nodes_list = _get_cluster_nodes(clusters, nodes)
+                grid_regions = list(table.grid_regions)
+                kv_regions = list(table.kv_regions)
 
-                else:
-                    clusters = [[cell.id for cell in table.cells]]
-                    cluster_nodes_list = [nodes]
+                if grid_only:
+                    kv_regions = []
+                if kv_only:
+                    grid_regions = []
 
-                for clustered_nodes in cluster_nodes_list:
-                    if not kv_only and is_grid_cluster(clustered_nodes):
-                        grid, grid_cells, dag = parse_grid_from_bottom_up(
-                            cells,
-                            clustered_nodes,
-                            self.merge_same_column_values,
-                        )
+                # kv_item と grid が重複検知された場合の優先度をルールベースで解決
+                grid_regions, kv_regions = _resolve_overlapping_regions(
+                    grid_regions,
+                    kv_regions,
+                    value_cells,
+                )
 
-                        if grid is None:
-                            continue
+                # --- grid 領域ごとに内部構造（行列）を推定 ---
+                grid_claimed_ids = set()
+                for region in grid_regions:
+                    region_cells = [
+                        c
+                        for c in value_cells
+                        if is_contained(region.box, c.box, threshold=0.5)
+                    ]
+                    if len(region_cells) == 0:
+                        continue
 
-                        table_information["grids"].append(grid)
-                        table_information["cells"].update(grid_cells)
+                    clustered_nodes = _split_nodes_with_role(region_cells)
+                    result = parse_grid_from_bottom_up(
+                        cells,
+                        clustered_nodes,
+                        self.merge_same_column_values,
+                    )
 
-                        # For Debugging
-                        vis_layout = dag_visualizer(
-                            dag,
-                            vis_layout,
-                        )
+                    if result is None:
+                        continue
 
-                    else:
-                        kv_items, dag, kv_cells = parse_kv_items(
-                            clustered_nodes,
-                            nodes,
-                            cells,
-                        )
+                    grid, grid_cells, dag = result
 
-                        table_information["kv_items"].extend(kv_items)
-                        table_information["cells"].update(kv_cells)
+                    table_information["grids"].append(grid)
+                    table_information["cells"].update(grid_cells)
+                    grid_claimed_ids.update(c.id for c in region_cells)
 
-                        # For Debugging
-                        vis_layout = dag_visualizer(
-                            dag,
-                            vis_layout,
-                        )
+                    dags.append(dag)
+
+                # --- grid に属さないセルを kv として推定 ---
+                remaining_cells = [
+                    c for c in value_cells if c.id not in grid_claimed_ids
+                ]
+                if remaining_cells:
+                    nodes = _split_nodes_with_role(remaining_cells)
+
+                    # モデル予測の kv_item 領域内のセルで隣接グラフを構築する
+                    for ki, region in enumerate(kv_regions):
+                        region.id = f"kvr{ki}"
+
+                    kv_items, dag, kv_cells = parse_kv_items(
+                        nodes,
+                        cells,
+                        kv_regions,
+                    )
+
+                    table_information["kv_items"].extend(kv_items)
+                    table_information["cells"].update(kv_cells)
+
+                    dags.append(dag)
 
             for cell in cells.values():
                 if cell.id not in table_information["cells"]:
@@ -746,5 +859,9 @@ class TableSemanticParser:
         if self.visualize:
             vis_layout = self.visualizer_layout(vis_layout, semantic_info)
             vis_ocr = self.visualizer_ocr(vis_ocr, semantic_info)
+
+            # テーブル構造のグラフ (DAG) をセル塗り・枠の上に描画して見やすくする
+            for dag in dags:
+                vis_layout = dag_visualizer(dag, vis_layout)
 
         return semantic_info, vis_layout, vis_ocr

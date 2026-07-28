@@ -63,7 +63,8 @@ def test_split_nodes_with_role_basic():
     assert nodes["header"] == []
     assert nodes["cell"] == []
     assert nodes["empty"] == []
-    assert nodes["group"] == []
+    # "group" はプリセットしない（kv グラフは領域内セルから直接構築する）
+    assert "group" not in nodes
 
 
 def test_get_cell_by_id_found_and_not_found():

@@ -4,7 +4,8 @@ from typing import List
 
 @dataclass
 class Data:
-    img_size: List[int] = field(default_factory=lambda: [640, 640])
+    # 960 検証用: 入力画像サイズを 960 に拡大
+    img_size: List[int] = field(default_factory=lambda: [960, 960])
 
 
 @dataclass
@@ -56,7 +57,8 @@ class Decoder:
     num_denoising: int = 100
     label_noise_ratio: float = 0.5
     box_noise_scale: float = 1.0
-    eval_spatial_size: List[int] = field(default_factory=lambda: [640, 640])
+    # 960 検証用: 入力画像サイズに合わせて拡大
+    eval_spatial_size: List[int] = field(default_factory=lambda: [960, 960])
 
     eval_idx: int = -1
 
@@ -66,13 +68,13 @@ class Decoder:
 
 
 @dataclass
-class TableCellParserRTDETRv2BetaConfig:
+class TableCellParserRTDETRv2Beta960Config:
     hf_hub_repo: str = "KotaroKinoshita/yomitoku-cell-detector-rtdtrv2-beta"
     # ローカルの学習済みチェックポイントを直接読み込む場合のパス。
-    # 設定されている場合は hf_hub_repo より優先される（beta検証用）。
+    # 設定されている場合は hf_hub_repo より優先される（960 入力サイズの beta 検証用）。
     # TODO: 検証後、重みを HF Hub に上げて hf_hub_repo に切り替える。
     weights_path: str = (
-        "/home/user/Projects/rtdetrv2_pytorch/output/table_semantic_parser/best.pth"
+        "/home/user/Projects/rtdetrv2_pytorch/output/table_semantic_parser_960_aug/best.pth"
     )
     # チェックポイント内で使用する重みキー ("model" or "ema")
     weights_key: str = "ema"

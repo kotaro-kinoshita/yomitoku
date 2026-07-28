@@ -150,6 +150,16 @@ def main():
         help="Output visualization images",
     )
     parser.add_argument(
+        "--cell-detector-model",
+        type=str,
+        default="rtdetrv2_beta",
+        choices=["rtdetrv2_beta", "rtdetrv2_beta_960"],
+        help=(
+            "Cell detector model variant "
+            "(rtdetrv2_beta: img_size 640, rtdetrv2_beta_960: img_size 960 検証用)"
+        ),
+    )
+    parser.add_argument(
         "--table-id",
         type=str,
         default=None,
@@ -215,7 +225,7 @@ def main():
     logger.info(f"Loaded schema with {len(schema.fields)} fields")
 
     tsp = TableSemanticParser(
-        configs={},
+        configs={"table_cell_parser": {"model_name": args.cell_detector_model}},
         device=args.device,
         visualize=args.vis,
     )

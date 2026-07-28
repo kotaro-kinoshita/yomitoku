@@ -190,15 +190,16 @@ def cell_detector_visualizer(img1, img2, cells):
             target, (x1, y1), (x2, y2), colors.get(c.role, (200, 200, 200)), 2
         )
 
-        target = cv2.putText(
-            target,
-            c.id,
-            (int((x1 + x2) / 2), int((y1 + y2) / 2)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (0, 0, 255),
-            2,
-        )
+        # セル ID の描画は一旦停止（グラフ可視化を見やすくするため）
+        # target = cv2.putText(
+        #     target,
+        #     c.id,
+        #     (int((x1 + x2) / 2), int((y1 + y2) / 2)),
+        #     cv2.FONT_HERSHEY_SIMPLEX,
+        #     0.8,
+        #     (0, 0, 255),
+        #     2,
+        # )
 
     return out1, out2
 
