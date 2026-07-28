@@ -13,6 +13,7 @@ from .configs import (
     TextRecognizerPARSeqTinyConfig,
     TextRecognizerPARSeqLargeV41Config,
     TextRecognizerPARSeqTinyDynwV4Config,
+    TextRecognizerPARSeqTinyDynwV5Config,
 )
 import cv2
 
@@ -20,7 +21,7 @@ from .data.dataset import ParseqDataset
 from .data.functions import resize_with_padding
 from .models import PARSeq
 from .postprocessor import ParseqTokenizer as Tokenizer
-from .utils.misc import load_charset
+from .utils.misc import load_char_replace_table, load_charset
 from .utils.visualizer import rec_visualizer
 
 from .constants import ROOT_DIR
@@ -41,6 +42,11 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
         self.register(
             "parseq-tiny-dynw-v4",
             TextRecognizerPARSeqTinyDynwV4Config,
+            PARSeq,
+        )
+        self.register(
+            "parseq-tiny-dynw-v5",
+            TextRecognizerPARSeqTinyDynwV5Config,
             PARSeq,
         )
 
@@ -71,6 +77,15 @@ class TextRecognizer(BaseModule):
         )
         self.charset = load_charset(self._cfg.charset)
         self.tokenizer = Tokenizer(self.charset)
+
+        # Charsets trained without uniform NFKC normalization opt out of the
+        # NFKC pass in postprocess and instead expand composite glyphs
+        # (e.g. ℡ -> TEL) via an explicit per-character replacement table.
+        self.nfkc_normalize = getattr(self._cfg, "nfkc_normalize", True)
+        char_replace_table = getattr(self._cfg, "char_replace_table", None)
+        self.char_replace_table = (
+            load_char_replace_table(char_replace_table) if char_replace_table else None
+        )
 
         self.device = device
 
@@ -231,7 +246,10 @@ class TextRecognizer(BaseModule):
 
     def postprocess(self, p, points):
         pred, score = self.tokenizer.decode(p)
-        pred = [unicodedata.normalize("NFKC", x) for x in pred]
+        if self.nfkc_normalize:
+            pred = [unicodedata.normalize("NFKC", x) for x in pred]
+        if self.char_replace_table is not None:
+            pred = [x.translate(self.char_replace_table) for x in pred]
 
         directions = []
         for point in points:

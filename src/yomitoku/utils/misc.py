@@ -1,3 +1,4 @@
+import csv
 import cv2
 import math
 import os
@@ -11,6 +12,26 @@ def load_charset(charset_path):
     with open(charset_path, "r", encoding="utf-8") as f:
         charset = f.read()
     return charset
+
+
+def load_char_replace_table(table_path):
+    """Load a source,target CSV into a str.translate mapping.
+
+    Each source must be a single character (the table expands composite
+    glyphs such as ℡ -> TEL after decoding, replacing the uniform NFKC
+    normalization for charsets trained without it).
+    """
+    table = {}
+    with open(table_path, "r", newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            source = row["source"]
+            if len(source) != 1:
+                raise ValueError(
+                    f"char replace table sources must be single characters, "
+                    f"got {source!r} in {table_path}"
+                )
+            table[ord(source)] = row["target"]
+    return table
 
 
 def filter_by_flag(elements, flags):
