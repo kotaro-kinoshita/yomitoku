@@ -511,7 +511,13 @@ def main():
         # similar-width crops to cut padding waste further.
         # (ONNX cannot do dynamic width here: the decoder's MultiheadAttention
         # bakes the encoder-memory length at export time.)
-        configs["ocr"]["text_recognizer"]["model_name"] = "parseq-tiny-dynw-v4"
+        # An explicitly passed --tr_name overrides the default lite recognizer
+        # so dynamic-width variants (e.g. parseq-tiny-dynw-v5) can be A/B
+        # tested under the same lite runtime settings.
+        lite_tr_name = "parseq-tiny-dynw-v4"
+        if args.tr_name != "parseq-large-v4_1":
+            lite_tr_name = args.tr_name
+        configs["ocr"]["text_recognizer"]["model_name"] = lite_tr_name
         configs["ocr"]["text_recognizer"]["dynamic_width"] = True
         configs["ocr"]["text_recognizer"]["batch_bucketing"] = True
         # Shrink high-resolution sources once before cropping (bounded by the
