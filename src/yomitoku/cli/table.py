@@ -5,12 +5,15 @@ from pathlib import Path
 
 import torch
 
-from ..constants import SUPPORT_INPUT_FORMAT
+from ..constants import ROOT_DIR, SUPPORT_INPUT_FORMAT
 from ..data.functions import load_image, load_pdf
 from ..table_semantic_parser import TableSemanticParser
 from ..utils.logger import set_logger
 from ..utils.misc import save_image
+from ..utils.visualizer import cell_id_visualizer
 from .main import validate_encoding
+
+FONT_PATH = os.path.join(ROOT_DIR, "resource", "MPLUS1p-Medium.ttf")
 
 logger = set_logger(__name__, "INFO")
 
@@ -68,6 +71,11 @@ def process_single_file(file_path, args, tsp):
         # TableSemanticParser は visualize=False でも入力画像のコピーを
         # 返すため、None 判定ではなく args.vis でゲートする
         if args.vis:
+            if args.vis_id:
+                vis_layout = cell_id_visualizer(
+                    vis_layout, semantic_info.tables, FONT_PATH
+                )
+
             vis_path = os.path.join(
                 args.outdir, f"{file_path.stem}_p{page + 1}_layout.jpg"
             )
@@ -118,6 +126,11 @@ def main():
         "--vis",
         action="store_true",
         help="if set, visualize the result",
+    )
+    parser.add_argument(
+        "--vis_id",
+        action="store_true",
+        help="if set with --vis, draw cell ids on the layout image",
     )
     parser.add_argument(
         "-l",

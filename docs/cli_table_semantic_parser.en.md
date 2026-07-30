@@ -13,6 +13,7 @@ yomitoku_table ${path_data} -o results -v
 | `${path_data}` | Path to a target image/PDF file or a directory containing them. Directories are processed recursively. |
 | `-o`, `--outdir` | Output directory (created if missing). Default: `results` |
 | `-v`, `--vis` | Export visualization images (`*_layout.jpg` / `*_ocr.jpg`). |
+| `--vis_id` | With `--vis`, draw cell ids at the top-left of each cell so that the cell ids referenced by the structured JSON and templates can be located on the image. |
 | `-l`, `--lite` | Use lite models (for CPU). |
 | `-d`, `--device` | Device to run the models on (cuda \| cpu \| mps). Default: `cuda` |
 | `--raw` | Output the normalized `TableSemanticParserSchema` JSON. |

@@ -249,3 +249,47 @@ def rec_visualizer(
     out = np.array(pillow_img)
     return out
     return out
+
+
+def cell_id_visualizer(img, tables, font_path, font_size=None):
+    """各セルの左上にセルIDのチップ (角丸矩形 + 白文字) を描画する。
+
+    構造化JSONやテンプレートが参照するセルIDを画像上で確認するための
+    可視化。group ロールのセルは枠が広域に被るためスキップする。
+    """
+    out = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)).convert("RGBA")
+    overlay = Image.new("RGBA", out.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+
+    if font_size is None:
+        font_size = max(14, out.width // 75)
+    font = ImageFont.truetype(font_path, font_size)
+
+    pad = max(2, font_size // 5)
+    radius = max(2, font_size // 5)
+
+    for table in tables:
+        cells = table.cells.values() if isinstance(table.cells, dict) else table.cells
+        for cell in cells:
+            if cell.role == "group" or cell.id is None:
+                continue
+
+            x1, y1, _, _ = map(int, cell.box)
+            label = str(cell.id)
+            left, top, right, bottom = draw.textbbox((0, 0), label, font=font)
+            w = right - left + pad * 2
+            h = bottom - top + pad * 2
+
+            bx, by = x1 + 2, y1 + 2
+            draw.rounded_rectangle(
+                [bx, by, bx + w, by + h], radius=radius, fill=(40, 40, 40, 200)
+            )
+            draw.text(
+                (bx + pad - left, by + pad - top),
+                label,
+                font=font,
+                fill=(255, 255, 255, 255),
+            )
+
+    merged = Image.alpha_composite(out, overlay).convert("RGB")
+    return cv2.cvtColor(np.array(merged), cv2.COLOR_RGB2BGR)

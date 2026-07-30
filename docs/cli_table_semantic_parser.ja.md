@@ -13,6 +13,7 @@ yomitoku_table ${path_data} -o results -v
 | `${path_data}` | 解析対象の画像・PDFファイル、またはそれらを含むディレクトリのパスを指定します。ディレクトリの場合はサブディレクトリも再帰的に処理します。 |
 | `-o`, `--outdir` | 出力ディレクトリを指定します（なければ作成）。デフォルト: `results` |
 | `-v`, `--vis` | 解析結果の可視化画像（`*_layout.jpg` / `*_ocr.jpg`）を出力します。 |
+| `--vis_id` | `--vis` と併用すると、各セルの左上にセルIDを描画します。構造化JSONやテンプレートが参照するセルIDを画像上で確認できます。 |
 | `-l`, `--lite` | 軽量モデルで実行します（CPU向け）。 |
 | `-d`, `--device` | モデルを実行するデバイスを指定します（cuda \| cpu \| mps）。デフォルト: `cuda` |
 | `--raw` | 正規化スキーマ（`TableSemanticParserSchema`）のJSONを出力します。 |

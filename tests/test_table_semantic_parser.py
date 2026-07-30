@@ -927,3 +927,26 @@ def test_resolve_non_overlapping_grid_regions_all_kept():
     grids, _ = _resolve_overlapping_regions([g1, g2], [], cells)
 
     assert len(grids) == 2
+
+
+def test_cell_id_visualizer_draws_chips_and_skips_group():
+    import numpy as np
+
+    from yomitoku.cli.table import FONT_PATH
+    from yomitoku.utils.visualizer import cell_id_visualizer
+
+    cells = {
+        "c0": mk_cell("c0", (50, 50, 150, 100), role="header", contents="k"),
+        "g0": mk_cell("g0", (200, 150, 290, 190), role="group"),
+    }
+    t = mk_table(cells=cells)
+    img = np.full((200, 300, 3), 255, dtype=np.uint8)
+
+    out = cell_id_visualizer(img, [t], FONT_PATH, font_size=14)
+
+    assert out.shape == img.shape
+    assert (img == 255).all()  # 入力は破壊されない
+    # c0 の左上にはチップが描かれる
+    assert (out[52:70, 52:70] != 255).any()
+    # group セル (g0) の左上には描かれない
+    assert (out[152:170, 202:220] == 255).all()
