@@ -99,7 +99,7 @@ Each component can be used independently (e.g., `OCR` alone for text extraction)
 | TextRecognizer | `parseq`, `parseqv2`, `parseq-small`, `parseq-tiny`, `parseq-large-v4_1`, `parseq-tiny-dynw-v4` |
 | LayoutParser | `layout_parser_rtdtrv2`, `layout_parser_rtdtrv2_v2` |
 | TableStructureRecognizer | `table_structure_recognizer_rtdtrv2` |
-| TableCellDetector | `rtdetrv2` (default, 960 input, AUG-trained), `rtdetrv2_beta` (640) |
+| TableCellDetector | `rtdetrv2` (default, 960 input, AUG-trained) |
 
 Lite mode (`--lite`) uses `parseq-tiny-dynw-v4` — a compact dynamic-width PARSeq recognizer (32px/192-dim/`[4,8]` patch) run with `dynamic_width=True` + `batch_bucketing=True` for fast CPU inference.
 

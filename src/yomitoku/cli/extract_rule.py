@@ -133,11 +133,8 @@ def main():
         "--cell-detector-model",
         type=str,
         default="rtdetrv2",
-        choices=["rtdetrv2", "rtdetrv2_beta"],
-        help=(
-            "Cell detector model variant "
-            "(rtdetrv2: 正式版 img_size 960, rtdetrv2_beta: img_size 640)"
-        ),
+        choices=["rtdetrv2"],
+        help="Cell detector model variant (rtdetrv2: 正式版 img_size 960)",
     )
     parser.add_argument(
         "--no-normalize",

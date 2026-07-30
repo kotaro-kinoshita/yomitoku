@@ -17,7 +17,7 @@ yomitoku_table ${path_data} -o results -v
 | `-d`, `--device` | Device to run the models on (cuda \| cpu \| mps). Default: `cuda` |
 | `--raw` | Output the normalized `TableSemanticParserSchema` JSON. |
 | `--simple` | Output text-only structured JSON without coordinates and other metadata. |
-| `--cell_name` | Table cell detector model (`rtdetrv2` \| `rtdetrv2_beta`). Default: `rtdetrv2` |
+| `--cell_name` | Table cell detector model. Default: `rtdetrv2` |
 | `--cell_cfg` | Path to a config file (YAML) for the cell detector. |
 | `--lp_name` / `--lp_cfg` | Layout parser (table detector) model name / config file. Default: `rtdetrv2v2` |
 | `--td_name` / `--td_cfg` | Text detector model name / config file. Default: `dbnetv2_1` |
@@ -135,7 +135,7 @@ yomitoku_table ${path_data} \
 
 | Module | Name option | Config option | Choices |
 | :-- | :-- | :-- | :-- |
-| Cell detector | `--cell_name` | `--cell_cfg` | `rtdetrv2` (official, 960 input), `rtdetrv2_beta` (640 input) |
+| Cell detector | `--cell_name` | `--cell_cfg` | `rtdetrv2` (official, 960 input) |
 | Table detector | `--lp_name` | `--lp_cfg` | `rtdetrv2`, `rtdetrv2v2` |
 | Text detector | `--td_name` | `--td_cfg` | `dbnet`, `dbnetv2`, `dbnetv2_1` |
 | Text recognizer | `--tr_name` | `--tr_cfg` | `parseq`, `parseqv2`, `parseq-small`, `parseq-tiny`, `parseq-large-v4_1` |

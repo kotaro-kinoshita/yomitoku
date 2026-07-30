@@ -12,7 +12,6 @@ from .constants import ROOT_DIR
 from .base import BaseModelCatalog, BaseModule, load_config
 from .configs import (
     TableCellParserRTDETRv2Config,
-    TableCellParserRTDETRv2BetaConfig,
 )
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
@@ -37,7 +36,6 @@ class TableParserModelCatalog(BaseModelCatalog):
         super().__init__()
         # 正式版 (入力サイズ 960 / augmentation 強化学習済み)
         self.register("rtdetrv2", TableCellParserRTDETRv2Config, RTDETRv2)
-        self.register("rtdetrv2_beta", TableCellParserRTDETRv2BetaConfig, RTDETRv2)
 
 
 def filter_contained_rectangles_with_category(category_elements, ignore_categories=[]):

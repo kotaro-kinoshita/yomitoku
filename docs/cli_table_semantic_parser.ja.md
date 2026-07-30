@@ -17,7 +17,7 @@ yomitoku_table ${path_data} -o results -v
 | `-d`, `--device` | モデルを実行するデバイスを指定します（cuda \| cpu \| mps）。デフォルト: `cuda` |
 | `--raw` | 正規化スキーマ（`TableSemanticParserSchema`）のJSONを出力します。 |
 | `--simple` | 座標などのメタ情報を持たないテキストのみの構造化JSONを出力します。 |
-| `--cell_name` | セル検出モデルを指定します（`rtdetrv2` \| `rtdetrv2_beta`）。デフォルト: `rtdetrv2` |
+| `--cell_name` | セル検出モデルを指定します。デフォルト: `rtdetrv2` |
 | `--cell_cfg` | セル検出モデルの設定ファイル（YAML）のパスを指定します。 |
 | `--lp_name` / `--lp_cfg` | レイアウト解析（テーブル検出）モデルの名前 / 設定ファイルを指定します。デフォルト: `rtdetrv2v2` |
 | `--td_name` / `--td_cfg` | 文字検出モデルの名前 / 設定ファイルを指定します。デフォルト: `dbnetv2_1` |
@@ -158,7 +158,7 @@ yomitoku_table ${path_data} \
 
 | モジュール | 名前の指定 | Configの指定 | 選択肢 |
 | :-- | :-- | :-- | :-- |
-| セル検出 | `--cell_name` | `--cell_cfg` | `rtdetrv2`（正式版・入力960）, `rtdetrv2_beta`（入力640） |
+| セル検出 | `--cell_name` | `--cell_cfg` | `rtdetrv2`（正式版・入力960） |
 | テーブル検出 | `--lp_name` | `--lp_cfg` | `rtdetrv2`, `rtdetrv2v2` |
 | 文字検出 | `--td_name` | `--td_cfg` | `dbnet`, `dbnetv2`, `dbnetv2_1` |
 | 文字認識 | `--tr_name` | `--tr_cfg` | `parseq`, `parseqv2`, `parseq-small`, `parseq-tiny`, `parseq-large-v4_1` |
