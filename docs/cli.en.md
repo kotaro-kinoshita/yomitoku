@@ -41,6 +41,19 @@ By using the --lite option, it is possible to perform inference with a lightweig
 yomitoku ${path_data} --lite -v
 ```
 
+In lightweight mode, the text recognizer is switched to the compact
+`parseq-tiny-dynw-v4` model (32px input height, 192-dim, `[4, 8]` patch),
+which is trained for **dynamic-width** inference. Instead of padding every
+text crop to the fixed 800px canvas, each mini-batch is padded only to the
+widest crop it contains, and similar-width crops are grouped together
+(**batch bucketing**). Because most text crops are narrow, this removes a
+large amount of wasted computation and is dramatically faster on CPU. On CPU,
+the text detector additionally runs with the ONNX runtime and recognizer
+mini-batches are executed concurrently.
+
+The lightweight recognizer is downloaded from Hugging Face Hub
+(`KotaroKinoshita/yomitoku-text-recognizer-parseq-tiny-dynw-v4`) on first use.
+
 ## Specifying Output Format
 
 You can specify the output format of the analysis results using the --format or -f option. Supported output formats include JSON, CSV, HTML, and MD (Markdown).

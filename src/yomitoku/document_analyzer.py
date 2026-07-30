@@ -600,31 +600,66 @@ class DocumentAnalyzer:
 
         return outputs
 
+    def _detect_and_recognize(self, img):
+        """Text detection followed immediately by recognition.
+
+        Recognition depends only on the detector output, so chaining them in
+        one worker lets recognition start as soon as detection finishes and
+        overlap with layout analysis running in the other worker.
+        """
+        results_det, _ = self.text_detector(img)
+
+        vis_det = None
+        if self.visualize:
+            vis_det = det_visualizer(
+                img,
+                results_det.points,
+            )
+
+        results_rec, ocr = self.text_recognizer(img, results_det.points, vis_det)
+        return results_det, results_rec, ocr
+
     async def run(self, img):
         with ThreadPoolExecutor(max_workers=2) as executor:
             loop = asyncio.get_running_loop()
-            tasks = [
-                # loop.run_in_executor(executor, self.ocr, img),
-                loop.run_in_executor(executor, self.text_detector, img),
-                loop.run_in_executor(executor, self.layout, img),
-            ]
-
-            results = await asyncio.gather(*tasks)
-
-            results_det, _ = results[0]
-            results_layout, layout = results[1]
 
             if self.split_text_across_cells:
+                # Recognition input depends on the layout result (detected
+                # lines are split at cell boundaries), so keep the original
+                # ordering: det || layout, then recognize.
+                tasks = [
+                    loop.run_in_executor(executor, self.text_detector, img),
+                    loop.run_in_executor(executor, self.layout, img),
+                ]
+
+                results = await asyncio.gather(*tasks)
+
+                results_det, _ = results[0]
+                results_layout, layout = results[1]
+
                 results_det = _split_text_across_cells(results_det, results_layout)
 
-            vis_det = None
-            if self.visualize:
-                vis_det = det_visualizer(
-                    img,
-                    results_det.points,
-                )
+                vis_det = None
+                if self.visualize:
+                    vis_det = det_visualizer(
+                        img,
+                        results_det.points,
+                    )
 
-            results_rec, ocr = self.text_recognizer(img, results_det.points, vis_det)
+                results_rec, ocr = self.text_recognizer(
+                    img, results_det.points, vis_det
+                )
+            else:
+                # det -> rec chain runs concurrently with layout analysis.
+                tasks = [
+                    loop.run_in_executor(executor, self._detect_and_recognize, img),
+                    loop.run_in_executor(executor, self.layout, img),
+                ]
+
+                results = await asyncio.gather(*tasks)
+
+                results_det, results_rec, ocr = results[0]
+                results_layout, layout = results[1]
 
             outputs = {"words": ocr_aggregate(results_det, results_rec)}
             results_ocr = OCRSchema(**outputs)

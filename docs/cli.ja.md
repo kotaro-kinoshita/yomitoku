@@ -38,6 +38,19 @@ yomitoku ${path_data} -v -o results
 yomitoku ${path_data} --lite -v
 ```
 
+軽量モードでは、文字認識モデルがコンパクトな `parseq-tiny-dynw-v4`（入力高さ
+32px、192 次元、`[4, 8]` パッチ）に切り替わります。このモデルは**動的幅
+（dynamic width）**推論向けに学習されており、すべての文字領域を固定の 800px
+幅にパディングする代わりに、ミニバッチ内で最も幅の広い領域に合わせてのみ
+パディングします。さらに、幅の近い領域をまとめて 1 バッチにする**バケッティング
+（batch bucketing）**を行います。実際の文字領域の多くは幅が狭いため、無駄な計算
+が大幅に削減され、特に CPU で高速になります。CPU 実行時はテキスト検出器を ONNX
+ランタイムで動かし、認識のミニバッチを並列に実行します。
+
+軽量モデルの重みは初回実行時に Hugging Face Hub
+（`KotaroKinoshita/yomitoku-text-recognizer-parseq-tiny-dynw-v4`）からダウンロード
+されます。
+
 ## 出力フォーマットの指定
 
 `-f`, `--format` 出力形式のファイルフォーマットを指定します。(json, csv, html, md, pdf(searchable-pdf) をサポート)

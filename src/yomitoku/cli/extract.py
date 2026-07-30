@@ -144,6 +144,12 @@ def main():
         help="Device for TableSemanticParser (default: cuda)",
     )
     parser.add_argument(
+        "-l",
+        "--lite",
+        action="store_true",
+        help="use the lite recognizer (parseq-tiny-dynw-v4 with dynamic-width batching) for faster CPU inference",
+    )
+    parser.add_argument(
         "-v",
         "--vis",
         action="store_true",
@@ -224,8 +230,22 @@ def main():
     schema = ExtractionSchema.from_yaml(str(schema_path))
     logger.info(f"Loaded schema with {len(schema.fields)} fields")
 
+    configs = {}
+    if args.lite:
+        # Dynamic-width lite recognizer: keep each crop at its native width and
+        # bucket similar-width crops together (mirrors the main CLI --lite).
+        configs["text_recognizer"] = {
+            "model_name": "parseq-tiny-dynw-v4",
+            "dynamic_width": True,
+            "batch_bucketing": True,
+        }
+        if args.device == "cpu":
+            configs.setdefault("text_detector", {})["infer_onnx"] = True
+
+    configs["table_cell_parser"] = {"model_name": args.cell_detector_model}
+
     tsp = TableSemanticParser(
-        configs={"table_cell_parser": {"model_name": args.cell_detector_model}},
+        configs=configs,
         device=args.device,
         visualize=args.vis,
     )
