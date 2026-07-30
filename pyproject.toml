@@ -109,8 +109,8 @@ commands =
 
 [testenv:lint]
 basepython = python3.12
-deps = ruff
-commands = 
+deps = ruff==0.14.3
+commands =
     ruff check
 
 [testenv:docs]
