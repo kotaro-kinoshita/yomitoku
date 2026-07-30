@@ -268,15 +268,20 @@ def main():
     }
 
     if args.lite:
-        # cli/main.py の --lite と同等の軽量化。明示的に --tr_name が
-        # 指定された場合はそちらを優先する
-        lite_tr_name = "parseq-tiny"
+        # cli/main.py の --lite と同等の軽量化 (動的幅バッチングの
+        # 軽量認識モデル)。明示的に --tr_name が指定された場合は
+        # そちらを優先する
+        lite_tr_name = "parseq-tiny-dynw-v4"
         if args.tr_name != "parseq-large-v4_1":
             lite_tr_name = args.tr_name
         configs["text_recognizer"]["model_name"] = lite_tr_name
+        configs["text_recognizer"]["dynamic_width"] = True
+        configs["text_recognizer"]["batch_bucketing"] = True
+        configs["text_recognizer"]["source_downscale"] = True
 
         if args.device == "cpu" or not torch.cuda.is_available():
             configs["text_detector"]["infer_onnx"] = True
+            configs["text_recognizer"]["num_parallel_batches"] = 4
 
     tsp = TableSemanticParser(
         configs=configs,
