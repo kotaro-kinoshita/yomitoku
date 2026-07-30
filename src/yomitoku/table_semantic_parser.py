@@ -433,11 +433,13 @@ def _nearest_index(value, centers):
 def sort_cells(cells):
     """セルを読み順に整列し、位置ベースの ID (r{行}c{列}) を割り当てる。
 
-    行・列インデックスは、テーブル内の非 group セルの左上座標を
+    行インデックスは、テーブル内の非 group セルの上端 y 座標を
     クラスタリングして導出する (grid 由来でない kv セルにも付く)。
-    連番と違い他セルの検出増減の影響を受けず、テーブル box にも
-    依存しないため、座標ジッタ・スキャン位置ずれに対して安定する。
-    同一の行列位置に複数セルが来た場合は _2, _3 で区別する。
+    列インデックスは「その行内で左から数えた序数」。x 座標の全体
+    クラスタリングにしないのは、行ごとに区切り位置が異なる密な帳票では
+    x 分布に谷がなく列クラスタが不安定になるため (行内序数なら検出増減の
+    影響はその行の右側のみに閉じる)。連番と違い他の行のセル増減や
+    テーブル box に依存せず、座標ジッタ・スキャン位置ずれに対して安定する。
     group ロールのセルは grp0, grp1 の連番。
     """
     if len(cells) == 0:
@@ -455,20 +457,19 @@ def sort_cells(cells):
 
     if values:
         ys = [c.box[1] for c in values]
-        xs = [c.box[0] for c in values]
         row_centers = _cluster_centers(ys, _gap_valley_tol(ys))
-        col_centers = _cluster_centers(xs, _gap_valley_tol(xs))
 
-        used = {}
+        rows = {}
         for cell in values:
             row = _nearest_index(cell.box[1], row_centers)
-            col = _nearest_index(cell.box[0], col_centers)
-            base = f"r{row}c{col}"
-            count = used.get(base, 0) + 1
-            used[base] = count
-            new_id = base if count == 1 else f"{base}_{count}"
-            remap_ids[cell.id] = new_id
-            cell.id = new_id
+            rows.setdefault(row, []).append(cell)
+
+        for row, row_cells in rows.items():
+            row_cells.sort(key=lambda c: c.box[0])
+            for col, cell in enumerate(row_cells):
+                new_id = f"r{row}c{col}"
+                remap_ids[cell.id] = new_id
+                cell.id = new_id
 
     for i, cell in enumerate(groups):
         new_id = f"grp{i}"

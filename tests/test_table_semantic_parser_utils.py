@@ -201,16 +201,37 @@ def test_sort_cells_position_ids_stable_under_jitter():
     assert remap1 == {"a": "r0c0", "b": "r0c1", "c": "r1c0", "d": "r1c1"}
 
 
-def test_sort_cells_suffixes_duplicate_positions():
-    """同一の行列位置に複数セルが来た場合は _2 で区別され、値が失われない"""
+def test_sort_cells_same_row_cells_get_distinct_ordinals():
+    """同一行のほぼ同位置のセルも行内序数で区別され、値が失われない"""
     cells = [
         mk_cell("a", (0, 0, 100, 30), role="cell"),
         mk_cell("b", (2, 1, 50, 20), role="cell"),
     ]
     out, remap = sort_cells(cells)
 
-    assert sorted(remap.values()) == ["r0c0", "r0c0_2"]
+    assert sorted(remap.values()) == ["r0c0", "r0c1"]
     assert len({c.id for c in out}) == 2
+
+
+def test_sort_cells_column_ordinal_is_scoped_to_the_row():
+    """列は行内序数: 行ごとに区切りが違ってもセル増減の影響が行内に閉じる"""
+    base = [
+        mk_cell("a", (0, 0, 50, 30), role="cell"),
+        mk_cell("b", (200, 0, 300, 30), role="cell"),
+        mk_cell("c", (0, 60, 120, 90), role="cell"),
+        mk_cell("d", (120, 60, 300, 90), role="cell"),
+    ]
+    _, remap1 = sort_cells([mk_cell(c.id, c.box, role=c.role) for c in base])
+
+    # 行0 の先頭にセルが1つ増えても、行1 の ID は変わらない
+    extra = [mk_cell("x", (60, 0, 150, 30), role="cell")] + base
+    _, remap2 = sort_cells([mk_cell(c.id, c.box, role=c.role) for c in extra])
+
+    assert remap1["c"] == remap2["c"]
+    assert remap1["d"] == remap2["d"]
+    # 行0 は挿入位置より右だけがずれる
+    assert remap1["a"] == remap2["a"] == "r0c0"
+    assert remap1["b"] == "r0c1" and remap2["b"] == "r0c2"
 
 
 def test_sort_elements_assigns_prefix_ids_in_sorted_order():

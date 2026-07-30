@@ -38,7 +38,7 @@ Results are saved per page as `{stem}_p{page}.json`.
 
 Cell ids in `kv_items` / `grids` are resolved into text, and the originating cell ids and coordinates are embedded as `key_cells` / `value_cells`.
 
-Cell ids are position-based, in the form `r{row}c{col}`. The row/column indices are derived by clustering the cell coordinates within each table, so they are robust to changes in the number of detected cells and to coordinate jitter of a few pixels, and can be located on the image with `--vis_id`. When multiple cells are detected at the same position, they are distinguished with suffixes such as `_2`. For strict cross-run matching, use coordinate-based matching (`match_policy: bbox` in templates) instead of ids.
+Cell ids are position-based, in the form `r{row}c{col}`. The row index is derived by clustering the cell top coordinates within each table, and the column index is the left-to-right position within that row, so ids are robust to detection changes in other rows and to coordinate jitter of a few pixels, and can be located on the image with `--vis_id`. For strict cross-run matching, use coordinate-based matching (`match_policy: bbox` in templates) instead of ids.
 
 - When multiple values are associated with the same key cells, the values are joined in spatial order (vertical/horizontal is auto-detected) with a line break, and `value_cells` lists the source cells in the same order.
 - Merging is decided by the key cell ids, not the key text, so distinct fields that happen to share the same label text are never merged.
