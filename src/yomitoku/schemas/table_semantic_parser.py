@@ -265,8 +265,13 @@ class SimpleGridSchema(BaseSchema):
 
 class SimpleTableSchema(BaseSchema):
     id: Union[str, None] = Field(None, description="Unique identifier of the table")
-    kv_items: Dict[str, str] = Field(
-        ..., description="Resolved key-value items as {key: value}"
+    kv_items: Dict[str, Any] = Field(
+        ...,
+        description=(
+            "Resolved key-value items nested by header hierarchy. Values are "
+            "strings, nested dicts (child headers), or lists (repeated "
+            "same-text sibling headers)"
+        ),
     )
     grids: List[SimpleGridSchema] = Field(..., description="Resolved grids")
 
@@ -688,16 +693,13 @@ class TableSemanticContentsView:
             refs.append(StructuredCellRefSchema(id=cell.id, box=cell.box))
         return refs
 
-    def kv_items_to_structured(self, separator="\n") -> List[StructuredEntrySchema]:
-        """KVアイテムをテキスト+セル座標に解決したエントリ列に変換する。
-
-        同一の「キーセル」(セルIDの並びが一致) を持つアイテムは1エントリに
-        統合し、value を空間順 (縦横の広がりで軸を判定) に separator で
-        結合する。value_cells には結合元セルが同じ順序で並ぶ。
+    def _kv_groups(self) -> list[dict]:
+        """kv_items を同一キーセル列でグループ化し、value を空間順に整列する。
 
         統合の判定はキーの「テキスト」ではなくセルIDで行う。たまたま同じ
         ラベル文字列を持つ別のフィールド (別のキーセル) は統合しない。
-        キーを持たない単独セルも統合せず、個別のエントリのまま返す。
+        キーを持たない単独セルも統合せず、個別のグループのまま返す。
+        複数 value は空間順 (縦横の広がりで軸を判定) に整列する。
         """
         t = self.table
         groups = []
@@ -722,11 +724,8 @@ class TableSemanticContentsView:
                 (t.safe_contents(kv.value), t.find_cell_by_id(kv.value), kv.value)
             )
 
-        entries = []
         for group in groups:
-            key_text = "_".join(t.safe_contents(i) for i in group["key_ids"])
             values = group["values"]
-
             if len(values) > 1:
                 with_cell = [v for v in values if v[1] is not None]
                 without_cell = [v for v in values if v[1] is None]
@@ -736,18 +735,80 @@ class TableSemanticContentsView:
                     y_spread = max(b[1] for b in boxes) - min(b[1] for b in boxes)
                     axis = 1 if y_spread >= x_spread else 0
                     with_cell.sort(key=lambda v: v[1].box[axis])
-                values = with_cell + without_cell
+                group["values"] = with_cell + without_cell
 
+        return groups
+
+    def kv_items_to_structured(self, separator="\n") -> List[StructuredEntrySchema]:
+        """KVアイテムをテキスト+セル座標に解決したエントリ列に変換する。
+
+        同一の「キーセル」(セルIDの並びが一致) を持つアイテムは1エントリに
+        統合し、value を空間順に separator で結合する。value_cells には
+        結合元セルが同じ順序で並ぶ。統合規則は _kv_groups を参照。
+        """
+        t = self.table
+        entries = []
+        for group in self._kv_groups():
             entries.append(
                 StructuredEntrySchema(
-                    key=key_text,
-                    value=separator.join(str(v[0]) for v in values),
+                    key="_".join(t.safe_contents(i) for i in group["key_ids"]),
+                    value=separator.join(str(v[0]) for v in group["values"]),
                     key_cells=self._cell_refs(group["key_ids"]),
-                    value_cells=self._cell_refs([v[2] for v in values]),
+                    value_cells=self._cell_refs([v[2] for v in group["values"]]),
                 )
             )
 
         return entries
+
+    def kv_items_to_nested(self, separator="\n") -> dict:
+        """KVアイテムを、キーセルの入れ子構造を保った階層dictに変換する。
+
+        キーセルIDのチェーン (親ヘッダー → 子ヘッダー) から木を構築する。
+        ノードの同一性はテキストではなくセルIDで判定し、同じ階層に同名
+        テキストの別ノード (繰り返しブロック) が並ぶ場合は配列にする。
+        親キーが値と子キーの両方を持つ場合、値は "_value" キーに入れる。
+        キーなしの単独セルは空文字キー "" の下に並ぶ。
+        同一キーセル列の複数 value の結合挙動は to_structured と同一。
+        """
+        t = self.table
+        root = {"text": None, "children": {}, "order": [], "values": []}
+
+        for i, group in enumerate(self._kv_groups()):
+            # キーなしはテキスト "" の葉として個別に扱う (結合しない)
+            key_ids = group["key_ids"] or [f"__keyless_{i}"]
+            node = root
+            for cell_id in key_ids:
+                child = node["children"].get(cell_id)
+                if child is None:
+                    child = {
+                        "text": t.safe_contents(cell_id),
+                        "children": {},
+                        "order": [],
+                        "values": [],
+                    }
+                    node["children"][cell_id] = child
+                    node["order"].append(cell_id)
+                node = child
+            node["values"].append(separator.join(str(v[0]) for v in group["values"]))
+
+        return self._render_nested_node(root)
+
+    def _render_nested_node(self, node) -> dict:
+        by_text = {}
+        for cell_id in node["order"]:
+            child = node["children"][cell_id]
+            sub = self._render_nested_node(child)
+            if child["values"]:
+                # グループはキーセル列単位で一意なので values は高々1件
+                sub = (
+                    {"_value": child["values"][0], **sub} if sub else child["values"][0]
+                )
+            by_text.setdefault(child["text"], []).append(sub)
+
+        return {
+            text: items[0] if len(items) == 1 else items
+            for text, items in by_text.items()
+        }
 
     def grids_to_structured(self, ignore_space=True) -> List[StructuredGridSchema]:
         """グリッドをテキスト+セル座標に解決した行列構造に変換する。
@@ -951,14 +1012,15 @@ class TableSemanticParserSchema(BaseSchema):
         """座標などのメタ情報を持たないテキストのみの構造化形に変換する。
 
         to_structured からセル参照・座標・スコア類を落とした形。
-        同一キーの結合挙動は to_structured と同一。grid の行内で
-        ヘッダテキストが重複する場合や、kv_items にキーなしの単独セルが
-        複数ある場合は _0/_1 のインデックスを付与して値の消失を防ぐ。
+        kv_items はキーセルの入れ子構造を保った階層dictになる
+        (kv_items_to_nested を参照)。同一キーの結合挙動は to_structured と
+        同一。grid の行内でヘッダテキストが重複する場合は _0/_1 の
+        インデックスを付与して値の消失を防ぐ。
         """
         doc = self.to_structured(separator=separator)
 
         tables = []
-        for table in doc.tables:
+        for src_table, table in zip(self.tables, doc.tables):
             grids = []
             for grid in table.grids:
                 rows = []
@@ -972,14 +1034,10 @@ class TableSemanticParserSchema(BaseSchema):
                     )
                 grids.append(SimpleGridSchema(id=grid.id, rows=rows))
 
-            kv_keys = make_unique_all([[e.key] for e in table.kv_items])
             tables.append(
                 SimpleTableSchema(
                     id=table.id,
-                    kv_items={
-                        "_".join(map(str, k)): e.value
-                        for k, e in zip(kv_keys, table.kv_items)
-                    },
+                    kv_items=src_table.view.kv_items_to_nested(separator=separator),
                     grids=grids,
                 )
             )

@@ -726,8 +726,8 @@ def test_to_simple_drops_metadata_and_keeps_texts():
 
     assert len(simple.tables) == 1
     t = simple.tables[0]
-    # 同一キーセルは結合、同名別セルはインデックスで区別される
-    assert t.kv_items == {"住所_0": "東京都\n新宿区", "住所_1": "大阪府"}
+    # 同一キーセルは結合、同名別セルは配列で区別される
+    assert t.kv_items == {"住所": ["東京都\n新宿区", "大阪府"]}
     assert t.grids[0].id == "g0"
     assert t.grids[0].rows == [{"項目": "AA", "値": "BB"}]
     assert simple.paragraphs == ["本文"]
@@ -784,8 +784,8 @@ def test_view_kv_items_to_structured_does_not_merge_keyless_cells():
     assert [c.id for c in entries[1].value_cells] == ["v2"]
 
 
-def test_to_simple_keeps_keyless_cells_separate_with_index():
-    """--simple でもキーなしセルは結合されず、空キーの重複はインデックスで区別"""
+def test_to_simple_keeps_keyless_cells_separate_as_list():
+    """--simple でもキーなしセルは結合されず、空キーの下に配列で並ぶ"""
     from yomitoku.schemas.table_semantic_parser import TableSemanticParserSchema
 
     cells = {
@@ -801,7 +801,95 @@ def test_to_simple_keeps_keyless_cells_separate_with_index():
 
     simple = doc.to_simple()
 
-    assert simple.tables[0].kv_items == {"_0": "A", "_1": "B"}
+    assert simple.tables[0].kv_items == {"": ["A", "B"]}
+
+
+def test_view_kv_items_to_nested_groups_by_parent_header():
+    """入れ子ヘッダーは親ヘッダーでグループ化された階層dictになる"""
+    cells = {
+        "p": mk_cell("p", (0, 0, 20, 60), role="header", contents="申込者情報"),
+        "k1": mk_cell("k1", (20, 0, 60, 30), role="header", contents="団体名"),
+        "k2": mk_cell("k2", (20, 30, 60, 60), role="header", contents="電話番号"),
+        "v1": mk_cell("v1", (60, 0, 200, 30), role="cell", contents="MLism"),
+        "v2": mk_cell("v2", (60, 30, 200, 60), role="cell", contents="090"),
+        "s": mk_cell("s", (0, 60, 60, 90), role="header", contents="備考"),
+        "sv": mk_cell("sv", (60, 60, 200, 90), role="cell", contents="なし"),
+    }
+    kv_items = [
+        KvItemSchema(id=None, key=["p", "k1"], value="v1"),
+        KvItemSchema(id=None, key=["p", "k2"], value="v2"),
+        KvItemSchema(id=None, key=["s"], value="sv"),
+    ]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    nested = t.view.kv_items_to_nested()
+
+    assert nested == {
+        "申込者情報": {"団体名": "MLism", "電話番号": "090"},
+        "備考": "なし",
+    }
+
+
+def test_view_kv_items_to_nested_repeated_blocks_become_list():
+    """同名テキストの別親ヘッダー (繰り返しブロック) は配列になる"""
+    cells = {
+        "p1": mk_cell("p1", (0, 0, 20, 60), role="header", contents="扶養親族"),
+        "p2": mk_cell("p2", (0, 60, 20, 120), role="header", contents="扶養親族"),
+        "n1": mk_cell("n1", (20, 0, 60, 30), role="header", contents="氏名"),
+        "n2": mk_cell("n2", (20, 60, 60, 90), role="header", contents="氏名"),
+        "v1": mk_cell("v1", (60, 0, 200, 30), role="cell", contents="山田太郎"),
+        "v2": mk_cell("v2", (60, 60, 200, 90), role="cell", contents="山田花子"),
+    }
+    kv_items = [
+        KvItemSchema(id=None, key=["p1", "n1"], value="v1"),
+        KvItemSchema(id=None, key=["p2", "n2"], value="v2"),
+    ]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    nested = t.view.kv_items_to_nested()
+
+    assert nested == {
+        "扶養親族": [{"氏名": "山田太郎"}, {"氏名": "山田花子"}],
+    }
+
+
+def test_view_kv_items_to_nested_parent_with_value_and_children():
+    """親キーが値と子キーの両方を持つ場合、値は _value に入る"""
+    cells = {
+        "p": mk_cell("p", (0, 0, 20, 60), role="header", contents="扶養親族"),
+        "pv": mk_cell("pv", (20, 0, 60, 30), role="cell", contents="有"),
+        "n": mk_cell("n", (20, 30, 60, 60), role="header", contents="氏名"),
+        "nv": mk_cell("nv", (60, 30, 200, 60), role="cell", contents="山田太郎"),
+    }
+    kv_items = [
+        KvItemSchema(id=None, key=["p"], value="pv"),
+        KvItemSchema(id=None, key=["p", "n"], value="nv"),
+    ]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    nested = t.view.kv_items_to_nested()
+
+    assert nested == {
+        "扶養親族": {"_value": "有", "氏名": "山田太郎"},
+    }
+
+
+def test_view_kv_items_to_nested_merges_values_on_same_key_chain():
+    """同一キーセル列の複数 value は to_structured と同様に separator 結合"""
+    cells = {
+        "p": mk_cell("p", (0, 0, 20, 60), role="header", contents="住所"),
+        "v1": mk_cell("v1", (20, 0, 200, 30), role="cell", contents="東京都"),
+        "v2": mk_cell("v2", (20, 30, 200, 60), role="cell", contents="新宿区"),
+    }
+    kv_items = [
+        KvItemSchema(id=None, key=["p"], value="v1"),
+        KvItemSchema(id=None, key=["p"], value="v2"),
+    ]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    nested = t.view.kv_items_to_nested(separator="-")
+
+    assert nested == {"住所": "東京都-新宿区"}
 
 
 def test_resolve_overlapping_grid_regions_keeps_higher_score():

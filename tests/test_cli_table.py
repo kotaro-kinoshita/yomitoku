@@ -134,7 +134,8 @@ def test_run_jpg_simple(monkeypatch, tmp_path):
 
     t0 = data["tables"][0]
     assert isinstance(t0["kv_items"], dict)
-    assert all(isinstance(v, str) for v in t0["kv_items"].values())
+    # 値は文字列・階層dict・繰り返しブロックの配列のいずれか
+    assert all(isinstance(v, (str, dict, list)) for v in t0["kv_items"].values())
     assert all(isinstance(p, (str, type(None))) for p in data["paragraphs"])
 
     # メタ情報 (座標・セル参照) が含まれない

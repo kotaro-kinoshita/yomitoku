@@ -98,7 +98,14 @@ The same view is available from the Python API via `results.to_structured()`.
 
 ### `--simple` (text only)
 
-Outputs a text-only form without coordinates or cell references. `kv_items` becomes a `{key: value}` mapping, grid rows become `{column header: value}` mappings, and paragraphs become plain strings. Duplicate key texts are distinguished with `_0` / `_1` suffixes.
+Outputs a text-only form without coordinates or cell references. `kv_items` becomes a hierarchical mapping that preserves the header nesting, grid rows become `{column header: value}` mappings, and paragraphs become plain strings.
+
+Nesting rules for `kv_items`:
+
+- Nested headers (parent header → child header) become nested dicts
+- Sibling headers with the same text at the same level (repeated blocks) become arrays
+- When a parent header has both a value and child headers, the value goes into the `_value` key
+- Standalone cells without a key are listed under the empty-string key `""`
 
 ```bash
 yomitoku_table ${path_data} -o results --simple
