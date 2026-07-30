@@ -39,7 +39,7 @@ yomitoku_table ${path_data} -o results -v
 
 - 同一の「キーセル」に複数の値が紐づく場合は、値を空間順（縦・横の並びを自動判定）に改行で結合し、`value_cells` に結合元のセルが順序どおり並びます。
 - 結合の判定はキーの文字列ではなくセルIDで行うため、たまたま同じラベル文字列を持つ別のフィールドは結合されません。
-- キーを持たない単独セル（`key` が空文字）も結合されず、個別のエントリのまま出力されます。
+- キーを持たない単独セル（`key` が空配列）も結合されず、個別のエントリのまま出力されます。
 
 ```bash
 yomitoku_table ${path_data} -o results
@@ -54,7 +54,7 @@ yomitoku_table ${path_data} -o results
             "style": "border",
             "kv_items": [
                 {
-                    "key": "施設名称",
+                    "key": ["利用情報", "施設名称"],
                     "value": "MLism株式会社",
                     "key_cells": [{"id": "c1", "box": [150, 550, 365, 645]}],
                     "value_cells": [{"id": "c2", "box": [365, 550, 1499, 645]}]
@@ -70,7 +70,7 @@ yomitoku_table ${path_data} -o results
                         {
                             "cells": [
                                 {
-                                    "key": "日付",
+                                    "key": ["日付"],
                                     "value": "2025年01月30日(月曜日)",
                                     "key_cells": [{"id": "c7", "box": [365, 840, 947, 888]}],
                                     "value_cells": [{"id": "c11", "box": [365, 888, 947, 968]}]
@@ -105,7 +105,7 @@ Python API からは `results.to_structured()` で同じ構造化ビューを取
 - 入れ子ヘッダー（親ヘッダー → 子ヘッダー）は入れ子の辞書になります
 - 同じ階層に同名テキストの別ヘッダーが並ぶ場合（繰り返しブロック）は配列になります
 - 親ヘッダーが値と子ヘッダーの両方を持つ場合、値は `_value` キーに入ります
-- キーを持たない単独セルは空文字キー `""` の下に並びます
+- キーを持たない単独セルは予約キー `_unkeyed` の下に並びます
 
 ```bash
 yomitoku_table ${path_data} -o results --simple

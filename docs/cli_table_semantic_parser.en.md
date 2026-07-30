@@ -39,7 +39,7 @@ Cell ids in `kv_items` / `grids` are resolved into text, and the originating cel
 
 - When multiple values are associated with the same key cells, the values are joined in spatial order (vertical/horizontal is auto-detected) with a line break, and `value_cells` lists the source cells in the same order.
 - Merging is decided by the key cell ids, not the key text, so distinct fields that happen to share the same label text are never merged.
-- Standalone cells without a key (empty `key`) also remain separate entries.
+- Standalone cells without a key (empty `key` array) also remain separate entries.
 
 ```bash
 yomitoku_table ${path_data} -o results
@@ -54,7 +54,7 @@ yomitoku_table ${path_data} -o results
             "style": "border",
             "kv_items": [
                 {
-                    "key": "Facility name",
+                    "key": ["Usage information", "Facility name"],
                     "value": "MLism Inc.",
                     "key_cells": [{"id": "c1", "box": [150, 550, 365, 645]}],
                     "value_cells": [{"id": "c2", "box": [365, 550, 1499, 645]}]
@@ -70,7 +70,7 @@ yomitoku_table ${path_data} -o results
                         {
                             "cells": [
                                 {
-                                    "key": "Date",
+                                    "key": ["Date"],
                                     "value": "2025-01-30 (Mon)",
                                     "key_cells": [{"id": "c7", "box": [365, 840, 947, 888]}],
                                     "value_cells": [{"id": "c11", "box": [365, 888, 947, 968]}]
@@ -105,7 +105,7 @@ Nesting rules for `kv_items`:
 - Nested headers (parent header → child header) become nested dicts
 - Sibling headers with the same text at the same level (repeated blocks) become arrays
 - When a parent header has both a value and child headers, the value goes into the `_value` key
-- Standalone cells without a key are listed under the empty-string key `""`
+- Standalone cells without a key are listed under the reserved `_unkeyed` key
 
 ```bash
 yomitoku_table ${path_data} -o results --simple

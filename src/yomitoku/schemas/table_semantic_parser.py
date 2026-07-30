@@ -22,6 +22,12 @@ from ..utils.misc import (
 
 MatchPolicy = Literal["cell_id", "bbox"]
 
+# to_simple の kv_items で使う予約キー (実キーとの衝突を避けるため _ 接頭辞)。
+# UNKEYED_KEY: キーを持たない単独セルの値を束ねるキー
+# NESTED_VALUE_KEY: 親キーが値と子キーの両方を持つ場合の、親自身の値のキー
+UNKEYED_KEY = "_unkeyed"
+NESTED_VALUE_KEY = "_value"
+
 
 def make_unique_all(seq):
     counter = defaultdict(int)
@@ -187,12 +193,17 @@ class StructuredCellRefSchema(BaseSchema):
 class StructuredEntrySchema(BaseSchema):
     """key/value のテキストと、その由来セル参照を対で持つエントリ。
 
+    key は外側 (親) ヘッダーから内側の順のテキスト配列で、key_cells と
+    同じ順序で対応する。キーなしの単独セルでは空配列。
     kv_items では同一キーの複数 value が空間順に separator 結合され、
     value_cells に結合元セルが順序どおり並ぶ。grid の行セルでは
     value_cells は常に長さ1。
     """
 
-    key: str = Field(..., description="Key text")
+    key: List[str] = Field(
+        ...,
+        description="Key texts from the outermost header to the innermost",
+    )
     value: str = Field(..., description="Value text")
     key_cells: List[StructuredCellRefSchema] = Field(
         ...,
@@ -751,7 +762,7 @@ class TableSemanticContentsView:
         for group in self._kv_groups():
             entries.append(
                 StructuredEntrySchema(
-                    key="_".join(t.safe_contents(i) for i in group["key_ids"]),
+                    key=[t.safe_contents(i) for i in group["key_ids"]],
                     value=separator.join(str(v[0]) for v in group["values"]),
                     key_cells=self._cell_refs(group["key_ids"]),
                     value_cells=self._cell_refs([v[2] for v in group["values"]]),
@@ -767,21 +778,25 @@ class TableSemanticContentsView:
         ノードの同一性はテキストではなくセルIDで判定し、同じ階層に同名
         テキストの別ノード (繰り返しブロック) が並ぶ場合は配列にする。
         親キーが値と子キーの両方を持つ場合、値は "_value" キーに入れる。
-        キーなしの単独セルは空文字キー "" の下に並ぶ。
+        キーなしの単独セルは予約キー UNKEYED_KEY ("_unkeyed") の下に並ぶ。
         同一キーセル列の複数 value の結合挙動は to_structured と同一。
         """
         t = self.table
         root = {"text": None, "children": {}, "order": [], "values": []}
 
         for i, group in enumerate(self._kv_groups()):
-            # キーなしはテキスト "" の葉として個別に扱う (結合しない)
-            key_ids = group["key_ids"] or [f"__keyless_{i}"]
+            if group["key_ids"]:
+                chain = [(cid, t.safe_contents(cid)) for cid in group["key_ids"]]
+            else:
+                # キーなしは UNKEYED_KEY の葉として個別に扱う (結合しない)
+                chain = [(f"__keyless_{i}", UNKEYED_KEY)]
+
             node = root
-            for cell_id in key_ids:
+            for cell_id, text in chain:
                 child = node["children"].get(cell_id)
                 if child is None:
                     child = {
-                        "text": t.safe_contents(cell_id),
+                        "text": text,
                         "children": {},
                         "order": [],
                         "values": [],
@@ -801,7 +816,9 @@ class TableSemanticContentsView:
             if child["values"]:
                 # グループはキーセル列単位で一意なので values は高々1件
                 sub = (
-                    {"_value": child["values"][0], **sub} if sub else child["values"][0]
+                    {NESTED_VALUE_KEY: child["values"][0], **sub}
+                    if sub
+                    else child["values"][0]
                 )
             by_text.setdefault(child["text"], []).append(sub)
 
@@ -842,9 +859,7 @@ class TableSemanticContentsView:
                     header_ids = list(grid.col_headers[i])
                     entries.append(
                         StructuredEntrySchema(
-                            key="_".join(
-                                t.safe_contents(h, ignore_space) for h in header_ids
-                            ),
+                            key=[t.safe_contents(h, ignore_space) for h in header_ids],
                             value=t.safe_contents(cell_id, ignore_space),
                             key_cells=self._cell_refs(header_ids),
                             value_cells=self._cell_refs([cell_id]),
@@ -1025,7 +1040,7 @@ class TableSemanticParserSchema(BaseSchema):
             for grid in table.grids:
                 rows = []
                 for row in grid.rows:
-                    keys = make_unique_all([[e.key] for e in row.cells])
+                    keys = make_unique_all([list(e.key) for e in row.cells])
                     rows.append(
                         {
                             "_".join(map(str, k)): e.value

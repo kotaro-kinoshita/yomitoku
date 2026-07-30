@@ -522,7 +522,7 @@ def test_view_kv_items_to_structured_attaches_cells():
 
     assert len(entries) == 1
     e = entries[0]
-    assert e.key == "名前"
+    assert e.key == ["名前"]
     assert e.value == "太郎"
     assert [c.id for c in e.key_cells] == ["k"]
     assert [list(c.box) for c in e.key_cells] == [[0, 0, 100, 30]]
@@ -547,7 +547,7 @@ def test_view_kv_items_to_structured_merges_same_key_cell_vertically():
 
     assert len(entries) == 1
     e = entries[0]
-    assert e.key == "住所"
+    assert e.key == ["住所"]
     assert e.value == "東京都\n新宿区"  # y座標でソートされる
     assert [c.id for c in e.value_cells] == ["v1", "v2"]
     assert [c.id for c in e.key_cells] == ["k"]
@@ -571,8 +571,8 @@ def test_view_kv_items_to_structured_keeps_same_text_different_cells_separate():
 
     assert len(entries) == 2
     assert [(e.key, e.value) for e in entries] == [
-        ("住所", "東京都"),
-        ("住所", "大阪府"),
+        (["住所"], "東京都"),
+        (["住所"], "大阪府"),
     ]
     assert [c.id for c in entries[0].key_cells] == ["k1"]
     assert [c.id for c in entries[1].key_cells] == ["k2"]
@@ -590,7 +590,7 @@ def test_view_kv_items_to_structured_normalizes_bare_str_key():
     entries = t.view.kv_items_to_structured()
 
     assert len(entries) == 1
-    assert entries[0].key == "名前"
+    assert entries[0].key == ["名前"]
     assert [c.id for c in entries[0].key_cells] == ["k"]
 
 
@@ -633,7 +633,7 @@ def test_view_grids_to_structured_resolves_headers_and_cells():
     # ヘッダ行は除外され、データ行のみ
     assert len(g.rows) == 1
     row = g.rows[0].cells
-    assert [(e.key, e.value) for e in row] == [("項目", "AA"), ("値", "BB")]
+    assert [(e.key, e.value) for e in row] == [(["項目"], "AA"), (["値"], "BB")]
     assert [c.id for c in row[0].key_cells] == ["h1"]
     assert [c.id for c in row[0].value_cells] == ["a"]
     assert [list(c.box) for c in row[0].value_cells] == [[0, 10, 10, 20]]
@@ -679,7 +679,7 @@ def test_to_structured_builds_document_with_paragraphs():
 
     assert len(structured.tables) == 1
     assert structured.tables[0].id == "t0"
-    assert structured.tables[0].kv_items[0].key == "名前"
+    assert structured.tables[0].kv_items[0].key == ["名前"]
     assert len(structured.paragraphs) == 1
     assert structured.paragraphs[0].contents == "本文"
 
@@ -777,15 +777,15 @@ def test_view_kv_items_to_structured_does_not_merge_keyless_cells():
 
     assert len(entries) == 2
     assert [(e.key, e.value) for e in entries] == [
-        ("", "I_SUPER流通系"),
-        ("", "請求"),
+        ([], "I_SUPER流通系"),
+        ([], "請求"),
     ]
     assert [c.id for c in entries[0].value_cells] == ["v1"]
     assert [c.id for c in entries[1].value_cells] == ["v2"]
 
 
 def test_to_simple_keeps_keyless_cells_separate_as_list():
-    """--simple でもキーなしセルは結合されず、空キーの下に配列で並ぶ"""
+    """--simple でもキーなしセルは結合されず、_unkeyed の下に配列で並ぶ"""
     from yomitoku.schemas.table_semantic_parser import TableSemanticParserSchema
 
     cells = {
@@ -801,7 +801,7 @@ def test_to_simple_keeps_keyless_cells_separate_as_list():
 
     simple = doc.to_simple()
 
-    assert simple.tables[0].kv_items == {"": ["A", "B"]}
+    assert simple.tables[0].kv_items == {"_unkeyed": ["A", "B"]}
 
 
 def test_view_kv_items_to_nested_groups_by_parent_header():
