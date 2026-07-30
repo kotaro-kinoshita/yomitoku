@@ -141,7 +141,7 @@ def test_replace_edge_type_rewrites_matching_only():
 # ============================================================
 
 
-def test_sort_cells_remaps_ids_and_orders_values_before_groups():
+def test_sort_cells_assigns_position_ids_and_orders_values_before_groups():
     # min_height=10 として並びが安定するように作る
     c0 = mk_cell("old0", (0, 0, 10, 10), role="cell")
     c1 = mk_cell("old1", (20, 0, 30, 10), role="header")
@@ -154,13 +154,63 @@ def test_sort_cells_remaps_ids_and_orders_values_before_groups():
     assert [c.role for c in cells[:-1]] == ["cell", "header", "empty"]
     assert cells[-1].role == "group"
 
-    # remap できてる
+    # 位置ベースの r{行}c{列} が付く (group は grp 連番)
     assert set(remap.keys()) == {"old0", "old1", "old2", "grp"}
-    assert all(c.id.startswith("c") for c in cells)
+    assert [c.id for c in cells] == ["r0c0", "r0c1", "r1c0", "grp0"]
 
     cells, remap = sort_cells([])
     assert cells == []
     assert remap == {}
+
+
+def test_sort_cells_position_ids_ignore_other_cell_count_changes():
+    """セルが1つ増えても、既存セルの ID は変わらない (連番との違い)"""
+    base = [
+        mk_cell("a", (0, 0, 10, 10), role="cell"),
+        mk_cell("b", (100, 0, 110, 10), role="cell"),
+        mk_cell("c", (0, 100, 10, 110), role="cell"),
+    ]
+    _, remap1 = sort_cells([mk_cell(c.id, c.box, role=c.role) for c in base])
+
+    extra = base + [mk_cell("x", (100, 100, 110, 110), role="cell")]
+    _, remap2 = sort_cells([mk_cell(c.id, c.box, role=c.role) for c in extra])
+
+    for old in ["a", "b", "c"]:
+        assert remap1[old] == remap2[old]
+
+
+def test_sort_cells_position_ids_stable_under_jitter():
+    """数pxの座標ジッタでは ID が変わらない"""
+    cells = [
+        mk_cell("a", (0, 0, 100, 30), role="cell"),
+        mk_cell("b", (100, 2, 200, 32), role="cell"),
+        mk_cell("c", (1, 60, 101, 90), role="cell"),
+        mk_cell("d", (102, 61, 202, 91), role="cell"),
+    ]
+    _, remap1 = sort_cells([mk_cell(c.id, c.box, role=c.role) for c in cells])
+
+    jittered = [
+        mk_cell("a", (3, 2, 103, 32), role="cell"),
+        mk_cell("b", (97, 0, 197, 30), role="cell"),
+        mk_cell("c", (0, 63, 100, 93), role="cell"),
+        mk_cell("d", (105, 58, 205, 88), role="cell"),
+    ]
+    _, remap2 = sort_cells(jittered)
+
+    assert remap1 == remap2
+    assert remap1 == {"a": "r0c0", "b": "r0c1", "c": "r1c0", "d": "r1c1"}
+
+
+def test_sort_cells_suffixes_duplicate_positions():
+    """同一の行列位置に複数セルが来た場合は _2 で区別され、値が失われない"""
+    cells = [
+        mk_cell("a", (0, 0, 100, 30), role="cell"),
+        mk_cell("b", (2, 1, 50, 20), role="cell"),
+    ]
+    out, remap = sort_cells(cells)
+
+    assert sorted(remap.values()) == ["r0c0", "r0c0_2"]
+    assert len({c.id for c in out}) == 2
 
 
 def test_sort_elements_assigns_prefix_ids_in_sorted_order():
@@ -206,24 +256,23 @@ def test_assign_ids_remaps_grid_and_kv_consistently():
     assert table_information["grids"][0].id == "g0"
     assert table_information["kv_items"][0].id == "kv0"
 
-    # cells が remap 後 dict になっている（c0..）
+    # cells が remap 後 dict になっている（r{行}c{列}）
     new_ids = set(table_information["cells"].keys())
-    assert all(cid.startswith("c") for cid in new_ids)
+    assert all(cid.startswith("r") for cid in new_ids)
 
     # grid.data / col_headers / kv.key/value も remap されている
-    # （正確な c番号は sort_cells の並び依存なので “prefix” で判定）
     assert all(
-        x is None or x.startswith("c")
+        x is None or x.startswith("r")
         for row in table_information["grids"][0].data
         for x in row
     )
     assert all(
-        x is None or x.startswith("c")
+        x is None or x.startswith("r")
         for col in table_information["grids"][0].col_headers
         for x in col
     )
-    assert all(k.startswith("c") for k in table_information["kv_items"][0].key)
-    assert table_information["kv_items"][0].value.startswith("c")
+    assert all(k.startswith("r") for k in table_information["kv_items"][0].key)
+    assert table_information["kv_items"][0].value.startswith("r")
 
 
 # ============================================================

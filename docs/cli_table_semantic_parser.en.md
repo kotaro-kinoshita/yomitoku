@@ -38,6 +38,8 @@ Results are saved per page as `{stem}_p{page}.json`.
 
 Cell ids in `kv_items` / `grids` are resolved into text, and the originating cell ids and coordinates are embedded as `key_cells` / `value_cells`.
 
+Cell ids are position-based, in the form `r{row}c{col}`. The row/column indices are derived by clustering the cell coordinates within each table, so they are robust to changes in the number of detected cells and to coordinate jitter of a few pixels, and can be located on the image with `--vis_id`. When multiple cells are detected at the same position, they are distinguished with suffixes such as `_2`. For strict cross-run matching, use coordinate-based matching (`match_policy: bbox` in templates) instead of ids.
+
 - When multiple values are associated with the same key cells, the values are joined in spatial order (vertical/horizontal is auto-detected) with a line break, and `value_cells` lists the source cells in the same order.
 - Merging is decided by the key cell ids, not the key text, so distinct fields that happen to share the same label text are never merged.
 - Standalone cells without a key (empty `key` array) also remain separate entries.
@@ -57,8 +59,8 @@ yomitoku_table ${path_data} -o results
                 {
                     "key": ["Usage information", "Facility name"],
                     "value": "MLism Inc.",
-                    "key_cells": [{"id": "c1", "box": [150, 550, 365, 645]}],
-                    "value_cells": [{"id": "c2", "box": [365, 550, 1499, 645]}]
+                    "key_cells": [{"id": "r1c0", "box": [150, 550, 365, 645]}],
+                    "value_cells": [{"id": "r1c1", "box": [365, 550, 1499, 645]}]
                 }
             ],
             "grids": [
@@ -73,8 +75,8 @@ yomitoku_table ${path_data} -o results
                                 {
                                     "key": ["Date"],
                                     "value": "2025-01-30 (Mon)",
-                                    "key_cells": [{"id": "c7", "box": [365, 840, 947, 888]}],
-                                    "value_cells": [{"id": "c11", "box": [365, 888, 947, 968]}]
+                                    "key_cells": [{"id": "r4c1", "box": [365, 840, 947, 888]}],
+                                    "value_cells": [{"id": "r5c1", "box": [365, 888, 947, 968]}]
                                 }
                             ]
                         }
