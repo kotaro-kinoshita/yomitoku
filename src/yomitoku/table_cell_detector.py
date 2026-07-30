@@ -11,8 +11,8 @@ from .constants import ROOT_DIR
 
 from .base import BaseModelCatalog, BaseModule, load_config
 from .configs import (
+    TableCellParserRTDETRv2Config,
     TableCellParserRTDETRv2BetaConfig,
-    TableCellParserRTDETRv2Beta960Config,
 )
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
@@ -35,11 +35,9 @@ logger = set_logger(__name__, "INFO")
 class TableParserModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
+        # 正式版 (入力サイズ 960 / augmentation 強化学習済み)
+        self.register("rtdetrv2", TableCellParserRTDETRv2Config, RTDETRv2)
         self.register("rtdetrv2_beta", TableCellParserRTDETRv2BetaConfig, RTDETRv2)
-        # 入力画像サイズ 960 の検証用バリアント（configは別途参照）
-        self.register(
-            "rtdetrv2_beta_960", TableCellParserRTDETRv2Beta960Config, RTDETRv2
-        )
 
 
 def filter_contained_rectangles_with_category(category_elements, ignore_categories=[]):
@@ -201,7 +199,7 @@ class CellDetector(BaseModule):
 
     def __init__(
         self,
-        model_name="rtdetrv2_beta",
+        model_name="rtdetrv2",
         path_cfg=None,
         device="cuda",
         visualize=False,

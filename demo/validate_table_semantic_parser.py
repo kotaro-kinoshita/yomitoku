@@ -14,8 +14,8 @@ Usage:
         -o output/validate_semantic \
         -n 20 -d cuda
 
-    # 入力画像サイズ 960 の検証用モデルを使う場合
-    python demo/validate_table_semantic_parser.py -m rtdetrv2_beta_960 ...
+    # 旧beta (入力画像サイズ 640) のモデルを使う場合
+    python demo/validate_table_semantic_parser.py -m rtdetrv2_beta ...
 """
 
 import argparse
@@ -187,11 +187,11 @@ if __name__ == "__main__":
     p.add_argument(
         "-m",
         "--cell-detector-model",
-        default="rtdetrv2_beta",
-        choices=["rtdetrv2_beta", "rtdetrv2_beta_960"],
+        default="rtdetrv2",
+        choices=["rtdetrv2", "rtdetrv2_beta"],
         help=(
             "セル検出モデルのバリアント "
-            "(rtdetrv2_beta: img_size 640, rtdetrv2_beta_960: img_size 960 検証用)"
+            "(rtdetrv2: 正式版 img_size 960, rtdetrv2_beta: img_size 640)"
         ),
     )
     p.add_argument(

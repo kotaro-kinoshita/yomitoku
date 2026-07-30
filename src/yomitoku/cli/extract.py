@@ -152,11 +152,11 @@ def main():
     parser.add_argument(
         "--cell-detector-model",
         type=str,
-        default="rtdetrv2_beta",
-        choices=["rtdetrv2_beta", "rtdetrv2_beta_960"],
+        default="rtdetrv2",
+        choices=["rtdetrv2", "rtdetrv2_beta"],
         help=(
             "Cell detector model variant "
-            "(rtdetrv2_beta: img_size 640, rtdetrv2_beta_960: img_size 960 検証用)"
+            "(rtdetrv2: 正式版 img_size 960, rtdetrv2_beta: img_size 640)"
         ),
     )
     parser.add_argument(

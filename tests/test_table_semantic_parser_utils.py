@@ -224,3 +224,370 @@ def test_assign_ids_remaps_grid_and_kv_consistently():
     )
     assert all(k.startswith("c") for k in table_information["kv_items"][0].key)
     assert table_information["kv_items"][0].value.startswith("c")
+
+
+# ============================================================
+# 領域とセルの対応 / 領域重複の解決
+# ============================================================
+def _mk_region(rid, box, role="kv_item", score=1.0):
+    from yomitoku.schemas.table_semantic_parser import RegionSchema
+
+    return RegionSchema(id=rid, box=list(box), role=role, score=score)
+
+
+def test_region_cell_ids_returns_contained_cells():
+    from yomitoku.table_semantic_parser import _region_cell_ids
+
+    cells = [
+        mk_cell("inside", (10, 10, 90, 40)),
+        mk_cell("outside", (200, 200, 300, 240)),
+        mk_cell("partial", (80, 10, 200, 40)),  # 領域内は一部のみ
+    ]
+    region = _mk_region("r0", (0, 0, 100, 50))
+
+    ids = _region_cell_ids(region, cells)
+
+    assert "inside" in ids
+    assert "outside" not in ids
+    # threshold=0.5: 内包率が半分未満のセルは含まれない
+    assert "partial" not in ids
+
+
+def test_resolve_grid_kv_conflict_prefers_higher_cell_coverage():
+    """gridとkvが同じセル群を奪い合う場合、セル網羅度が高い方が残る"""
+    from yomitoku.table_semantic_parser import _resolve_overlapping_regions
+
+    cells = [mk_cell(f"c{i}", (i * 100, 0, (i + 1) * 100, 50)) for i in range(4)]
+
+    # grid はセル4つ、kv はそのうち1つだけを覆う
+    grid = _mk_region("g", (0, 0, 400, 50), role="grid")
+    kv = _mk_region("k", (0, 0, 100, 50), role="kv_item")
+
+    grids, kvs = _resolve_overlapping_regions([grid], [kv], cells)
+
+    assert [g.id for g in grids] == ["g"]
+    assert kvs == []
+
+
+def test_resolve_grid_kv_conflict_drops_grid_when_kv_covers_more():
+    from yomitoku.table_semantic_parser import _resolve_overlapping_regions
+
+    cells = [mk_cell(f"c{i}", (i * 100, 0, (i + 1) * 100, 50)) for i in range(4)]
+
+    grid = _mk_region("g", (0, 0, 100, 50), role="grid")
+    kv = _mk_region("k", (0, 0, 400, 50), role="kv_item")
+
+    grids, kvs = _resolve_overlapping_regions([grid], [kv], cells)
+
+    assert grids == []
+    assert [k.id for k in kvs] == ["k"]
+
+
+def test_resolve_non_conflicting_grid_and_kv_both_kept():
+    from yomitoku.table_semantic_parser import _resolve_overlapping_regions
+
+    cells = [
+        mk_cell("a", (0, 0, 100, 50)),
+        mk_cell("b", (0, 100, 100, 150)),
+    ]
+    grid = _mk_region("g", (0, 0, 100, 50), role="grid")
+    kv = _mk_region("k", (0, 100, 100, 150), role="kv_item")
+
+    grids, kvs = _resolve_overlapping_regions([grid], [kv], cells)
+
+    assert len(grids) == 1 and len(kvs) == 1
+
+
+# ============================================================
+# is_grid_cluster
+# ============================================================
+def test_is_grid_cluster_true_for_2x2():
+    from yomitoku.table_semantic_parser import is_grid_cluster
+
+    nodes = {
+        "header": [],
+        "cell": [
+            mk_cell("a", (0, 0, 100, 50)),
+            mk_cell("b", (100, 0, 200, 50)),
+            mk_cell("c", (0, 50, 100, 100)),
+            mk_cell("d", (100, 50, 200, 100)),
+        ],
+        "empty": [],
+    }
+
+    assert is_grid_cluster(nodes) is True
+
+
+def test_is_grid_cluster_false_for_single_row():
+    from yomitoku.table_semantic_parser import is_grid_cluster
+
+    nodes = {
+        "header": [],
+        "cell": [
+            mk_cell("a", (0, 0, 100, 50)),
+            mk_cell("b", (100, 0, 200, 50)),
+            mk_cell("c", (200, 0, 300, 50)),
+        ],
+        "empty": [],
+    }
+
+    assert is_grid_cluster(nodes) is False
+
+
+# ============================================================
+# TableSemanticParser.aggregate (OCR単語のセルへの集約)
+# ============================================================
+def _mk_word(content, box, direction="horizontal"):
+    from yomitoku.schemas import WordPrediction
+
+    x1, y1, x2, y2 = box
+    return WordPrediction(
+        points=[[x1, y1], [x2, y1], [x2, y2], [x1, y2]],
+        content=content,
+        direction=direction,
+        rec_score=0.99,
+        det_score=0.99,
+    )
+
+
+def test_aggregate_assigns_words_to_best_cell_in_reading_order():
+    from yomitoku.schemas import OCRSchema
+    from yomitoku.table_semantic_parser import TableSemanticParser
+
+    cell_a = mk_cell("a", (0, 0, 200, 50))
+    cell_b = mk_cell("b", (0, 100, 200, 150))
+    ocr = OCRSchema(
+        words=[
+            _mk_word("世界", (100, 10, 190, 40)),  # 意図的に逆順
+            _mk_word("こんにちは", (10, 10, 100, 40)),
+        ]
+    )
+
+    TableSemanticParser.aggregate(object(), ocr, [cell_a, cell_b])
+
+    # 読み順 (左→右) に結合される
+    assert cell_a.contents == "こんにちは世界"
+    # 単語が無いセルは空文字
+    assert cell_b.contents == ""
+
+
+def test_aggregate_skips_group_cells_and_low_overlap_words():
+    from yomitoku.schemas import OCRSchema
+    from yomitoku.table_semantic_parser import TableSemanticParser
+
+    group = mk_cell("g", (0, 0, 200, 50), role="group", contents="before")
+    cell = mk_cell("a", (0, 100, 200, 150))
+    ocr = OCRSchema(
+        words=[
+            _mk_word("グループ内", (10, 10, 100, 40)),  # group にのみ重なる
+            _mk_word("枠外", (500, 500, 600, 530)),  # どのセルにも重ならない
+        ]
+    )
+
+    TableSemanticParser.aggregate(object(), ocr, [group, cell])
+
+    # group セルには割り当てられない (contents は空にリセットされる)
+    assert group.contents == ""
+    assert cell.contents == ""
+
+
+# ============================================================
+# TableSemanticParser.replace_table_to_paragraphs
+# ============================================================
+def test_replace_table_to_paragraphs_converts_sparse_tables():
+    from yomitoku.table_semantic_parser import TableSemanticParser
+
+    sparse = SimpleNamespace(
+        box=[0, 0, 100, 50],
+        cells=[mk_cell("a", (0, 0, 100, 50), role="cell")],
+    )
+    dense = SimpleNamespace(
+        box=[0, 100, 200, 200],
+        cells=[
+            mk_cell("h", (0, 100, 100, 150), role="header"),
+            mk_cell("v", (100, 100, 200, 150), role="cell"),
+        ],
+    )
+    paragraphs = []
+
+    kept = TableSemanticParser.replace_table_to_paragraphs(
+        object(), [sparse, dense], paragraphs
+    )
+
+    # セル数2未満のテーブルは段落に変換され、テーブルからは除外される
+    assert kept == [dense]
+    assert len(paragraphs) == 1
+    assert paragraphs[0].box == [0, 0, 100, 50]
+
+
+# ============================================================
+# 可視化 (kv_items_visualizer / dag_visualizer)
+# ============================================================
+def test_kv_items_visualizer_draws_green_arrows():
+    import numpy as np
+
+    from yomitoku.table_semantic_parser import kv_items_visualizer
+
+    table = SimpleNamespace(
+        cells={
+            "k": mk_cell("k", (10, 10, 50, 40)),
+            "v": mk_cell("v", (50, 10, 120, 40)),
+        },
+        kv_items=[SimpleNamespace(key=["k"], value="v")],
+    )
+    img = np.full((100, 200, 3), 255, dtype=np.uint8)
+
+    out = kv_items_visualizer(table, img)
+
+    # 緑 (BGR=(0,255,0)) の矢印が描画されている
+    green = (out[:, :, 0] == 0) & (out[:, :, 1] == 255) & (out[:, :, 2] == 0)
+    assert green.any()
+
+
+def test_kv_items_visualizer_ignores_missing_cells():
+    import numpy as np
+
+    from yomitoku.table_semantic_parser import kv_items_visualizer
+
+    table = SimpleNamespace(
+        cells={},
+        kv_items=[SimpleNamespace(key=["missing"], value="also_missing")],
+    )
+    img = np.full((50, 50, 3), 255, dtype=np.uint8)
+
+    out = kv_items_visualizer(table, img)
+
+    assert (out == 255).all()
+
+
+def test_dag_visualizer_draws_edges():
+    import networkx as nx
+    import numpy as np
+
+    from yomitoku.table_semantic_parser import dag_visualizer
+
+    dag = nx.DiGraph()
+    dag.add_node("a", bbox=[10, 10, 50, 40])
+    dag.add_node("b", bbox=[50, 10, 120, 40])
+    dag.add_edge("a", "b", dir="R")
+    dag.add_edge("b", "a", dir="L")  # L/U は描画されない
+    img = np.full((100, 200, 3), 255, dtype=np.uint8)
+
+    out = dag_visualizer(dag, img)
+
+    assert (out != 255).any()
+
+
+# ============================================================
+# TableSemanticParser.__call__ (モデル非依存: run_models を差し替え)
+# ============================================================
+def _mk_parser():
+    from yomitoku.table_semantic_parser import TableSemanticParser
+
+    parser = TableSemanticParser.__new__(TableSemanticParser)
+    parser.visualize = False
+    parser.merge_same_column_values = False
+    return parser
+
+
+def _mk_detector_table(box, cells, kv_regions=(), grid_regions=()):
+    from yomitoku.schemas.table_semantic_parser import TableDetectorSchema
+
+    return TableDetectorSchema(
+        id=None,
+        box=list(box),
+        role=None,
+        cells=list(cells),
+        kv_regions=list(kv_regions),
+        grid_regions=list(grid_regions),
+    )
+
+
+def _mk_real_cell(cid, box, role="cell", contents=""):
+    from yomitoku.schemas.table_semantic_parser import CellSchema
+
+    return CellSchema(
+        meta={},
+        id=cid,
+        box=list(box),
+        role=role,
+        contents=contents,
+        row=None,
+        col=None,
+        row_span=None,
+        col_span=None,
+    )
+
+
+def _call_with_fake_models(parser, monkeypatch, tables, paragraphs, words=(), **kwargs):
+    import numpy as np
+
+    from yomitoku.schemas import OCRSchema
+
+    async def _fake_run_models(_img):
+        return OCRSchema(words=list(words)), tables, paragraphs
+
+    monkeypatch.setattr(parser, "run_models", _fake_run_models)
+    img = np.zeros((64, 64, 3), dtype=np.uint8)
+    return parser(img, **kwargs)
+
+
+def test_call_builds_schema_with_sorted_ids(monkeypatch):
+    from yomitoku.schemas import Element
+
+    parser = _mk_parser()
+
+    key = _mk_real_cell("k", (0, 0, 60, 30), role="header", contents="項目")
+    value = _mk_real_cell("v", (60, 0, 180, 30), role="cell", contents="値")
+    table = _mk_detector_table(
+        (0, 0, 180, 30),
+        [key, value],
+        kv_regions=[_mk_region("r0", (0, 0, 180, 30))],
+    )
+    paragraph = Element(
+        id=None, box=[0, 100, 100, 130], score=0.9, role=None, contents="本文"
+    )
+    # セルのcontentsはOCR単語のaggregateで決まる
+    words = [
+        _mk_word("項目", (5, 5, 55, 25)),
+        _mk_word("値", (65, 5, 175, 25)),
+    ]
+
+    semantic_info, vis_layout, vis_ocr = _call_with_fake_models(
+        parser, monkeypatch, [table], [paragraph], words=words
+    )
+
+    assert [t.id for t in semantic_info.tables] == ["t0"]
+    assert [p.id for p in semantic_info.paragraphs] == ["p0"]
+
+    t0 = semantic_info.tables[0]
+    assert [kv.id for kv in t0.kv_items] == ["kv0"]
+    # キー/値のテキストが解決されている
+    kv = t0.kv_items[0]
+    keys = [kv.key] if isinstance(kv.key, str) else kv.key
+    assert [t0.safe_contents(k) for k in keys] == ["項目"]
+    assert t0.safe_contents(kv.value) == "値"
+
+    # visualize=False でも入力画像と同形状のコピーが返る
+    assert vis_layout.shape == (64, 64, 3)
+    assert vis_ocr.shape == (64, 64, 3)
+
+
+def test_call_kv_only_ignores_grid_regions(monkeypatch):
+    parser = _mk_parser()
+
+    key = _mk_real_cell("k", (0, 0, 60, 30), role="header", contents="項目")
+    value = _mk_real_cell("v", (60, 0, 180, 30), role="cell", contents="値")
+    table = _mk_detector_table(
+        (0, 0, 180, 30),
+        [key, value],
+        kv_regions=[_mk_region("r0", (0, 0, 180, 30))],
+        grid_regions=[_mk_region("g0", (0, 0, 180, 30), role="grid")],
+    )
+
+    semantic_info, _, _ = _call_with_fake_models(
+        parser, monkeypatch, [table], [], kv_only=True
+    )
+
+    assert semantic_info.tables[0].grids == []
+    assert len(semantic_info.tables[0].kv_items) == 1

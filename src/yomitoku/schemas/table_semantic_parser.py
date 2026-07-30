@@ -174,6 +174,112 @@ class TableGridSchema(BaseSchema):
     )
 
 
+class StructuredCellRefSchema(BaseSchema):
+    """構造化出力でテキストの由来セルを指す参照 (セルIDと座標)。"""
+
+    id: Union[str, None] = Field(..., description="Cell id")
+    box: conlist(int, min_length=4, max_length=4) = Field(
+        ...,
+        description="Bounding box of the cell in the format [x1, y1, x2, y2]",
+    )
+
+
+class StructuredEntrySchema(BaseSchema):
+    """key/value のテキストと、その由来セル参照を対で持つエントリ。
+
+    kv_items では同一キーの複数 value が空間順に separator 結合され、
+    value_cells に結合元セルが順序どおり並ぶ。grid の行セルでは
+    value_cells は常に長さ1。
+    """
+
+    key: str = Field(..., description="Key text")
+    value: str = Field(..., description="Value text")
+    key_cells: List[StructuredCellRefSchema] = Field(
+        ...,
+        description="Cells the key text originates from",
+    )
+    value_cells: List[StructuredCellRefSchema] = Field(
+        ...,
+        description="Cells the value text originates from",
+    )
+
+
+class StructuredGridRowSchema(BaseSchema):
+    cells: List[StructuredEntrySchema] = Field(
+        ...,
+        description="Entries in the row (column header as key, cell as value)",
+    )
+
+
+class StructuredGridSchema(BaseSchema):
+    id: Union[str, None] = Field(..., description="Unique identifier of the grid")
+    box: conlist(int, min_length=4, max_length=4) = Field(
+        ...,
+        description="Bounding box of the grid in the format [x1, y1, x2, y2]",
+    )
+    n_row: int = Field(..., description="Number of rows in the table grid")
+    n_col: int = Field(..., description="Number of columns in the table grid")
+    rows: List[StructuredGridRowSchema] = Field(
+        ...,
+        description="Data rows (header rows are excluded)",
+    )
+
+
+class StructuredTableSchema(BaseSchema):
+    id: Union[str, None] = Field(None, description="Unique identifier of the table")
+    box: conlist(int, min_length=4, max_length=4) = Field(
+        ...,
+        description="Bounding box of the table in the format [x1, y1, x2, y2]",
+    )
+    style: str = Field(
+        ..., description="Border style of the table, e.g., ['border', 'borderless']"
+    )
+    kv_items: List[StructuredEntrySchema] = Field(
+        ..., description="Resolved key-value items"
+    )
+    grids: List[StructuredGridSchema] = Field(
+        ..., description="Resolved grid representations"
+    )
+
+
+class StructuredDocumentSchema(BaseSchema):
+    """ドキュメント全体の構造化ビュー。
+
+    TableSemanticParserSchema (正規化スキーマ) からセルIDをテキストと座標に
+    解決した非正規化形。ロスレスな往復が必要な場合は正規化スキーマを使う。
+    """
+
+    tables: List[StructuredTableSchema] = Field(..., description="Structured tables")
+    paragraphs: List[Element] = Field(
+        ..., description="List of recognized paragraphs in the document"
+    )
+
+
+class SimpleGridSchema(BaseSchema):
+    id: Union[str, None] = Field(..., description="Unique identifier of the grid")
+    rows: List[Dict[str, str]] = Field(
+        ...,
+        description="Data rows as {column header: value} mappings",
+    )
+
+
+class SimpleTableSchema(BaseSchema):
+    id: Union[str, None] = Field(None, description="Unique identifier of the table")
+    kv_items: Dict[str, str] = Field(
+        ..., description="Resolved key-value items as {key: value}"
+    )
+    grids: List[SimpleGridSchema] = Field(..., description="Resolved grids")
+
+
+class SimpleDocumentSchema(BaseSchema):
+    """座標やセル参照などのメタ情報を持たない、テキストのみの構造化ビュー。"""
+
+    tables: List[SimpleTableSchema] = Field(..., description="Simple tables")
+    paragraphs: List[Union[str, None]] = Field(
+        ..., description="Paragraph texts in the document"
+    )
+
+
 class TableSemanticContentsSchema(BaseSchema):
     id: str | None = Field(None, description="Unique identifier of the table")
     style: str = Field(
@@ -568,6 +674,137 @@ class TableSemanticContentsView:
 
         return results
 
+    def _cell_refs(self, cell_ids) -> List[StructuredCellRefSchema]:
+        """セルIDの列を StructuredCellRefSchema の列に解決する。
+
+        cells に存在しないIDは黙って除外する (safe_contents が "" を返す
+        挙動に合わせる)。
+        """
+        refs = []
+        for cell_id in cell_ids:
+            cell = self.table.find_cell_by_id(cell_id)
+            if cell is None:
+                continue
+            refs.append(StructuredCellRefSchema(id=cell.id, box=cell.box))
+        return refs
+
+    def kv_items_to_structured(self, separator="\n") -> List[StructuredEntrySchema]:
+        """KVアイテムをテキスト+セル座標に解決したエントリ列に変換する。
+
+        同一の「キーセル」(セルIDの並びが一致) を持つアイテムは1エントリに
+        統合し、value を空間順 (縦横の広がりで軸を判定) に separator で
+        結合する。value_cells には結合元セルが同じ順序で並ぶ。
+
+        統合の判定はキーの「テキスト」ではなくセルIDで行う。たまたま同じ
+        ラベル文字列を持つ別のフィールド (別のキーセル) は統合しない。
+        キーを持たない単独セルも統合せず、個別のエントリのまま返す。
+        """
+        t = self.table
+        groups = []
+        by_key = {}
+
+        for kv in t.kv_items:
+            # key は Union[str, List[str]]。bare str を文字単位で
+            # イテレートしないよう正規化する。
+            key_ids = [kv.key] if isinstance(kv.key, str) else list(kv.key)
+            group_id = tuple(key_ids)
+
+            # キーなしの単独セルはマージしない
+            if key_ids and group_id in by_key:
+                group = by_key[group_id]
+            else:
+                group = {"key_ids": list(key_ids), "values": []}
+                groups.append(group)
+                if key_ids:
+                    by_key[group_id] = group
+
+            group["values"].append(
+                (t.safe_contents(kv.value), t.find_cell_by_id(kv.value), kv.value)
+            )
+
+        entries = []
+        for group in groups:
+            key_text = "_".join(t.safe_contents(i) for i in group["key_ids"])
+            values = group["values"]
+
+            if len(values) > 1:
+                with_cell = [v for v in values if v[1] is not None]
+                without_cell = [v for v in values if v[1] is None]
+                if with_cell:
+                    boxes = [v[1].box for v in with_cell]
+                    x_spread = max(b[0] for b in boxes) - min(b[0] for b in boxes)
+                    y_spread = max(b[1] for b in boxes) - min(b[1] for b in boxes)
+                    axis = 1 if y_spread >= x_spread else 0
+                    with_cell.sort(key=lambda v: v[1].box[axis])
+                values = with_cell + without_cell
+
+            entries.append(
+                StructuredEntrySchema(
+                    key=key_text,
+                    value=separator.join(str(v[0]) for v in values),
+                    key_cells=self._cell_refs(group["key_ids"]),
+                    value_cells=self._cell_refs([v[2] for v in values]),
+                )
+            )
+
+        return entries
+
+    def grids_to_structured(self, ignore_space=True) -> List[StructuredGridSchema]:
+        """グリッドをテキスト+セル座標に解決した行列構造に変換する。
+
+        grids_to_dict と同じく、ヘッダ行のセル・行内で重複するセルID・
+        空になった行は除外する。data の None 穴と col_headers より長い行は
+        スキップする。
+        """
+        t = self.table
+        results = []
+        for grid in t.grids:
+            rows = []
+            for row in grid.data:
+                entries = []
+                seen_cell_ids = set()
+
+                for i, cell_id in enumerate(row):
+                    if i >= len(grid.col_headers):
+                        break
+
+                    if cell_id is None:
+                        continue
+
+                    if cell_id in grid.col_headers[i]:
+                        continue
+
+                    if cell_id in seen_cell_ids:
+                        continue
+                    seen_cell_ids.add(cell_id)
+
+                    header_ids = list(grid.col_headers[i])
+                    entries.append(
+                        StructuredEntrySchema(
+                            key="_".join(
+                                t.safe_contents(h, ignore_space) for h in header_ids
+                            ),
+                            value=t.safe_contents(cell_id, ignore_space),
+                            key_cells=self._cell_refs(header_ids),
+                            value_cells=self._cell_refs([cell_id]),
+                        )
+                    )
+
+                if entries:
+                    rows.append(StructuredGridRowSchema(cells=entries))
+
+            results.append(
+                StructuredGridSchema(
+                    id=grid.id,
+                    box=grid.box,
+                    n_row=grid.n_row,
+                    n_col=grid.n_col,
+                    rows=rows,
+                )
+            )
+
+        return results
+
 
 class CellTemplateSchema(BaseSchema):
     id: Optional[str] = Field(None, description="Cell id for matching")
@@ -689,6 +926,68 @@ class TableSemanticParserSchema(BaseSchema):
             results[table.id] = result
 
         return results
+
+    def to_structured(self, separator="\n") -> StructuredDocumentSchema:
+        """ドキュメント全体を、テキストとセル座標を解決した構造化形に変換する。
+
+        to_dict のkey-value構造に加えて、各エントリに由来セルのIDと座標
+        (key_cells / value_cells) を埋め込み、paragraphs も含める。
+        """
+        tables = []
+        for table in self.tables:
+            tables.append(
+                StructuredTableSchema(
+                    id=table.id,
+                    box=table.box,
+                    style=table.style,
+                    kv_items=table.view.kv_items_to_structured(separator=separator),
+                    grids=table.view.grids_to_structured(),
+                )
+            )
+
+        return StructuredDocumentSchema(tables=tables, paragraphs=self.paragraphs)
+
+    def to_simple(self, separator="\n") -> SimpleDocumentSchema:
+        """座標などのメタ情報を持たないテキストのみの構造化形に変換する。
+
+        to_structured からセル参照・座標・スコア類を落とした形。
+        同一キーの結合挙動は to_structured と同一。grid の行内で
+        ヘッダテキストが重複する場合や、kv_items にキーなしの単独セルが
+        複数ある場合は _0/_1 のインデックスを付与して値の消失を防ぐ。
+        """
+        doc = self.to_structured(separator=separator)
+
+        tables = []
+        for table in doc.tables:
+            grids = []
+            for grid in table.grids:
+                rows = []
+                for row in grid.rows:
+                    keys = make_unique_all([[e.key] for e in row.cells])
+                    rows.append(
+                        {
+                            "_".join(map(str, k)): e.value
+                            for k, e in zip(keys, row.cells)
+                        }
+                    )
+                grids.append(SimpleGridSchema(id=grid.id, rows=rows))
+
+            kv_keys = make_unique_all([[e.key] for e in table.kv_items])
+            tables.append(
+                SimpleTableSchema(
+                    id=table.id,
+                    kv_items={
+                        "_".join(map(str, k)): e.value
+                        for k, e in zip(kv_keys, table.kv_items)
+                    },
+                    grids=grids,
+                )
+            )
+
+        return SimpleDocumentSchema(
+            tables=tables,
+            paragraphs=[p.contents for p in doc.paragraphs],
+        )
 
     def find_table_by_id(
         self, table_id: str

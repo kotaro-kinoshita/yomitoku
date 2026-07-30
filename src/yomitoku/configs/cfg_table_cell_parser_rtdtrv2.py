@@ -4,7 +4,6 @@ from typing import List
 
 @dataclass
 class Data:
-    # 960 検証用: 入力画像サイズを 960 に拡大
     img_size: List[int] = field(default_factory=lambda: [960, 960])
 
 
@@ -48,16 +47,14 @@ class Decoder:
     num_levels: int = 3
 
     num_layers: int = 6
-    # 学習時 (rtdetrv2_pytorch/configs/table_semantic_parser) は 900。
-    # learn_query_content=False のため、推論時に増やしても重みの shape は不変
-    # (encoder proposal の top-k 選択数が増えるだけ)。密なテーブル (最大 ~1000
-    # セル) で検出上限に達しないよう余裕を持たせる。
+    # 学習時は 900。learn_query_content=False のため、推論時に増やしても重みの
+    # shape は不変 (encoder proposal の top-k 選択数が増えるだけ)。密なテーブル
+    # (最大 ~1000 セル) で検出上限に達しないよう余裕を持たせる。
     num_queries: int = 1500
 
     num_denoising: int = 100
     label_noise_ratio: float = 0.5
     box_noise_scale: float = 1.0
-    # 960 検証用: 入力画像サイズに合わせて拡大
     eval_spatial_size: List[int] = field(default_factory=lambda: [960, 960])
 
     eval_idx: int = -1
@@ -68,16 +65,14 @@ class Decoder:
 
 
 @dataclass
-class TableCellParserRTDETRv2Beta960Config:
-    hf_hub_repo: str = "KotaroKinoshita/yomitoku-cell-detector-rtdtrv2-beta"
-    # ローカルの学習済みチェックポイントを直接読み込む場合のパス。
-    # 設定されている場合は hf_hub_repo より優先される（960 入力サイズの beta 検証用）。
-    # TODO: 検証後、重みを HF Hub に上げて hf_hub_repo に切り替える。
-    weights_path: str = (
-        "/home/user/Projects/rtdetrv2_pytorch/output/table_semantic_parser_960_aug/best.pth"
-    )
-    # チェックポイント内で使用する重みキー ("model" or "ema")
-    weights_key: str = "ema"
+class TableCellParserRTDETRv2Config:
+    """正式版のセル検出器 (rtdetrv2)。
+
+    入力サイズ 960 で augmentation を強化して学習したモデル。重みは HF Hub の
+    safetensors から読み込む (学習チェックポイントの .pth は配布しない)。
+    """
+
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-cell-detector-rtdtrv2-v1"
     thresh_score: float = 0.5
     data: Data = field(default_factory=Data)
     PResNet: BackBone = field(default_factory=BackBone)

@@ -86,6 +86,7 @@ yomitoku_mcp = "yomitoku.cli.mcp_server:main"
 download_model = "yomitoku.cli.download_model:main"
 yomitoku_extract = "yomitoku.cli.extract_rule:main"
 yomitoku_extract_with_llm = "yomitoku.cli.extract:main"
+yomitoku_table = "yomitoku.cli.table:main"
 
 [project.optional-dependencies]
 mcp = [

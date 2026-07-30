@@ -217,6 +217,28 @@ def _resolve_overlapping_regions(
     drop_grid = set()
     drop_kv = set()
 
+    # grid同士の重複予測を解決する (同一テーブルへの二重予測)。
+    # 共有セルが小さい方の領域の保持セルの大半を占める場合は重複とみなし、
+    # 検出スコアが高い方を残す
+    score_order = sorted(
+        range(len(grid_regions)),
+        key=lambda i: getattr(grid_regions[i], "score", 1.0),
+        reverse=True,
+    )
+    kept_grids = []
+    for gi in score_order:
+        is_duplicate = False
+        for gj in kept_grids:
+            inter = grid_cellsets[gi] & grid_cellsets[gj]
+            denom = min(len(grid_cellsets[gi]), len(grid_cellsets[gj]))
+            if denom and len(inter) / denom >= conflict_ratio_th:
+                is_duplicate = True
+                break
+        if is_duplicate:
+            drop_grid.add(gi)
+        else:
+            kept_grids.append(gi)
+
     for gi in range(len(grid_regions)):
         for ki in range(len(kv_regions)):
             if gi in drop_grid or ki in drop_kv:
@@ -445,6 +467,49 @@ def _assign_ids(table_information, cell_offset=0):
         grid.col_headers = new_col_headers
 
     return cell_offset + len(cells)
+
+
+def kv_items_visualizer(table, img):
+    """確定した kv_items のキー連鎖 (key[0] -> ... -> value) を緑の矢印で描画する。
+
+    DAGではなく最終的な kv_items から描画するため、フォールバック救済で
+    連結されたキー (孤児ヘッダー・孤児セル連鎖) も含めて、確定した
+    KV関係がすべて可視化される。
+    """
+    for kv in table.kv_items:
+        keys = [kv.key] if isinstance(kv.key, str) else list(kv.key)
+        chain = [k for k in keys if k in table.cells]
+        if kv.value in table.cells:
+            chain.append(kv.value)
+
+        for u, v in zip(chain, chain[1:]):
+            bu = table.cells[u].box
+            bv = table.cells[v].box
+            cx1, cy1 = (bu[0] + bu[2]) / 2, (bu[1] + bu[3]) / 2
+            cx2, cy2 = (bv[0] + bv[2]) / 2, (bv[1] + bv[3]) / 2
+
+            # dag_visualizer と同じ規則: 隣接方向と直交する軸は両セルの
+            # 重なり帯の中点に揃えて水平/垂直に描画する
+            y_lo, y_hi = max(bu[1], bv[1]), min(bu[3], bv[3])
+            x_lo, x_hi = max(bu[0], bv[0]), min(bu[2], bv[2])
+            if y_lo < y_hi and int(cx1) != int(cx2):
+                cy1 = cy2 = (y_lo + y_hi) / 2
+            elif x_lo < x_hi:
+                cx1 = cx2 = (x_lo + x_hi) / 2
+
+            length = max(1.0, ((cx2 - cx1) ** 2 + (cy2 - cy1) ** 2) ** 0.5)
+            tip_length = min(0.2, 12.0 / length)
+
+            img = cv2.arrowedLine(
+                img,
+                (int(cx1), int(cy1)),
+                (int(cx2), int(cy2)),
+                (0, 255, 0),
+                2,
+                tipLength=tip_length,
+            )
+
+    return img
 
 
 def dag_visualizer(dag, img):
@@ -684,15 +749,8 @@ class TableSemanticParser:
                 results_table.cells.values(),
             )
 
-            # for kv_item in results_table.kv_items:
-            #    box = kv_item.box
-            #    cv2.rectangle(
-            #        vis_layout,
-            #        (box[0], box[1]),
-            #        (box[2], box[3]),
-            #        (0, 0, 255),
-            #        3,
-            #    )
+            # kv_items のキー連鎖を緑の矢印で描画する (救済リンク含む)
+            vis_layout = kv_items_visualizer(results_table, vis_layout)
 
             for grid in results_table.grids:
                 box = grid.box
@@ -818,7 +876,9 @@ class TableSemanticParser:
                     table_information["kv_items"].extend(kv_items)
                     table_information["cells"].update(kv_cells)
 
-                    dags.append(dag)
+                    # NOTE: kv側はDAGではなく確定した kv_items のキー連鎖を
+                    # kv_items_visualizer (緑矢印) で描画するため、DAGの
+                    # 上描き対象には追加しない (dagsはgrid構造の可視化用)
 
             for cell in cells.values():
                 if cell.id not in table_information["cells"]:

@@ -6,7 +6,12 @@ from .utils.misc import (
     is_bottom_adjacent,
     is_contained,
     is_right_adjacent,
+    overlap_interval,
 )
+
+# 孤児ヘッダー救済で「入れ子」とみなす区間内包率の閾値
+NESTED_CONTAINMENT_TH = 0.8
+
 
 def _assign_cells_to_regions(nodes, regions):
     """
@@ -196,6 +201,11 @@ def _calc_adjacent_cell_to_cell(dag, cell_to_region, nodes):
 
 
 def get_kv_items_dag(nodes, regions):
+    """kv領域内の隣接グラフ(DAG)を構築する。
+
+    戻り値は (dag, cell_to_region, header_to_regions)。後段の孤児ノード
+    救済のため、領域割当の結果も返す。
+    """
     cell_to_region, header_to_regions = _assign_cells_to_regions(nodes, regions)
 
     # どの領域にも属さないヘッダーを、左方に隣接する領域ヘッダーの領域へ取り込む
@@ -231,7 +241,7 @@ def get_kv_items_dag(nodes, regions):
     _calc_adjacent_header_to_header(dag, header_to_regions, nodes["header"])
     _calc_adjacent_cell_to_cell(dag, cell_to_region, nodes["cell"])
 
-    return dag
+    return dag, cell_to_region, header_to_regions
 
 
 def _merge_bbox(box1, box2):
@@ -295,8 +305,239 @@ def _dfs_collect_kv(dag, node_id, key_path, kv_items, cells, kv_cells, allowed_d
             )
 
 
+def _nested_ratio(parent_lo, parent_hi, child_lo, child_hi):
+    """child区間がparent区間に内包される割合 (0.0〜1.0)"""
+    length = child_hi - child_lo
+    if length <= 0:
+        return 0.0
+    return overlap_interval(parent_lo, parent_hi, child_lo, child_hi) / length
+
+
+def _rescue_nested_orphan_headers(orphan_headers, kv_items, cells, kv_cells):
+    """孤児ヘッダーの入れ子救済（KV限定のフォールバック）。
+
+    kv領域外の孤児ヘッダーが、キーとして採用済みのヘッダーを入れ子に
+    持つ場合、そのkv_itemのキー先頭に孤児ヘッダーを連結する。入れ子は
+    複数セルにまたがるため、対象は1セルに限定しない。
+
+    「入れ子」条件として、キーヘッダーの区間が孤児ヘッダーの区間に
+    内包され、かつサイズが十分小さいこと（同サイズの隣接ヘッダーは
+    兄弟セクション見出しであり、入れ子ではない）。
+
+    - 左右入れ子: 孤児ヘッダーのy区間に内包され右方にあるキーヘッダー
+      「すべて」に紐付ける（複数行にまたがる行ヘッダー）
+    - 上下入れ子: 孤児ヘッダーのx区間に内包されるキーヘッダーのうち、
+      直下に隣接するものから下方向に連続して隣接する「すべて」に
+      紐付ける（複数列・複数行をまたぐ上位ヘッダー）
+    """
+    for orphan in orphan_headers:
+        ox1, oy1, ox2, oy2 = orphan.box
+        o_width = ox2 - ox1
+        o_height = oy2 - oy1
+
+        heads = {}
+        for kv in kv_items:
+            if not kv.key:
+                continue
+            head = cells.get(kv.key[0])
+            if head is None or head.id == orphan.id:
+                continue
+            heads[head.id] = head
+
+        target_head_ids = set()
+
+        # 左右入れ子: y区間が内包され、右方にあるキーヘッダーすべて
+        for head in heads.values():
+            hx1, hy1, hx2, hy2 = head.box
+            if (
+                hx1 >= ox2 - o_width * 0.1
+                and (hy2 - hy1) < o_height * 0.9
+                and _nested_ratio(oy1, oy2, hy1, hy2) >= NESTED_CONTAINMENT_TH
+            ):
+                target_head_ids.add(head.id)
+
+        # 上下入れ子: x区間内包の候補のうち、直下隣接から下方向に
+        # 連続して隣接する全てのキーヘッダー
+        v_candidates = {
+            head.id: head
+            for head in heads.values()
+            if (head.box[2] - head.box[0]) < o_width * 0.9
+            and _nested_ratio(ox1, ox2, head.box[0], head.box[2])
+            >= NESTED_CONTAINMENT_TH
+        }
+        frontier = [
+            head
+            for head in v_candidates.values()
+            if is_bottom_adjacent(orphan.box, head.box)
+        ]
+        linked = {head.id for head in frontier}
+        while frontier:
+            current = frontier.pop()
+            for head in v_candidates.values():
+                if head.id in linked:
+                    continue
+                if is_bottom_adjacent(current.box, head.box):
+                    linked.add(head.id)
+                    frontier.append(head)
+        target_head_ids |= linked
+
+        if not target_head_ids:
+            continue
+
+        for kv in kv_items:
+            if kv.key and kv.key[0] in target_head_ids:
+                kv.key = [orphan.id] + list(kv.key)
+                kv.box = _merge_bbox(kv.box, orphan.box) if kv.box else list(orphan.box)
+
+        kv_cells[orphan.id] = cells[orphan.id]
+
+
+def _rescue_orphan_header_cell_pairs(
+    orphan_headers, orphan_cells, kv_items, cells, kv_cells
+):
+    """孤児ヘッダーを起点に、隣接する孤児セルの連鎖をKV化する。
+
+    孤児ヘッダーから一方向（右方向 or 下方向）に隣接をたどって
+    孤児セルの連鎖をDFSし、末端のセルをvalue、経路途中のセルを
+    キーの一部としてKV化する。
+    (例: 扶助状況 → 受給中の年金の種類と金額 → 金額欄
+     は key=[扶助状況, 受給中の年金の種類と金額] value=金額欄 になる)
+    """
+    paired_values = set()
+    used_as_keys = set()
+
+    adjacency = {
+        "R": is_right_adjacent,
+        "D": is_bottom_adjacent,
+    }
+
+    for orphan in orphan_headers:
+        for direction, is_adjacent in adjacency.items():
+            seen = set()
+
+            def _chain(node, key_path):
+                children = [
+                    c
+                    for c in orphan_cells
+                    if c.id not in seen
+                    and c.id not in paired_values
+                    and c.id not in used_as_keys
+                    and is_adjacent(node.box, c.box)
+                ]
+
+                if not children:
+                    if node.id == orphan.id:
+                        return
+                    # 葉セルに到達: 経路途中をキー、葉をvalueとしてKV化
+                    kv_items.append(
+                        KvItemSchema(
+                            id=None,
+                            key=list(key_path),
+                            value=node.id,
+                            box=_merge_bbox(cells[key_path[0]].box, node.box),
+                        )
+                    )
+                    for key_id in key_path:
+                        kv_cells[key_id] = cells[key_id]
+                    kv_cells[node.id] = cells[node.id]
+                    paired_values.add(node.id)
+                    used_as_keys.update(key_path[1:])
+                    return
+
+                for child in children:
+                    seen.add(child.id)
+                for child in children:
+                    _chain(child, key_path + [node.id])
+
+            _chain(orphan, [])
+
+    return paired_values, used_as_keys
+
+
+def _rescue_orphan_cells_extending_values(kv_items, orphan_cells, cells, kv_cells):
+    """ヘッダーと紐付いた値セルの右方・下方に続く孤立セルにキーを引き継ぐ。
+
+    孤立セルの左方 (または上方) にヘッダーと紐付いた値セルが隣接する
+    場合、その値セルのキーを孤立セルにも割り当てて新しいKVを作る
+    (複数行の記入欄など、値の続きのセルの救済)。
+    孤立セル→孤立セルと続く場合も同じキーを引き継いで連鎖する。
+
+    行・列の続きであることの判定として、隣接方向と直交する軸の区間が
+    相互に内包し合っていること (行の続きなら同じ行高、列の続きなら
+    同じ列幅) を要求する。全幅の注記セルや細長い隙間セルなど、
+    サイズが一致しないセルへの誤伝播を防ぐ。
+    """
+    inherited_values = set()
+
+    # キーを持つ値セルid -> キー のマップ (連鎖で成長する)
+    value_to_key = {kv.value: list(kv.key) for kv in kv_items if kv.key}
+
+    # 左方の値セル (行の続き) を上方 (列の続き) より優先する
+    directions = (
+        (is_right_adjacent, (1, 3)),  # 値セルの右隣が孤立セル
+        (is_bottom_adjacent, (0, 2)),  # 値セルの下隣が孤立セル
+    )
+
+    remaining = {c.id: c for c in orphan_cells}
+    updated = True
+    while updated:
+        updated = False
+        for cell in list(remaining.values()):
+            key = None
+            for is_adjacent, (lo, hi) in directions:
+                for value_id, value_key in value_to_key.items():
+                    value_cell = cells.get(value_id)
+                    if value_cell is None:
+                        continue
+                    if not is_adjacent(value_cell.box, cell.box):
+                        continue
+                    # 直交軸の区間が相互に内包し合っている (行/列の続き)
+                    if (
+                        _nested_ratio(
+                            value_cell.box[lo],
+                            value_cell.box[hi],
+                            cell.box[lo],
+                            cell.box[hi],
+                        )
+                        < NESTED_CONTAINMENT_TH
+                        or _nested_ratio(
+                            cell.box[lo],
+                            cell.box[hi],
+                            value_cell.box[lo],
+                            value_cell.box[hi],
+                        )
+                        < NESTED_CONTAINMENT_TH
+                    ):
+                        continue
+                    key = value_key
+                    break
+                if key is not None:
+                    break
+
+            if key is None:
+                continue
+
+            kv_items.append(
+                KvItemSchema(
+                    id=None,
+                    key=list(key),
+                    value=cell.id,
+                    box=_merge_bbox(cells[key[0]].box, cell.box),
+                )
+            )
+            kv_cells[cell.id] = cells[cell.id]
+            for key_id in key:
+                kv_cells[key_id] = cells[key_id]
+            value_to_key[cell.id] = list(key)
+            inherited_values.add(cell.id)
+            del remaining[cell.id]
+            updated = True
+
+    return inherited_values
+
+
 def parse_kv_items(nodes, cells, regions):
-    dag = get_kv_items_dag(nodes, regions)
+    dag, cell_to_region, header_to_regions = get_kv_items_dag(nodes, regions)
 
     kv_items = []
     kv_cells = {}
@@ -340,8 +581,43 @@ def parse_kv_items(nodes, cells, regions):
         ]
         dag.remove_edges_from(edges_to_remove)
 
-    # DFSで到達できなかったcell/emptyはキーなしで追加
+    # --- 孤児ノードのフォールバック救済 ---
+    # どのkv領域にも属さない孤児ヘッダー (左方隣接の救済後も残ったもの)
+    orphan_headers = sorted(
+        (h for h in nodes["header"] if not header_to_regions.get(h.id)),
+        key=lambda h: (h.box[1], h.box[0]),
+    )
+
+    # 1. 入れ子救済: 孤児ヘッダーを入れ子のキーヘッダーに紐付ける
+    _rescue_nested_orphan_headers(orphan_headers, kv_items, cells, kv_cells)
+
+    # 2. 孤児ヘッダーから隣接する孤児セルの連鎖をKV化する
     visited_values = {kv.value for kv in kv_items}
+    orphan_cells = [
+        cell
+        for cell in nodes["cell"] + nodes["empty"]
+        if cell.id not in cell_to_region and cell.id not in visited_values
+    ]
+    paired_values, used_as_keys = _rescue_orphan_header_cell_pairs(
+        orphan_headers, orphan_cells, kv_items, cells, kv_cells
+    )
+    visited_values |= paired_values
+    # キーとして使われた孤児セルもキーなしフォールバックの対象から外す
+    visited_values |= used_as_keys
+
+    # 3. 紐付き値セルの右方・下方に続くキー未割当セルへキーを引き継ぐ
+    #    (複数行の記入欄など、値の続きのセルの救済)。
+    #    kv領域の外の孤児セルに限らず、領域内でDFSが届かなかった
+    #    キーなしセルも対象とする
+    unkeyed_cells = [
+        cell for cell in nodes["cell"] + nodes["empty"] if cell.id not in visited_values
+    ]
+    inherited_values = _rescue_orphan_cells_extending_values(
+        kv_items, unkeyed_cells, cells, kv_cells
+    )
+    visited_values |= inherited_values
+
+    # DFSで到達できなかったcell/emptyはキーなしで追加
     for cell in nodes["cell"] + nodes["empty"]:
         if cell.id not in visited_values:
             kv_items.append(KvItemSchema(id=None, key=[], value=cell.id, box=cell.box))

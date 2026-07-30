@@ -114,14 +114,19 @@ def parser():
 
 
 def test_semantic_output_matches_golden(parser, monkeypatch):
-    input_dir = Path("tests/data/table_semantic_inputs")  # 10 json
+    # 入力フィクスチャの内訳:
+    # - debug_table_raw_0〜9: kv_regions / grid_regions を持たない旧検出器の
+    #   出力。領域なしのフォールバック (孤児ノード救済) の経路を検証する
+    # - debug_table_raw_10: モデル予測の kv_regions / grid_regions を含む
+    #   現行検出器の出力。領域ベースのkv/grid解析の経路を検証する
+    input_dir = Path("tests/data/table_semantic_inputs")  # 11 json
     golden_dir = Path("tests/data/table_semantic_outputs")  # 期待出力
     golden_dir.mkdir(parents=True, exist_ok=True)
 
     img = np.zeros((32, 32, 3), dtype=np.uint8)
 
     files = sorted(input_dir.glob("*.json"))
-    assert len(files) == 10
+    assert len(files) == 11
 
     for jf in files:
         tables = load_table_detector_list(jf)

@@ -89,6 +89,7 @@ Each component can be used independently (e.g., `OCR` alone for text extraction)
 | `download_model` | `cli.download_model` | Model downloader |
 | `yomitoku_extract` | `cli.extract_rule` | Rule-based structured data extraction |
 | `yomitoku_extract_with_llm` | `cli.extract` | LLM-based structured data extraction |
+| `yomitoku_table` | `cli.table` | Whole-document structured JSON (resolved kv/grid + cell coords + paragraphs); `--raw` for the normalized schema |
 
 ### Available Models
 
@@ -98,7 +99,7 @@ Each component can be used independently (e.g., `OCR` alone for text extraction)
 | TextRecognizer | `parseq`, `parseqv2`, `parseq-small`, `parseq-tiny` |
 | LayoutParser | `layout_parser_rtdtrv2`, `layout_parser_rtdtrv2_v2` |
 | TableStructureRecognizer | `table_structure_recognizer_rtdtrv2` |
-| TableCellDetector | `table_cell_parser_rtdtrv2_beta` |
+| TableCellDetector | `rtdetrv2` (default, 960 input, AUG-trained), `rtdetrv2_beta` (640) |
 
 Lite mode (`--lite`) uses `parseq-small`/`parseq-tiny` for CPU-friendly inference.
 
