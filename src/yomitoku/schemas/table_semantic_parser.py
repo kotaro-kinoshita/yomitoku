@@ -522,13 +522,11 @@ class TableSemanticContentsExport:
     def __init__(self, table: TableSemanticContentsSchema):
         self.table = table
 
-    def to_json(self, out_path, merge_values=False, separator="\n") -> str:
+    def to_json(self, out_path, separator="\n") -> str:
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
         grids = self.table.view.grids_to_dict()
-        kv_items = self.table.view.kv_items_to_dict(
-            merge_values=merge_values, separator=separator
-        )
+        kv_items = self.table.view.kv_items_to_nested(separator=separator)
 
         table_contents = {
             "kv_items": kv_items,
@@ -550,6 +548,7 @@ class TableSemanticContentsExport:
             os.makedirs(dirname, exist_ok=True)
 
         csvs = []
+        basename = out_path.rsplit(".", 1)[0]
         for table_grid in table_contents.grids:
             csv = []
             for row in table_grid.data:
@@ -559,10 +558,9 @@ class TableSemanticContentsExport:
                     row_data.append(cell_text)
                 csv.append(row_data)
 
-            basename = out_path.rsplit(".", 1)[0]
-            out_path = f"{basename}_{table_grid.id}.csv"
+            grid_path = f"{basename}_{table_grid.id}.csv"
 
-            with open(out_path, "w", encoding="utf-8") as f:
+            with open(grid_path, "w", encoding="utf-8") as f:
                 for row in csv:
                     f.write(",".join(row) + "\n")
 
@@ -582,10 +580,13 @@ class TableSemanticContentsExport:
 
         return grids
 
-    def kv_items_to_json(self, out_path, merge_values=False, separator="\n") -> str:
-        kv_items = self.table.view.kv_items_to_dict(
-            merge_values=merge_values, separator=separator
-        )
+    def kv_items_to_json(self, out_path, separator="\n") -> str:
+        """kv_items をキーの入れ子構造を保った階層dictとしてJSONに書き出す。
+
+        構造は kv_items_to_nested を参照。同一キーセル列の複数 value は
+        separator で結合される。
+        """
+        kv_items = self.table.view.kv_items_to_nested(separator=separator)
 
         dirname = os.path.dirname(out_path)
         if dirname:
@@ -601,59 +602,13 @@ class TableSemanticContentsView:
     def __init__(self, table: TableSemanticContentsSchema):
         self.table = table
 
-    def kv_items_to_dict(self, merge_values=False, separator="\n") -> dict:
-        """KVアイテムをdict形式に変換する。
+    def kv_items_to_dict(self, separator="\n") -> dict:
+        """KVアイテムを、キーセルの入れ子構造を保った階層dictに変換する。
 
-        Args:
-            merge_values: Trueの場合、同一キーの複数valueを結合する。
-                Falseの場合、同一キーにはインデックスを付与して個別に返す。
-            separator: merge_values=True時のvalue結合セパレータ。
+        kv_items_to_nested のエイリアス。同一キーセル列の複数 value は
+        空間順に separator で結合される。
         """
-        t = self.table
-        parsed = {}
-        keys, vals = [], []
-
-        for kv in t.kv_items:
-            k = [t.safe_contents(i) for i in kv.key]
-            v = t.safe_contents(kv.value)
-            keys.append(k)
-            vals.append(v)
-
-        if not merge_values:
-            keys = make_unique_all(keys)
-            for k, v in zip(keys, vals):
-                parsed["_".join(map(str, k))] = str(v)
-        else:
-            grouped = defaultdict(list)
-            for kv, k, v in zip(t.kv_items, keys, vals):
-                key_str = "_".join(map(str, k))
-                value_cell = t.cells.get(kv.value)
-                grouped[key_str].append((v, value_cell))
-
-            for key_str, items in grouped.items():
-                if len(items) == 1:
-                    parsed[key_str] = str(items[0][0])
-                else:
-                    cells_with_boxes = [
-                        (v, cell) for v, cell in items if cell is not None
-                    ]
-                    if cells_with_boxes:
-                        boxes = [cell.box for _, cell in cells_with_boxes]
-                        x_spread = max(b[0] for b in boxes) - min(b[0] for b in boxes)
-                        y_spread = max(b[1] for b in boxes) - min(b[1] for b in boxes)
-
-                        if y_spread >= x_spread:
-                            cells_with_boxes.sort(key=lambda x: x[1].box[1])
-                        else:
-                            cells_with_boxes.sort(key=lambda x: x[1].box[0])
-
-                        parsed[key_str] = separator.join(
-                            str(v) for v, _ in cells_with_boxes
-                        )
-                    else:
-                        parsed[key_str] = separator.join(str(v) for v, _ in items)
-
-        return parsed
+        return self.kv_items_to_nested(separator=separator)
 
     def grids_to_dict(self, ignore_space=True) -> list[dict]:
         t = self.table
@@ -990,13 +945,17 @@ class TableSemanticParserSchema(BaseSchema):
                 out_path=f"{outdir}/table_{table.id}.csv",
             )
 
-    def to_dict(self, merge_values=False, separator="\n"):
+    def to_dict(self, separator="\n"):
+        """テーブルIDごとの構造化情報 (kv_items / grids) を dict で返す。
+
+        kv_items は to_simple と同じく、キーセルの入れ子構造を保った
+        階層dictになる (kv_items_to_nested を参照)。同一キーセル列の
+        複数 value は separator で結合される。
+        """
         results = {}
         for table in self.tables:
             result = {
-                "kv_items": table.view.kv_items_to_dict(
-                    merge_values=merge_values, separator=separator
-                ),
+                "kv_items": table.view.kv_items_to_nested(separator=separator),
                 "grids": table.view.grids_to_dict(),
             }
             results[table.id] = result

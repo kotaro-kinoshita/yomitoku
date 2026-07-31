@@ -31,9 +31,11 @@ cv2.imwrite("vis_cell.jpg", vis_layout)
 table = results.find_table_by_id(table_id="t0")
 
 # テーブルのすべてのスキーマを表示
-pprint(table.view.kv_items_to_dict(merge_values=True))
+pprint(table.view.kv_items_to_dict())
 """
->>{'利用目的': 'セミナー', '実施内容': 'YomiTokuの利用方法に関する説明会', '施設名称': 'MLism株式会社'}
+>>{'利用情報': {'利用目的': 'セミナー',
+>>          '実施内容': 'YomiTokuの利用方法に関する説明会',
+>>          '施設名称': 'MLism株式会社'}}
 """
 
 pprint(table.view.grids_to_dict())
@@ -52,16 +54,19 @@ pprint(table.view.grids_to_dict())
 table = results.find_table_by_id(table_id="t1")
 pprint(table.search_kv_items_by_key(key="団体名"))
 """
->> [{'key': [CellSchema(meta={}, contents='団 体 名', role='header', id='c1', box=[149, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],
->>  'value': CellSchema(meta={}, contents='エムリズムカブシキガイシャ', role='cell', id='c2', box=[365, 1393, 1498, 1444], row=None, col=None, row_span=None, col_span=None)},
->> {'key': [CellSchema(meta={}, contents='団 体 名', role='header', id='c1', box=[149, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],
->>  'value': CellSchema(meta={}, contents='MLism 株式会社', role='cell', id='c3', box=[365, 1444, 1498, 1539], row=None, col=None, row_span=None, col_span=None)}]
+>> [{'key': [CellSchema(meta={}, contents='申込者情報', role='header', id='r0c0', box=[150, 1341, 1499, 1393], row=None, col=None, row_span=None, col_span=None),
+>>          CellSchema(meta={}, contents='団 体 名', role='header', id='r1c0', box=[150, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],
+>>  'value': CellSchema(meta={}, contents='エムリズムカブシキガイシャ', role='cell', id='r1c1', box=[365, 1393, 1499, 1444], row=None, col=None, row_span=None, col_span=None)},
+>> {'key': [CellSchema(meta={}, contents='申込者情報', role='header', id='r0c0', box=[150, 1341, 1499, 1393], row=None, col=None, row_span=None, col_span=None),
+>>          CellSchema(meta={}, contents='団 体 名', role='header', id='r1c0', box=[150, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],
+>>  'value': CellSchema(meta={}, contents='MLism 株式会社', role='cell', id='r2c0', box=[364, 1444, 1499, 1540], row=None, col=None, row_span=None, col_span=None)}]
 """
 
 
 # 解析結果から住所を検索して表示
 pprint(table.search_kv_items_by_key(key="住所"))
 """
-[{'key': [CellSchema(meta={}, contents='住 所', role='header', id='c7', box=[149, 1686, 364, 1788], row=None, col=None, row_span=None, col_span=None)],
-  'value': CellSchema(meta={}, contents='〒277-8520千葉県柏市若柴 178 番地 4 柏の葉キャンパス 148 街区 2 ショップ&オフィス棟 6F', role='cell', id='c8', box=[365, 1686, 1498, 1788], row=None, col=None, row_span=None, col_span=None)}]
+[{'key': [CellSchema(meta={}, contents='申込者情報', role='header', id='r0c0', box=[150, 1341, 1499, 1393], row=None, col=None, row_span=None, col_span=None),
+          CellSchema(meta={}, contents='住 所', role='header', id='r5c0', box=[150, 1686, 364, 1789], row=None, col=None, row_span=None, col_span=None)],
+  'value': CellSchema(meta={}, contents='〒277-8520千葉県柏市若柴 178 番地 4 柏の葉キャンパス 148 街区 2 ショップ&オフィス棟 6F', role='cell', id='r5c1', box=[365, 1686, 1499, 1789], row=None, col=None, row_span=None, col_span=None)}]
 """
