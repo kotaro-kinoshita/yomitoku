@@ -47,6 +47,7 @@ Source of the image: Created by processing content from “Reiwa 6 Edition Infor
 
 ## 📣 Release
 
+- **July 30, 2026 – YomiToku v0.14.0**: Official release of the **Table Semantic Parser** (semantic table analysis with key-value/grid extraction and the `yomitoku_table` command).
 - **November 5, 2025 – YomiToku v0.10.1**: Added support for a **GPU-free OCR model optimized for CPU inference**.
 - **April 4, 2025 – YomiToku v0.8.0**: Added support for **handwritten character recognition**.
 - **November 26, 2024 – YomiToku v0.5.1 (beta)**: Public release.
@@ -105,6 +106,29 @@ yomitoku --help
 - In efficient mode, fast inference is possible even on a CPU.
 - YomiToku is optimized for document OCR and is not designed for scene OCR (e.g., text printed on non-paper surfaces like signs).
 - The resolution of input images is critical for improving the accuracy of AI-OCR recognition. Low-resolution images may lead to reduced recognition accuracy. It is recommended to use images with a minimum short side resolution of 720px for inference.
+
+## 📊 Table Semantic Parser
+
+The Table Semantic Parser detects tables in document images and PDFs and automatically estimates their semantic structure: cell roles (header/value), **key-value pairs (label → value)**, and **grids (matrix-like records)**. The `yomitoku_table` command exports whole-document analysis results as per-page structured JSON.
+
+```bash
+yomitoku_table ${path_data} -o results -v
+```
+
+By default, the output is structured JSON with the resolved key-value/grid texts and the originating cell ids and coordinates embedded. Paragraphs are also included.
+
+| Option | Description |
+| :--- | :--- |
+| `--simple` | Output text-only structured JSON without coordinates and other metadata. |
+| `--raw` | Output the normalized `TableSemanticParserSchema` JSON (for template round-trips). |
+| `--lite` | Use lite models (for CPU). |
+| `--grid_only` / `--kv_only` | Parse only grids / key-value items. |
+
+For the other options (per-module model/config overrides, templates, page selection, etc.), see the [Table Semantic Parser CLI documentation](https://kotaro-kinoshita.github.io/yomitoku/en/cli_table_semantic_parser/). For the Python API, see the [Table Semantic Parser documentation](https://kotaro-kinoshita.github.io/yomitoku/en/table_semantic_parser/).
+
+See [gallery_table_semantic_parser.md](gallery_table_semantic_parser.md) for visualized results on various forms.
+
+Note: Only forms with ruled separator lines are supported.
 
 ## 📋 Extractor (Structured Data Extraction)
 

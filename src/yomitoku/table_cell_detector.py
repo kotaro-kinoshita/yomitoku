@@ -9,23 +9,33 @@ from PIL import Image
 
 from .constants import ROOT_DIR
 
-from .base import BaseModelCatalog, BaseModule
-from .configs import TableCellParserRTDETRv2BetaConfig
+from .base import BaseModelCatalog, BaseModule, load_config
+from .configs import (
+    TableCellParserRTDETRv2Config,
+)
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 
 from .utils.misc import filter_by_flag, is_contained, calc_iou
+from .utils.logger import set_logger
 
-from .schemas.table_semantic_parser import CellSchema, TableDetectorSchema
+from .schemas.table_semantic_parser import (
+    CellSchema,
+    RegionSchema,
+    TableDetectorSchema,
+)
 from .utils.misc import is_right_adjacent, is_bottom_adjacent
 
 import numpy as np
+
+logger = set_logger(__name__, "INFO")
 
 
 class TableParserModelCatalog(BaseModelCatalog):
     def __init__(self):
         super().__init__()
-        self.register("rtdetrv2_beta", TableCellParserRTDETRv2BetaConfig, RTDETRv2)
+        # 正式版 (入力サイズ 960 / augmentation 強化学習済み)
+        self.register("rtdetrv2", TableCellParserRTDETRv2Config, RTDETRv2)
 
 
 def filter_contained_rectangles_with_category(category_elements, ignore_categories=[]):
@@ -187,7 +197,7 @@ class CellDetector(BaseModule):
 
     def __init__(
         self,
-        model_name="rtdetrv2_beta",
+        model_name="rtdetrv2",
         path_cfg=None,
         device="cuda",
         visualize=False,
@@ -195,11 +205,27 @@ class CellDetector(BaseModule):
         infer_onnx=False,
     ):
         super().__init__()
+
+        # ローカルの学習済みチェックポイントが指定されている場合はそちらを優先する。
+        # (HF Hub 上のモデルは旧クラス構成のため、そのまま from_pretrained すると
+        #  重みの形状が一致しない)
+        default_cfg, _ = self.model_catalog.get(model_name)
+        peek_cfg = load_config(default_cfg, path_cfg)
+        weights_path = getattr(peek_cfg, "weights_path", None)
+        use_local = bool(weights_path) and os.path.exists(weights_path)
+
         self.load_model(
             model_name,
             path_cfg,
-            from_pretrained=from_pretrained,
+            from_pretrained=(from_pretrained and not use_local),
         )
+
+        if use_local:
+            self._load_local_weights(
+                weights_path,
+                getattr(self._cfg, "weights_key", "ema"),
+            )
+
         self.device = device
         self.visualize = visualize
 
@@ -264,6 +290,24 @@ class CellDetector(BaseModule):
             dynamic_axes=dynamic_axes,
         )
 
+    def _load_local_weights(self, weights_path, weights_key="ema"):
+        """rtdetrv2_pytorch の学習チェックポイントから重みを読み込む。"""
+        ckpt = torch.load(weights_path, map_location="cpu")
+
+        if weights_key == "ema" and "ema" in ckpt:
+            state = ckpt["ema"]["module"]
+        elif "model" in ckpt:
+            state = ckpt["model"]
+        else:
+            state = ckpt
+
+        missing, unexpected = self.model.load_state_dict(state, strict=False)
+        if missing:
+            logger.warning(f"Missing keys when loading local weights: {missing}")
+        if unexpected:
+            logger.warning(f"Unexpected keys when loading local weights: {unexpected}")
+        logger.info(f"Loaded local cell-detector weights from {weights_path}")
+
     def preprocess(self, img, tables):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -314,7 +358,11 @@ class CellDetector(BaseModule):
         for box, score, label in zip(boxes, scores, labels):
             category = self.label_mapper[label.item()]
             box = box.astype(int).tolist()
-            if self.is_fully_contained(box, [0, 0, w, h]):
+            # grid / kv_item はテーブル全体を覆うことがあるため、
+            # 切り抜き全体と一致する検出を除去する対象から外す
+            if category not in ("grid", "kv_item") and self.is_fully_contained(
+                box, [0, 0, w, h]
+            ):
                 continue
 
             category_elements[category].append(
@@ -325,11 +373,12 @@ class CellDetector(BaseModule):
                 }
             )
 
+        # kv_item / grid はセル領域を内包する大きな領域なので、
+        # 同一カテゴリの内包除去では無視する
         category_elements = filter_contained_rectangles_with_category(
             category_elements,
-            ignore_categories=["group"],
+            ignore_categories=["kv_item", "grid"],
         )
-        category_elements = filter_contained_groups(category_elements)
         category_elements = filter_contained_rectangles_across_categories(
             category_elements,
             source="cell",
@@ -369,15 +418,6 @@ class CellDetector(BaseModule):
                 cell["box"][2] += data["offset"][0]
                 cell["box"][3] += data["offset"][1]
 
-        # グループが検出されなかった場合、テーブル全体をグループとして扱う
-        if len(category_elements["group"]) == 0:
-            category_elements["group"] = [
-                {
-                    "box": table_box,
-                    "role": "group",
-                }
-            ]
-
         # テーブル内にセルが検出されなかった場合、テーブル全体をセルとして扱う
         if (
             len(
@@ -394,14 +434,20 @@ class CellDetector(BaseModule):
                 }
             ]
 
-        table_x, table_y = data["offset"]
-        table_x2 = table_x + data["size"][1]
-        table_y2 = table_y + data["size"][0]
-        table_box = [table_x, table_y, table_x2, table_y2]
-
         cells = self.extract_cell_elements(category_elements)
         cells = self.remove_noise_cells(cells, min_width=10, min_height=10)
-        return cells
+
+        # モデルが直接予測した kv_item / grid 領域を抽出する
+        kv_regions = [
+            RegionSchema(id=None, box=e["box"], role="kv_item", score=e["score"])
+            for e in category_elements.get("kv_item", [])
+        ]
+        grid_regions = [
+            RegionSchema(id=None, box=e["box"], role="grid", score=e["score"])
+            for e in category_elements.get("grid", [])
+        ]
+
+        return cells, kv_regions, grid_regions
 
     def remove_noise_cells(self, cells, min_width=30, min_height=30):
         filtered_cells = []
@@ -457,7 +503,7 @@ class CellDetector(BaseModule):
                     data["tensor"] = data["tensor"].to(self.device)
                     pred = self.model(data["tensor"])
 
-            cells = self.postprocess(pred, data, table.box)
+            cells, kv_regions, grid_regions = self.postprocess(pred, data, table.box)
 
             if len(cells) == 0:
                 continue
@@ -468,6 +514,8 @@ class CellDetector(BaseModule):
                     box=table.box,
                     role=table.role,
                     cells=cells,
+                    kv_regions=kv_regions,
+                    grid_regions=grid_regions,
                 )
             )
 

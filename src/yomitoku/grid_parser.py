@@ -13,10 +13,62 @@ from .utils.union_find import UnionFind
 
 BBox = Tuple[float, float, float, float]
 
+# 隣接判定しきい値のセル寸法に対する比率。
+# 固定ピクセル値は画像解像度・表の行ピッチに依存して破綻する
+# （例: 行高~20pxの表で dist_threshold=20 だと1行飛ばした先のセルまで
+# 「下隣」と誤判定され、単位セル展開で幅0のスライバーが生成される）ため、
+# クラスタ内セルの高さ・幅の下位25%点を基準にした相対値を用いる。
+# - DIST_SCALE: 距離しきい値 = 寸法の下位25%点 × この比率。
+#   1行(1列)分の寸法より十分小さいギャップのみを隣接とみなす。
+# - IGNORE_SCALE: 対角(斜め)接触の棄却しきい値の比率。
+# - DIST_FLOOR: 罫線太さ・検出ノイズを許容する下限(px)。
+GRID_DIST_SCALE = 0.5
+GRID_IGNORE_SCALE = 0.25
+GRID_DIST_FLOOR = 3.0
 
-def _get_grid_dag(nodes):
+
+def _lower_quantile(values, q=0.25):
+    """下位q分位点（簡易・補間なし）を返す。"""
+    vals = sorted(values)
+    idx = min(int(len(vals) * q), len(vals) - 1)
+    return vals[idx]
+
+
+def _calc_adjacency_thresholds(boxes):
+    """セル寸法の統計量から隣接判定しきい値を算出する。
+
+    基準スケールは「セル高・セル幅それぞれの下位25%点の min」（=最小セル寸法の
+    頑健推定）。外れ値（結合セル等の大きなセル）の影響を避けるため下位25%点を
+    採用する。
+
+    - dist: 基準スケールより十分小さいギャップのみ隣接とみなす。
+      1行(1列)分の寸法より小さくすることで行・列を飛び越えた誤隣接を防ぐ。
+    - ignore: 対角(斜め)接触の棄却しきい値。正対する隣接セルの角距離は
+      最小セル寸法程度になるため、それより十分小さくする必要がある
+      （寸法の大きい軸で計算すると正規の隣接まで棄却される）。
+    """
+    if not boxes:
+        return {
+            "dist": GRID_DIST_FLOOR,
+            "ignore": GRID_DIST_FLOOR / 2,
+        }
+
+    h_scale = _lower_quantile([b[3] - b[1] for b in boxes])
+    w_scale = _lower_quantile([b[2] - b[0] for b in boxes])
+    scale = min(h_scale, w_scale)
+
+    return {
+        "dist": max(GRID_DIST_FLOOR, GRID_DIST_SCALE * scale),
+        "ignore": max(GRID_DIST_FLOOR / 2, GRID_IGNORE_SCALE * scale),
+    }
+
+
+def _get_grid_dag(nodes, thresholds=None):
     dag = nx.DiGraph()
     cells = nodes["cell"] + nodes["empty"] + nodes["header"]
+
+    if thresholds is None:
+        thresholds = _calc_adjacency_thresholds([c.box for c in cells])
 
     for cell in cells:
         dag.add_node(
@@ -35,7 +87,8 @@ def _get_grid_dag(nodes):
                 cell1.box,
                 cell2.box,
                 rule="soft",
-                dist_threshold=20,
+                dist_threshold=thresholds["dist"],
+                ignore_dist_threshold=thresholds["ignore"],
                 overlap_ratio_th=0.25,
             ):
                 dag.add_edge(cell1.id, cell2.id, dir="D")
@@ -45,7 +98,8 @@ def _get_grid_dag(nodes):
                 cell1.box,
                 cell2.box,
                 rule="soft",
-                dist_threshold=20,
+                dist_threshold=thresholds["dist"],
+                ignore_dist_threshold=thresholds["ignore"],
                 overlap_ratio_th=0.25,
             ):
                 dag.add_edge(cell1.id, cell2.id, dir="R")
@@ -54,124 +108,113 @@ def _get_grid_dag(nodes):
     return dag
 
 
-def split_bbox_by_right_neighbors_exact(
-    G,
-    u,
-    right_nodes: List,
-    bbox_key="bbox",
-) -> List[BBox]:
-    """
-    u の bbox を、右隣セル(right_nodes)の bbox の y1/y2 を使って縦分割する。
-    - right_nodes を上→下にソート
-    - それぞれの (y1,y2) を u の範囲にクリップして採用
-    - 採用区間が重なったり隙間が出たら、上から順に「連続な区間」に補正
-    """
-    ux1, uy1, ux2, uy2 = G.nodes[u][bbox_key]
-    if not right_nodes:
-        return [(ux1, uy1, ux2, uy2)]
+# out 隣接セル同士の分割軸区間 IoU がこの値以上なら「同一スロットの重複検出」
+# とみなしてグループ化する。片方がもう片方を包含するだけの正規のスパン関係
+# （例: 帯ヘッダとその下の列ヘッダで IoU〜0.3）はグループ化せず、
+# ほぼ同一区間（IoU〜1.0）の二重検出のみを対象にするための閾値。
+OUT_GROUP_IOU_TH = 0.7
 
-    # 右隣の bbox を上→下に
-    rights = sorted(
-        right_nodes,
-        key=lambda n: (G.nodes[n][bbox_key][1] + G.nodes[n][bbox_key][3]) / 2.0,
-    )
 
-    # 右隣の y区間を u 範囲にクリップして取得
+def _group_outs_by_axis_interval(G, outs, axis, iou_th=OUT_GROUP_IOU_TH):
+    """out 隣接セルを分割軸の区間 IoU でグループ化し、区間中心順に返す。
+
+    セル検出モデルがほぼ同じ領域に重複してセルを出すことがあり、その2つを
+    別スロットとして 1:1 分割すると長さ0のスライバー複製ノードが生じ、
+    エッジが不正な位置に潰れる。区間がほぼ一致する out は同一スロットに
+    まとめ、1つの複製ノードへ N:1 で接続する。
+
+    axis: 0 で x 区間（列分割）、1 で y 区間（行分割）。
+    return: (groups, intervals)
+      groups: ノードidのリストのリスト（区間中心の昇順）
+      intervals: 各グループのメンバー区間の和集合 (a, b)
+    """
+    ivs = [
+        (G.nodes[n]["bbox"][axis], G.nodes[n]["bbox"][axis + 2]) for n in outs
+    ]
+
+    parent = list(range(len(outs)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for i in range(len(outs)):
+        for j in range(i + 1, len(outs)):
+            a1, a2 = ivs[i]
+            b1, b2 = ivs[j]
+            inter = max(0.0, min(a2, b2) - max(a1, b1))
+            union = max(a2, b2) - min(a1, b1)
+            if union > 0 and inter / union >= iou_th:
+                parent[find(i)] = find(j)
+
+    members = {}
+    for i in range(len(outs)):
+        members.setdefault(find(i), []).append(i)
+
+    groups = []
     intervals = []
-    for n in rights:
-        _, ry1, _, ry2 = G.nodes[n][bbox_key]
-        a = max(uy1, ry1)
-        b = min(uy2, ry2)
-        intervals.append((a, b))
+    for idxs in members.values():
+        groups.append([outs[i] for i in idxs])
+        intervals.append(
+            (min(ivs[i][0] for i in idxs), max(ivs[i][1] for i in idxs))
+        )
 
-    # 連続区間に補正（ズレ対策）
-    # 1) 無効区間（a>=b）は捨てずに後で埋めるためプレースホルダとして残す
-    fixed = []
-    cur = uy1
-    for a, b in intervals:
-        a = max(a, cur)  # 前の終端より上は切り上げ
+    order = sorted(
+        range(len(groups)), key=lambda k: (intervals[k][0] + intervals[k][1]) / 2.0
+    )
+    return [groups[k] for k in order], [intervals[k] for k in order]
+
+
+def _assign_slots_by_intervals(lo, hi, groups, intervals, min_len=None):
+    """[lo, hi] を、中心順に並んだグループ区間に沿って連続なスロット列に
+    割り当てる。
+
+    - 各 interval を [lo, hi] にクリップし、先頭から順に「連続な区間」に補正
+    - クリップ・補正後に取り分が min_len 以下しか残らないグループ
+      （先行グループの区間に包含・消費されたもの。例: 融合誤検出セルが
+      実セルを包含しているケースや、隣の値セルが列をまたいで検出された
+      ケース）は、独立スロットにせず直前のスロットへ併合する。
+      以前はここで長さ0〜数pxのスライバー区間が生成され、実体と無関係な
+      位置から斜めエッジが張られたり、幻の行・列が生じていた。
+
+    return: (segs, merged_groups)  両者は同じ長さ・同じ順序
+    """
+    if min_len is None:
+        min_len = GRID_DIST_FLOOR
+
+    segs = []
+    merged_groups = []
+    pending = []  # 先頭でスロットを確保できなかったグループの退避先
+    cur = lo
+    for group, (a, b) in zip(groups, intervals):
+        a = max(lo, min(a, hi))
+        b = max(lo, min(b, hi))
+        a = max(a, cur)  # 前の終端より手前は切り上げ
         b = max(b, a)  # b>=a に
-        fixed.append([a, b])
+
+        if b - a <= min_len:
+            # 取り分なし → 直前スロットへ併合（無ければ次のスロットへ）
+            if merged_groups:
+                merged_groups[-1].extend(group)
+            else:
+                pending.extend(group)
+            continue
+
+        merged_groups.append(pending + list(group))
+        pending = []
+        segs.append([a, b])
         cur = b
 
-    # 2) 末尾が uy2 に届かないなら、最後を伸ばす
-    if fixed:
-        fixed[-1][1] = uy2
+    if pending and merged_groups:
+        merged_groups[-1].extend(pending)
 
-    # 3) 途中で長さ0があるなら、隣の区間から分配（簡易）
-    #    （本当に0が出るのは right bbox が u とほぼ重ならない時＝入力が壊れてる時）
-    for i in range(len(fixed)):
-        a, b = fixed[i]
-        if b - a <= 1e-3:
-            # 可能なら次区間の先頭を少し削って埋める
-            if i + 1 < len(fixed) and fixed[i + 1][1] - fixed[i + 1][0] > 2e-3:
-                take = (fixed[i + 1][1] - fixed[i + 1][0]) * 0.1
-                fixed[i][1] = fixed[i][0] + take
-                fixed[i + 1][0] = fixed[i][1]
-            # それも無理なら等分で埋める（最終手段）
-            else:
-                pass
+    # 末尾が hi に届かないなら、最後を伸ばす
+    if segs:
+        segs[-1][1] = hi
 
-    # bboxへ
-    return [(ux1, a, ux2, b) for a, b in fixed]
-
-
-def split_bbox_by_down_neighbors_exact_x(
-    G,
-    u,
-    down_nodes: List,
-    bbox_key="bbox",
-) -> List[BBox]:
-    """
-    u の bbox を、下隣セル(down_nodes)の bbox の x1/x2 を使って横分割する（x方向）。
-    - down_nodes を左→右にソート（x中心）
-    - それぞれの (x1,x2) を u の範囲にクリップして採用
-    - 採用区間が重なったり隙間が出たら、左から順に「連続な区間」に補正
-    """
-    ux1, uy1, ux2, uy2 = G.nodes[u][bbox_key]
-    if not down_nodes:
-        return [(ux1, uy1, ux2, uy2)]
-
-    # 下隣の bbox を左→右に
-    downs = sorted(
-        down_nodes,
-        key=lambda n: (G.nodes[n][bbox_key][0] + G.nodes[n][bbox_key][2]) / 2.0,
-    )
-
-    # 下隣の x区間を u 範囲にクリップして取得
-    intervals = []
-    for n in downs:
-        dx1, _, dx2, _ = G.nodes[n][bbox_key]
-        a = max(ux1, dx1)
-        b = min(ux2, dx2)
-        intervals.append((a, b))
-
-    # 連続区間に補正（ズレ対策）
-    fixed = []
-    cur = ux1
-    for a, b in intervals:
-        a = max(a, cur)  # 前の終端より左は切り上げ
-        b = max(b, a)  # b>=a に
-        fixed.append([a, b])
-        cur = b
-
-    # 末尾が ux2 に届かないなら、最後を伸ばす
-    if fixed:
-        fixed[-1][1] = ux2
-
-    # 途中で長さ0があるなら、隣の区間から分配（簡易）
-    for i in range(len(fixed)):
-        a, b = fixed[i]
-        if b - a <= 1e-3:
-            if i + 1 < len(fixed) and fixed[i + 1][1] - fixed[i + 1][0] > 2e-3:
-                take = (fixed[i + 1][1] - fixed[i + 1][0]) * 0.1
-                fixed[i][1] = fixed[i][0] + take
-                fixed[i + 1][0] = fixed[i][1]
-            else:
-                pass
-
-    # bboxへ（xだけ分割、yはそのまま）
-    return [(a, uy1, b, uy2) for a, b in fixed]
+    return segs, merged_groups
 
 
 def normalize_row_with_out_edges(
@@ -180,6 +223,7 @@ def normalize_row_with_out_edges(
     dir_key: str = "dir",
     out_edge_type: str = "R",
     in_edge_type: str = "L",
+    thresholds=None,
 ) -> nx.DiGraph:
     """
     head から辿れるノードを対象に、横方向(out_edge_type/in_edge_type)で
@@ -188,6 +232,11 @@ def normalize_row_with_out_edges(
     - out_edge_type="R" のとき: 右方向に分割（従来）
     - out_edge_type="L" のとき: 左方向に分割（左右反転対応）
     """
+    if thresholds is None:
+        thresholds = _calc_adjacency_thresholds(
+            [dag.nodes[n]["bbox"] for n in dag.nodes]
+        )
+
     G = dag.copy()
     queue = deque([head])
     dup_counter = count(1)
@@ -210,8 +259,8 @@ def normalize_row_with_out_edges(
                     G.nodes[bwd]["bbox"],
                     G.nodes[dup]["bbox"],
                     rule="soft",
-                    dist_threshold=20,
-                    ignore_dist_threshold=10,
+                    dist_threshold=thresholds["dist"],
+                    ignore_dist_threshold=thresholds["ignore"],
                     overlap_ratio_th=0.25,
                 )
 
@@ -225,8 +274,8 @@ def normalize_row_with_out_edges(
                     G.nodes[dup]["bbox"],
                     G.nodes[bwd]["bbox"],
                     rule="soft",
-                    dist_threshold=20,
-                    ignore_dist_threshold=10,
+                    dist_threshold=thresholds["dist"],
+                    ignore_dist_threshold=thresholds["ignore"],
                     overlap_ratio_th=0.25,
                 )
 
@@ -240,16 +289,27 @@ def normalize_row_with_out_edges(
         up_cells = [p for p in G.predecessors(u) if G[p][u].get(dir_key) == "D"]  # 上→u
         down_cells = [v for v in G.successors(u) if G[u][v].get(dir_key) == "D"]  # u→下
 
+        # ほぼ同一の y区間を持つ out（重複検出セル）は同一スロットにまとめ、
+        # 取り分が空になるグループ（包含された重複検出）は直前スロットへ併合
+        out_groups = []
+        seg_spans = []
         if len(outs_fwd) > 1:
-            seg_bboxes = split_bbox_by_right_neighbors_exact(
-                G,
-                u,
-                outs_fwd,
-                bbox_key="bbox",
+            groups, group_intervals = _group_outs_by_axis_interval(
+                G, outs_fwd, axis=1
+            )
+            _, uy1, _, uy2 = G.nodes[u]["bbox"]
+            # 最小セル寸法よりはるかに細いスロットは実在の行ではない
+            seg_spans, out_groups = _assign_slots_by_intervals(
+                uy1, uy2, groups, group_intervals, min_len=thresholds["ignore"]
             )
 
-            seg_bboxes = sorted(seg_bboxes, key=lambda box: box[1])
-            outs_fwd = sorted(outs_fwd, key=lambda n: G.nodes[n]["bbox"][1])
+        if len(out_groups) > 1:
+            # スロットの y区間（中心順・上→下に単調補正）で u を縦分割する。
+            # 分割区間とグループは同じ順序で構築されるため、zip のペアリングが
+            # ねじれない（y1 順で並べ直すと、y1 が同値だったり区間が重複し合う
+            # 隣接セルで対応がねじれ、斜めエッジが生じる）。
+            ux1, uy1, ux2, uy2 = G.nodes[u]["bbox"]
+            seg_bboxes = [(ux1, a, ux2, b) for a, b in seg_spans]
 
             base_attr = dict(G.nodes[u])
             dups = []
@@ -262,10 +322,12 @@ def normalize_row_with_out_edges(
                 G.add_node(nu, **attr)
                 dups.append(nu)
 
-            # 前方(out) と複製ノードを 1:1 で接続
-            for out, dup in zip(outs_fwd, dups):
-                G.add_edge(dup, out, dir=out_edge_type)
-                G.add_edge(out, dup, dir=in_edge_type)
+            # 前方(out) グループと複製ノードを 1:1 で接続
+            # （グループ内の重複セルはすべて同じ複製ノードへ接続する）
+            for group, dup in zip(out_groups, dups):
+                for out in group:
+                    G.add_edge(dup, out, dir=out_edge_type)
+                    G.add_edge(out, dup, dir=in_edge_type)
 
             # 先頭ノードは上方セルと接続（U/D）
             for p in up_cells:
@@ -311,10 +373,16 @@ def normalize_col_with_out_edges(
     dir_key: str = "dir",
     out_edge_type: str = "D",
     in_edge_type: str = "U",
+    thresholds=None,
 ) -> nx.DiGraph:
     """
     head から辿れるノードを対象に、右隣セルが複数あるノードを分割して 1:1 化する。
     """
+    if thresholds is None:
+        thresholds = _calc_adjacency_thresholds(
+            [dag.nodes[n]["bbox"] for n in dag.nodes]
+        )
+
     G = dag.copy()
     queue = deque([head])
     dup_counter = count(1)
@@ -333,8 +401,8 @@ def normalize_col_with_out_edges(
                     G.nodes[bwd]["bbox"],
                     G.nodes[dup]["bbox"],
                     rule="soft",
-                    dist_threshold=20,
-                    ignore_dist_threshold=10,
+                    dist_threshold=thresholds["dist"],
+                    ignore_dist_threshold=thresholds["ignore"],
                     overlap_ratio_th=0.25,
                 )
         elif out_edge_type == "U":
@@ -345,8 +413,8 @@ def normalize_col_with_out_edges(
                     G.nodes[dup]["bbox"],
                     G.nodes[bwd]["bbox"],
                     rule="soft",
-                    dist_threshold=20,
-                    ignore_dist_threshold=10,
+                    dist_threshold=thresholds["dist"],
+                    ignore_dist_threshold=thresholds["ignore"],
                     overlap_ratio_th=0.25,
                 )
         else:
@@ -357,32 +425,45 @@ def normalize_col_with_out_edges(
 
         left_cells = [p for p in G.predecessors(u) if G[p][u].get(dir_key) == "R"]
         right_cells = [v for v in G.successors(u) if G[u][v].get(dir_key) == "R"]
+        # ほぼ同一の x区間を持つ out（重複検出セル）は同一スロットにまとめ、
+        # 取り分が空になるグループ（包含された重複検出）は直前スロットへ併合
+        out_groups = []
+        seg_spans = []
         if len(outs_fwd) > 1:
-            seg_bboxes = split_bbox_by_down_neighbors_exact_x(
-                G,
-                u,
-                outs_fwd,
-                bbox_key="bbox",
+            groups, group_intervals = _group_outs_by_axis_interval(
+                G, outs_fwd, axis=0
+            )
+            ux1, _, ux2, _ = G.nodes[u]["bbox"]
+            # 最小セル寸法よりはるかに細いスロットは実在の列ではない
+            seg_spans, out_groups = _assign_slots_by_intervals(
+                ux1, ux2, groups, group_intervals, min_len=thresholds["ignore"]
             )
 
-            seg_bboxes = sorted(seg_bboxes, key=lambda box: box[0])
-            outs_fwd = sorted(outs_fwd, key=lambda n: G.nodes[n]["bbox"][0])
+        if len(out_groups) > 1:
+            # スロットの x区間（中心順・左→右に単調補正）で u を横分割する。
+            # 分割区間とグループは同じ順序で構築されるため、zip のペアリングが
+            # ねじれない（x1 順で並べ直すと、x1 が同値だったり区間が重複し合う
+            # 隣接セルで対応がねじれ、斜めエッジが生じる）。
+            ux1, uy1, ux2, uy2 = G.nodes[u]["bbox"]
+            seg_bboxes = [(a, uy1, b, uy2) for a, b in seg_spans]
 
             base_attr = dict(G.nodes[u])
             dups = []
 
             # 各分割 bbox ごとに新ノードを作成
-            for i, bb in enumerate(seg_bboxes):
+            for bb in seg_bboxes:
                 nu = f"{u}__dup{next(dup_counter)}"
                 attr = dict(base_attr)
                 attr["bbox"] = bb
                 G.add_node(nu, **attr)
                 dups.append(nu)
 
-            # 隣接ノードと複製ノードを接続
-            for i, (out, dup) in enumerate(zip(outs_fwd, dups)):
-                G.add_edge(dup, out, dir=out_edge_type)
-                G.add_edge(out, dup, dir=in_edge_type)
+            # 前方(out) グループと複製ノードを 1:1 で接続
+            # （グループ内の重複セルはすべて同じ複製ノードへ接続する）
+            for group, dup in zip(out_groups, dups):
+                for out in group:
+                    G.add_edge(dup, out, dir=out_edge_type)
+                    G.add_edge(out, dup, dir=in_edge_type)
 
             # 先頭ノードは左セルと接続
             for p in left_cells:
@@ -424,6 +505,7 @@ def normalize_col_with_out_edges(
 def expand_dir_to_uit_row(
     dag: nx.DiGraph,
     dir_key: str = "dir",
+    thresholds=None,
 ) -> nx.DiGraph:
     """
     target_dir（クラスタ抽出に使う方向）で線クラスタの head を取り、
@@ -439,6 +521,7 @@ def expand_dir_to_uit_row(
             dir_key=dir_key,
             in_edge_type="L",
             out_edge_type="R",
+            thresholds=thresholds,
         )
 
     line_heads, line_clusters = _cluster_heads_by_in_degree(G, dir_value="L")
@@ -449,6 +532,7 @@ def expand_dir_to_uit_row(
             dir_key=dir_key,
             in_edge_type="R",
             out_edge_type="L",
+            thresholds=thresholds,
         )
 
     return G
@@ -493,6 +577,7 @@ def _cluster_heads_by_in_degree(dag: nx.DiGraph, dir_value: str):
 def expand_dir_to_uit_col(
     dag: nx.DiGraph,
     dir_key: str = "dir",
+    thresholds=None,
 ) -> nx.DiGraph:
     """
     target_dir（クラスタ抽出に使う方向）で線クラスタの head を取り、
@@ -508,6 +593,7 @@ def expand_dir_to_uit_col(
             dir_key=dir_key,
             in_edge_type="U",
             out_edge_type="D",
+            thresholds=thresholds,
         )
 
     line_heads, line_clusters = _cluster_heads_by_in_degree(G, dir_value="U")
@@ -518,6 +604,7 @@ def expand_dir_to_uit_col(
             dir_key=dir_key,
             in_edge_type="D",
             out_edge_type="U",
+            thresholds=thresholds,
         )
 
     return G
@@ -559,11 +646,11 @@ def _calc_spans_and_indices_from_raw_grid(raw_data):
     return info
 
 
-def _expand_grid_to_unit(dag: nx.DiGraph) -> nx.DiGraph:
+def _expand_grid_to_unit(dag: nx.DiGraph, thresholds=None) -> nx.DiGraph:
     """dagをユニットセル化（行・列方向に分割して1:1化）する。"""
 
-    dag = expand_dir_to_uit_row(dag)
-    dag = expand_dir_to_uit_col(dag)
+    dag = expand_dir_to_uit_row(dag, thresholds=thresholds)
+    dag = expand_dir_to_uit_col(dag, thresholds=thresholds)
     return dag
 
 
@@ -785,8 +872,15 @@ def _merge_same_column_values(grid, col_headers, cells):
 
 
 def parse_grid_from_bottom_up(cells, clustered_nodes, merge_same_column_values=False):
-    dag = _get_grid_dag(clustered_nodes)
-    dag = _expand_grid_to_unit(dag)
+    # クラスタ内セルの寸法統計から隣接判定しきい値を算出し、
+    # DAG構築とユニットセル展開で同一のしきい値を用いる
+    grid_nodes = (
+        clustered_nodes["cell"] + clustered_nodes["empty"] + clustered_nodes["header"]
+    )
+    thresholds = _calc_adjacency_thresholds([c.box for c in grid_nodes])
+
+    dag = _get_grid_dag(clustered_nodes, thresholds=thresholds)
+    dag = _expand_grid_to_unit(dag, thresholds=thresholds)
 
     grid = _get_grid_from_dag(dag)
 

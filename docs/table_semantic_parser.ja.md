@@ -28,6 +28,18 @@
 [demo/simple_table_semantic_analysis.py](../demo/simple_table_semantic_analysis.py)
 <!--/codeinclude-->
 
+## CLI での利用（yomitoku_table）
+
+`yomitoku_table` コマンドで、ドキュメント全体を構造化した JSON をページ単位で出力できます。
+
+```bash
+yomitoku_table ${path_data} -o results -v
+```
+
+デフォルトではセルIDをテキストと座標に解決した構造化JSONを出力します。`--simple`（テキストのみ）、`--raw`（正規化スキーマ）、`--lite`（軽量モード）、モデル・Configの個別指定などのオプションの詳細は [CLI Usage (Table Semantic Parser)](cli_table_semantic_parser.ja.md) を参照してください。
+
+Python API からは `results.to_structured()` / `results.to_simple()` で同じ構造化ビューを取得できます。
+
 
 ## Table Semantic Parser の解析結果の出力
 詳細は![スキーマ](schemas.ja.md)を参照してください。

@@ -57,14 +57,22 @@ dev-dependencies = [
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
+    # Blackwell (sm_120) 以降の GPU 対応のため Linux は cu128 ビルドを使う
+    { index = "pytorch-cu128", marker = "platform_system == 'Linux'"},
 ]
 torchvision = [
     { index = "pytorch-cpu", marker = "platform_system == 'Darwin'"},
+    { index = "pytorch-cu128", marker = "platform_system == 'Linux'"},
 ]
 
 [[tool.uv.index]]
 name = "pytorch-cuda124"
 url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
 explicit = true
 
 [[tool.uv.index]]
@@ -78,6 +86,7 @@ yomitoku_mcp = "yomitoku.cli.mcp_server:main"
 download_model = "yomitoku.cli.download_model:main"
 yomitoku_extract = "yomitoku.cli.extract_rule:main"
 yomitoku_extract_with_llm = "yomitoku.cli.extract:main"
+yomitoku_table = "yomitoku.cli.table:main"
 
 [project.optional-dependencies]
 mcp = [
@@ -100,8 +109,8 @@ commands =
 
 [testenv:lint]
 basepython = python3.12
-deps = ruff
-commands = 
+deps = ruff==0.14.3
+commands =
     ruff check
 
 [testenv:docs]

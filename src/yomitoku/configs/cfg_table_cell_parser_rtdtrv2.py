@@ -4,7 +4,7 @@ from typing import List
 
 @dataclass
 class Data:
-    img_size: List[int] = field(default_factory=lambda: [640, 640])
+    img_size: List[int] = field(default_factory=lambda: [960, 960])
 
 
 @dataclass
@@ -39,19 +39,23 @@ class Encoder:
 
 @dataclass
 class Decoder:
-    num_classes: int = 8
+    # 6 classes: table, cell, header, empty, kv_item, grid
+    num_classes: int = 6
     feat_channels: List[int] = field(default_factory=lambda: [256, 256, 256])
     feat_strides: List[int] = field(default_factory=lambda: [8, 16, 32])
     hidden_dim: int = 256
     num_levels: int = 3
 
     num_layers: int = 6
-    num_queries: int = 2500
+    # 学習時は 900。learn_query_content=False のため、推論時に増やしても重みの
+    # shape は不変 (encoder proposal の top-k 選択数が増えるだけ)。密なテーブル
+    # (最大 ~1000 セル) で検出上限に達しないよう余裕を持たせる。
+    num_queries: int = 1500
 
-    num_denoising: int = 1000
+    num_denoising: int = 100
     label_noise_ratio: float = 0.5
     box_noise_scale: float = 1.0
-    eval_spatial_size: List[int] = field(default_factory=lambda: [640, 640])
+    eval_spatial_size: List[int] = field(default_factory=lambda: [960, 960])
 
     eval_idx: int = -1
 
@@ -61,23 +65,28 @@ class Decoder:
 
 
 @dataclass
-class TableCellParserRTDETRv2BetaConfig:
-    hf_hub_repo: str = "KotaroKinoshita/yomitoku-cell-detector-rtdtrv2-beta"
+class TableCellParserRTDETRv2Config:
+    """正式版のセル検出器 (rtdetrv2)。
+
+    入力サイズ 960 で augmentation を強化して学習したモデル。重みは HF Hub の
+    safetensors から読み込む (学習チェックポイントの .pth は配布しない)。
+    """
+
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-cell-detector-rtdtrv2-v1"
     thresh_score: float = 0.5
     data: Data = field(default_factory=Data)
     PResNet: BackBone = field(default_factory=BackBone)
     HybridEncoder: Encoder = field(default_factory=Encoder)
     RTDETRTransformerv2: Decoder = field(default_factory=Decoder)
 
+    # 0-indexed 6クラス (rtdetrv2_pytorch/dataset/table_crops と一致)
     category: List[str] = field(
         default_factory=lambda: [
             "table",
             "cell",
-            "form",
             "header",
-            "check",
-            "select",
-            "group",
             "empty",
+            "kv_item",
+            "grid",
         ]
     )

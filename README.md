@@ -47,6 +47,7 @@ Markdown でエクスポートした結果は関してはリポジトリ内の[s
 
 ## 📣 リリース情報
 
+- 2026 年  7 月 30 日 YomiToku v0.14.0 Table Semantic Parser（表の意味構造解析: Key-Value・グリッド抽出と `yomitoku_table` コマンド）を正式リリース
 - 2026 年  7 月 15 日 軽量モデル（`--lite`）が手書き文字の読み取りに対応し、1 行あたりの最大文字列長を 100 文字に拡張
 - 2025 年 11 月  5 日 YomiToku v0.10.1 CPU推論向けに最適化したGPU Free OCRモデルのサポート
 - 2025 年  4 月  4 日 YomiToku v0.8.0 手書き文字認識のサポート
@@ -163,6 +164,29 @@ yomitoku --help
 - 軽量モデルでは CPU でも高速に推論できます。
 - YomiToku は文書 OCR 向けに最適化されており、情景 OCR(看板など紙以外にプリントされた文字の読み取り)向けには最適化されていません。
 - AI-OCR の識別精度を高めるために、入力画像の解像度が重要です。低解像度画像では識別精度が低下します。最低でも画像の短辺を 720px 以上の画像で推論することをお勧めします。
+
+## 📊 Table Semantic Parser（表の意味構造解析）
+
+Table Semantic Parserは、帳票画像やPDFから表を検出し、セルの役割（ヘッダー／値）や **Key-Value（項目名→値）**・**グリッド（行列データ）** といった意味構造を自動で推定する機能です。`yomitoku_table` コマンドで、ドキュメント全体の解析結果をページ単位の構造化JSONとして出力できます。
+
+```bash
+yomitoku_table ${path_data} -o results -v
+```
+
+デフォルトの出力は、Key-Value・グリッドのテキストに由来セルのIDと座標を埋め込んだ構造化JSONです。段落（`paragraphs`）も含まれます。
+
+| オプション | 説明 |
+| :--- | :--- |
+| `--simple` | 座標などのメタ情報を持たない、テキストのみの構造化JSONを出力します。 |
+| `--raw` | 正規化スキーマ（`TableSemanticParserSchema`）のまま出力します（テンプレート往復用）。 |
+| `--lite` | 軽量モデルで実行します（CPU向け）。 |
+| `--grid_only` / `--kv_only` | グリッドのみ / Key-Valueのみを解析します。 |
+
+その他のオプション（モデル・Configの個別指定、テンプレート適用、ページ指定など）は[Table Semantic Parser CLIのドキュメント](https://kotaro-kinoshita.github.io/yomitoku/cli_table_semantic_parser/)を参照してください。Python APIの詳細は[Table Semantic Parserのドキュメント](https://kotaro-kinoshita.github.io/yomitoku/table_semantic_parser/)を参照してください。
+
+[gallery_table_semantic_parser.md](gallery_table_semantic_parser.md)に複数種類の帳票に対する解析結果の可視化を掲載しています。
+
+※ 区切り罫線が存在する帳票のみをサポートしています。
 
 ## 📋 Extractor（構造化データ抽出）
 

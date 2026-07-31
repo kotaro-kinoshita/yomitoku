@@ -156,6 +156,13 @@ def main():
         help="Output visualization images",
     )
     parser.add_argument(
+        "--cell-detector-model",
+        type=str,
+        default="rtdetrv2",
+        choices=["rtdetrv2"],
+        help="Cell detector model variant (rtdetrv2: 正式版 img_size 960)",
+    )
+    parser.add_argument(
         "--table-id",
         type=str,
         default=None,
@@ -231,6 +238,8 @@ def main():
         }
         if args.device == "cpu":
             configs.setdefault("text_detector", {})["infer_onnx"] = True
+
+    configs["table_cell_parser"] = {"model_name": args.cell_detector_model}
 
     tsp = TableSemanticParser(
         configs=configs,

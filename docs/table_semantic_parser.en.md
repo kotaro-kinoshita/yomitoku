@@ -34,6 +34,21 @@ In the following sections, we explain the functionality with source code and exa
 
 ---
 
+## CLI Usage (yomitoku_table)
+
+The `yomitoku_table` command exports whole-document structured JSON per page.
+
+```bash
+yomitoku_table ${path_data} -o results -v
+```
+
+By default, cell ids are resolved into text with coordinates embedded. See [CLI Usage (Table Semantic Parser)](cli_table_semantic_parser.en.md) for the full option reference, including `--simple` (text only), `--raw` (normalized schema), `--lite`, and per-module model/config overrides.
+
+The same views are available from the Python API via `results.to_structured()` / `results.to_simple()`.
+
+---
+
+
 ## Output of the Table Semantic Parser
 
 See the [schema](schemas.en.md) for details.

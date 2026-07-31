@@ -8,14 +8,17 @@ from PIL import Image
 
 from .constants import ROOT_DIR
 
-from .base import BaseModelCatalog, BaseModule
+from .base import BaseModelCatalog, BaseModule, load_config
 from .configs import LayoutParserRTDETRv2Config, LayoutParserRTDETRv2V2Config
 from .models import RTDETRv2
 from .postprocessor import RTDETRPostProcessor
 from .utils.misc import filter_by_flag, is_contained
 from .utils.visualizer import layout_visualizer
+from .utils.logger import set_logger
 
 from .schemas import LayoutParserSchema
+
+logger = set_logger(__name__, "INFO")
 
 
 class LayoutParserModelCatalog(BaseModelCatalog):
@@ -87,7 +90,27 @@ class LayoutParser(BaseModule):
         infer_onnx=False,
     ):
         super().__init__()
-        self.load_model(model_name, path_cfg, from_pretrained)
+
+        # ローカルの学習済みチェックポイントが指定されている場合はそちらを優先する。
+        # (HF Hub 上のモデルは旧クラス構成のため、そのまま from_pretrained すると
+        #  重みの形状が一致しない)
+        default_cfg, _ = self.model_catalog.get(model_name)
+        peek_cfg = load_config(default_cfg, path_cfg)
+        weights_path = getattr(peek_cfg, "weights_path", None)
+        use_local = bool(weights_path) and os.path.exists(weights_path)
+
+        self.load_model(
+            model_name,
+            path_cfg,
+            from_pretrained=(from_pretrained and not use_local),
+        )
+
+        if use_local:
+            self._load_local_weights(
+                weights_path,
+                getattr(self._cfg, "weights_key", "ema"),
+            )
+
         self.device = device
         self.visualize = visualize
 
@@ -150,6 +173,24 @@ class LayoutParser(BaseModule):
             output_names=["pred_logits", "pred_boxes"],
             dynamic_axes=dynamic_axes,
         )
+
+    def _load_local_weights(self, weights_path, weights_key="ema"):
+        """rtdetrv2_pytorch の学習チェックポイントから重みを読み込む。"""
+        ckpt = torch.load(weights_path, map_location="cpu")
+
+        if weights_key == "ema" and "ema" in ckpt:
+            state = ckpt["ema"]["module"]
+        elif "model" in ckpt:
+            state = ckpt["model"]
+        else:
+            state = ckpt
+
+        missing, unexpected = self.model.load_state_dict(state, strict=False)
+        if missing:
+            logger.warning(f"Missing keys when loading local weights: {missing}")
+        if unexpected:
+            logger.warning(f"Unexpected keys when loading local weights: {unexpected}")
+        logger.info(f"Loaded local layout-parser weights from {weights_path}")
 
     def preprocess(self, img):
         cv_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)

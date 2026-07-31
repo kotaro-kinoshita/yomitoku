@@ -73,6 +73,7 @@ nav:
   - Installation: installation.md
   - CLI Usage:
     - Document Analyzer: cli.md
+    - Table Semantic Parser: cli_table_semantic_parser.md
     - Extractor: extractor.md
     - Schema Generation Prompt: schema_generation_prompt.md
   - Module Usage: module.md
