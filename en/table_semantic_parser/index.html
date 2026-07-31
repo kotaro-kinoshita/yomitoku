@@ -1208,10 +1208,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tablekv_items_to_json" class="md-nav__link">
+  <a href="#tableexportkv_items_to_json" class="md-nav__link">
     <span class="md-ellipsis">
       
-        table.kv_items_to_json
+        table.export.kv_items_to_json
       
     </span>
   </a>
@@ -1219,10 +1219,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tablegrids_to_json" class="md-nav__link">
+  <a href="#tableexportgrids_to_json" class="md-nav__link">
     <span class="md-ellipsis">
       
-        table.grids_to_json
+        table.export.grids_to_json
       
     </span>
   </a>
@@ -1230,10 +1230,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tablegrids_to_csv" class="md-nav__link">
+  <a href="#tableexportgrids_to_csv" class="md-nav__link">
     <span class="md-ellipsis">
       
-        table.grids_to_csv
+        table.export.grids_to_csv
       
     </span>
   </a>
@@ -1828,10 +1828,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tablekv_items_to_json" class="md-nav__link">
+  <a href="#tableexportkv_items_to_json" class="md-nav__link">
     <span class="md-ellipsis">
       
-        table.kv_items_to_json
+        table.export.kv_items_to_json
       
     </span>
   </a>
@@ -1839,10 +1839,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tablegrids_to_json" class="md-nav__link">
+  <a href="#tableexportgrids_to_json" class="md-nav__link">
     <span class="md-ellipsis">
       
-        table.grids_to_json
+        table.export.grids_to_json
       
     </span>
   </a>
@@ -1850,10 +1850,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tablegrids_to_csv" class="md-nav__link">
+  <a href="#tableexportgrids_to_csv" class="md-nav__link">
     <span class="md-ellipsis">
       
-        table.grids_to_csv
+        table.export.grids_to_csv
       
     </span>
   </a>
@@ -1980,73 +1980,83 @@
 </span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>
 </span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a><span class="c1"># テーブルのすべてのスキーマを表示</span>
 </span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>
-</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">kv_items_to_dict</span><span class="p">(</span><span class="n">merge_values</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">kv_items_to_dict</span><span class="p">())</span>
 </span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>
 </span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>
-</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a><span class="sd">&gt;&gt;{&#39;利用目的&#39;: &#39;セミナー&#39;, &#39;実施内容&#39;: &#39;YomiTokuの利用方法に関する説明会&#39;, &#39;施設名称&#39;: &#39;MLism株式会社&#39;}</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a><span class="sd">&gt;&gt;{&#39;利用情報&#39;: {&#39;利用目的&#39;: &#39;セミナー&#39;,</span>
 </span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>
-</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a><span class="sd">&gt;&gt;          &#39;実施内容&#39;: &#39;YomiTokuの利用方法に関する説明会&#39;,</span>
 </span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>
-</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>
+</span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a><span class="sd">&gt;&gt;          &#39;施設名称&#39;: &#39;MLism株式会社&#39;}}</span>
 </span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>
-</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">grids_to_dict</span><span class="p">())</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>
-</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>
 </span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>
-</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a><span class="sd">&gt;&gt;[{&#39;id&#39;: &#39;g0&#39;,</span>
+</span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">grids_to_dict</span><span class="p">())</span>
 </span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>
-</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a><span class="sd">&gt;&gt;  &#39;rows&#39;: [{&#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;日付&#39;: &#39;2025年01月30日(月曜日)&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;},</span>
+</span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>
-</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;日付&#39;: &#39;2025年02月1日(火曜日)&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;},</span>
+</span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a><span class="sd">&gt;&gt;[{&#39;id&#39;: &#39;g0&#39;,</span>
 </span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>
-</span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},</span>
+</span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a><span class="sd">&gt;&gt;  &#39;rows&#39;: [{&#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;日付&#39;: &#39;2025年01月30日(月曜日)&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;},</span>
 </span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>
-</span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},</span>
+</span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;10時00分&#39;, &#39;日付&#39;: &#39;2025年02月1日(火曜日)&#39;, &#39;退室時刻&#39;: &#39;17時00分&#39;},</span>
 </span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>
-</span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;}]</span>
+</span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},</span>
 </span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>
-</span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a><span class="sd">&gt;&gt;}]</span>
+</span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;},</span>
 </span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>
-</span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a><span class="sd">&gt;&gt;           {&#39;入室時刻&#39;: &#39;時分&#39;, &#39;日付&#39;: &#39;年月日(曜日)&#39;, &#39;退室時刻&#39;: &#39;時分&#39;}]</span>
 </span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>
-</span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>
+</span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a><span class="sd">&gt;&gt;}]</span>
 </span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>
-</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>
+</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="__span-0-100"><a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>
-</span><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a><span class="c1"># 解析結果から団体名を検索して表示</span>
+</span><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>
 </span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>
-</span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="n">table_id</span><span class="o">=</span><span class="s2">&quot;t1&quot;</span><span class="p">)</span>
+</span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>
 </span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>
-</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;団体名&quot;</span><span class="p">))</span>
+</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a><span class="c1"># 解析結果から団体名を検索して表示</span>
 </span><span id="__span-0-106"><a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>
-</span><span id="__span-0-107"><a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-107"><a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a><span class="n">table</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">find_table_by_id</span><span class="p">(</span><span class="n">table_id</span><span class="o">=</span><span class="s2">&quot;t1&quot;</span><span class="p">)</span>
 </span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>
-</span><span id="__span-0-109"><a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a><span class="sd">&gt;&gt; [{&#39;key&#39;: [CellSchema(meta={}, contents=&#39;団 体 名&#39;, role=&#39;header&#39;, id=&#39;c1&#39;, box=[149, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],</span>
+</span><span id="__span-0-109"><a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;団体名&quot;</span><span class="p">))</span>
 </span><span id="__span-0-110"><a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>
-</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a><span class="sd">&gt;&gt;  &#39;value&#39;: CellSchema(meta={}, contents=&#39;エムリズムカブシキガイシャ&#39;, role=&#39;cell&#39;, id=&#39;c2&#39;, box=[365, 1393, 1498, 1444], row=None, col=None, row_span=None, col_span=None)},</span>
+</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>
-</span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a><span class="sd">&gt;&gt; {&#39;key&#39;: [CellSchema(meta={}, contents=&#39;団 体 名&#39;, role=&#39;header&#39;, id=&#39;c1&#39;, box=[149, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],</span>
+</span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a><span class="sd">&gt;&gt; [{&#39;key&#39;: [CellSchema(meta={}, contents=&#39;申込者情報&#39;, role=&#39;header&#39;, id=&#39;r0c0&#39;, box=[150, 1341, 1499, 1393], row=None, col=None, row_span=None, col_span=None),</span>
 </span><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>
-</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a><span class="sd">&gt;&gt;  &#39;value&#39;: CellSchema(meta={}, contents=&#39;MLism 株式会社&#39;, role=&#39;cell&#39;, id=&#39;c3&#39;, box=[365, 1444, 1498, 1539], row=None, col=None, row_span=None, col_span=None)}]</span>
+</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a><span class="sd">&gt;&gt;          CellSchema(meta={}, contents=&#39;団 体 名&#39;, role=&#39;header&#39;, id=&#39;r1c0&#39;, box=[150, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],</span>
 </span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>
-</span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a><span class="sd">&gt;&gt;  &#39;value&#39;: CellSchema(meta={}, contents=&#39;エムリズムカブシキガイシャ&#39;, role=&#39;cell&#39;, id=&#39;r1c1&#39;, box=[365, 1393, 1499, 1444], row=None, col=None, row_span=None, col_span=None)},</span>
 </span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>
-</span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a>
+</span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a><span class="sd">&gt;&gt; {&#39;key&#39;: [CellSchema(meta={}, contents=&#39;申込者情報&#39;, role=&#39;header&#39;, id=&#39;r0c0&#39;, box=[150, 1341, 1499, 1393], row=None, col=None, row_span=None, col_span=None),</span>
 </span><span id="__span-0-120"><a id="__codelineno-0-120" name="__codelineno-0-120" href="#__codelineno-0-120"></a>
-</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a>
+</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a><span class="sd">&gt;&gt;          CellSchema(meta={}, contents=&#39;団 体 名&#39;, role=&#39;header&#39;, id=&#39;r1c0&#39;, box=[150, 1393, 364, 1539], row=None, col=None, row_span=None, col_span=None)],</span>
 </span><span id="__span-0-122"><a id="__codelineno-0-122" name="__codelineno-0-122" href="#__codelineno-0-122"></a>
-</span><span id="__span-0-123"><a id="__codelineno-0-123" name="__codelineno-0-123" href="#__codelineno-0-123"></a><span class="c1"># 解析結果から住所を検索して表示</span>
+</span><span id="__span-0-123"><a id="__codelineno-0-123" name="__codelineno-0-123" href="#__codelineno-0-123"></a><span class="sd">&gt;&gt;  &#39;value&#39;: CellSchema(meta={}, contents=&#39;MLism 株式会社&#39;, role=&#39;cell&#39;, id=&#39;r2c0&#39;, box=[364, 1444, 1499, 1540], row=None, col=None, row_span=None, col_span=None)}]</span>
 </span><span id="__span-0-124"><a id="__codelineno-0-124" name="__codelineno-0-124" href="#__codelineno-0-124"></a>
-</span><span id="__span-0-125"><a id="__codelineno-0-125" name="__codelineno-0-125" href="#__codelineno-0-125"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;住所&quot;</span><span class="p">))</span>
+</span><span id="__span-0-125"><a id="__codelineno-0-125" name="__codelineno-0-125" href="#__codelineno-0-125"></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="__span-0-126"><a id="__codelineno-0-126" name="__codelineno-0-126" href="#__codelineno-0-126"></a>
-</span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127" href="#__codelineno-0-127"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-127"><a id="__codelineno-0-127" name="__codelineno-0-127" href="#__codelineno-0-127"></a>
 </span><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128" href="#__codelineno-0-128"></a>
-</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129" href="#__codelineno-0-129"></a><span class="sd">[{&#39;key&#39;: [CellSchema(meta={}, contents=&#39;住 所&#39;, role=&#39;header&#39;, id=&#39;c7&#39;, box=[149, 1686, 364, 1788], row=None, col=None, row_span=None, col_span=None)],</span>
+</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129" href="#__codelineno-0-129"></a>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130" href="#__codelineno-0-130"></a>
-</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131" href="#__codelineno-0-131"></a><span class="sd">  &#39;value&#39;: CellSchema(meta={}, contents=&#39;〒277-8520千葉県柏市若柴 178 番地 4 柏の葉キャンパス 148 街区 2 ショップ&amp;オフィス棟 6F&#39;, role=&#39;cell&#39;, id=&#39;c8&#39;, box=[365, 1686, 1498, 1788], row=None, col=None, row_span=None, col_span=None)}]</span>
+</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131" href="#__codelineno-0-131"></a><span class="c1"># 解析結果から住所を検索して表示</span>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132" href="#__codelineno-0-132"></a>
-</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a><span class="n">pprint</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;住所&quot;</span><span class="p">))</span>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134" href="#__codelineno-0-134"></a>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136" href="#__codelineno-0-136"></a>
+</span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137" href="#__codelineno-0-137"></a><span class="sd">[{&#39;key&#39;: [CellSchema(meta={}, contents=&#39;申込者情報&#39;, role=&#39;header&#39;, id=&#39;r0c0&#39;, box=[150, 1341, 1499, 1393], row=None, col=None, row_span=None, col_span=None),</span>
+</span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138" href="#__codelineno-0-138"></a>
+</span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139" href="#__codelineno-0-139"></a><span class="sd">          CellSchema(meta={}, contents=&#39;住 所&#39;, role=&#39;header&#39;, id=&#39;r5c0&#39;, box=[150, 1686, 364, 1789], row=None, col=None, row_span=None, col_span=None)],</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140" href="#__codelineno-0-140"></a>
+</span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141" href="#__codelineno-0-141"></a><span class="sd">  &#39;value&#39;: CellSchema(meta={}, contents=&#39;〒277-8520千葉県柏市若柴 178 番地 4 柏の葉キャンパス 148 街区 2 ショップ&amp;オフィス棟 6F&#39;, role=&#39;cell&#39;, id=&#39;r5c1&#39;, box=[365, 1686, 1499, 1789], row=None, col=None, row_span=None, col_span=None)}]</span>
+</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142" href="#__codelineno-0-142"></a>
+</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143" href="#__codelineno-0-143"></a><span class="sd">&quot;&quot;&quot;</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -2073,13 +2083,14 @@
 <li><code>words</code>: Information about text in the document. This is obtained from the text detection model and includes positions and the recognized text within the regions.</li>
 </ul>
 <h2 id="visualization-of-the-results">Visualization of the Results<a class="headerlink" href="#visualization-of-the-results" title="Permanent link">&para;</a></h2>
+<p>An example visualization including cell IDs (produced by the CLI with <code>yomitoku_table ${path_data} -o results -v --vis_id</code>).</p>
 <p><img alt="Example of Visualization" src="../../assets/vis_cell.jpg" /></p>
 <hr />
 <h2 id="two-types-of-structured-outputs-kv_items-and-grids">Two Types of Structured Outputs: <code>kv_items</code> and <code>grids</code><a class="headerlink" href="#two-types-of-structured-outputs-kv_items-and-grids" title="Permanent link">&para;</a></h2>
 <p>The Table Semantic Parser not only reconstructs a table as a “set of cells,” but also estimates and outputs the <strong>semantic structure</strong> of the table. The key concepts are <strong><code>kv_items</code></strong> and <strong><code>grids</code></strong>.</p>
 <h3 id="kv_items-key-value"><code>kv_items</code> (Key-Value)<a class="headerlink" href="#kv_items-key-value" title="Permanent link">&para;</a></h3>
 <p><code>kv_items</code> represent information in a table where a <strong>header (label)</strong> and a <strong>value</strong> correspond <strong>1:1</strong>.</p>
-<p>For example, in the sample form, the following items correspond to <code>kv_items</code> (highlighted with red boxes in the visualization):</p>
+<p>For example, in the sample form, the following items correspond to <code>kv_items</code> (drawn as green arrows from key to value in the visualization):</p>
 <ul>
 <li><code>利用目的</code> → <code>セミナー</code></li>
 <li><code>施設名称</code> → <code>MLism株式会社</code></li>
@@ -2096,7 +2107,7 @@
 </ul>
 <p>In other words, <code>grids</code> are defined as grid-shaped data where <strong>multiple rows exist as records</strong> and <strong>columns are defined as attributes</strong>.</p>
 <h3 id="cells">Cells<a class="headerlink" href="#cells" title="Permanent link">&para;</a></h3>
-<p>Cells inside each table are stored in a schema called <code>cells</code>. Each cell is assigned a table-unique identifier <code>id</code> (e.g., <code>c0</code>).</p>
+<p>Cells inside each table are stored in a schema called <code>cells</code>. Each cell is assigned a table-unique identifier <code>id</code> in the position-based format <code>r{row}c{col}</code> (e.g., <code>r0c0</code>).</p>
 <p><code>kv_items</code> and <code>grids</code> store cell IDs, and by referencing these IDs you can access detailed cell information. In addition to using structured data such as <code>kv_items</code> and <code>grids</code>, APIs are also provided to reference cells by <code>id</code> or to retrieve specific cell information based on positional relationships.</p>
 <hr />
 <h2 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h2>
@@ -2162,18 +2173,18 @@
 <p>If IDs change, you may not be able to extract information correctly. In such cases, try extraction methods based on relative positions or semantic structures.</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>cell_id: str</code>: Cell ID (e.g., <code>"c0"</code>)</li>
+<li><code>cell_id: str</code>: Cell ID (e.g., <code>"r0c0"</code>)</li>
 </ul>
 <p><strong>Returns</strong></p>
 <ul>
 <li><code>CellSchema</code>: Contains detailed cell information such as ID, text, bounding box, and row/column indices.</li>
 </ul>
 <p><strong>Example</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">cell</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">find_cell_by_id</span><span class="p">(</span><span class="s2">&quot;c0&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">cell</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">find_cell_by_id</span><span class="p">(</span><span class="s2">&quot;r0c0&quot;</span><span class="p">)</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">contents</span><span class="p">,</span> <span class="n">cell</span><span class="o">.</span><span class="n">box</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Output</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>c0 利用情報 [149, 498, 1501, 550]
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>r0c0 利用情報 [150, 500, 1499, 550]
 </span></code></pre></div>
 <hr />
 <h4 id="tablesearch_cells_by_query"><code>table.search_cells_by_query</code><a class="headerlink" href="#tablesearch_cells_by_query" title="Permanent link">&para;</a></h4>
@@ -2192,8 +2203,8 @@
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">contents</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">box</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Output</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>c11 2025年 01月 30日(月 曜日) [365, 888, 946, 968]
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>c14 2025年 02月 1日(火 曜日) [365, 968, 946, 1049]
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>r5c0 2025年 01月 30日(月 曜日) [365, 888, 947, 968]
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>r6c0 2025年 02月 1日(火 曜日) [365, 968, 947, 1049]
 </span></code></pre></div>
 <p><strong>Use cases</strong></p>
 <ul>
@@ -2224,8 +2235,8 @@
 </span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">contents</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Output</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>c6 YomiToku の利用方法に関する説明会
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>c7 利用希望日
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>r3c1 YomiToku の利用方法に関する説明会
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>r4c0 利用希望日
 </span></code></pre></div>
 <hr />
 <h2 id="extracting-information-from-semantic-structures-kv_items-grids">Extracting Information from Semantic Structures (<code>kv_items</code> / <code>grids</code>)<a class="headerlink" href="#extracting-information-from-semantic-structures-kv_items-grids" title="Permanent link">&para;</a></h2>
@@ -2240,7 +2251,7 @@
 </ul>
 <p><strong>Returns</strong></p>
 <ul>
-<li><code>List[dict]</code>: Each element is <code>{"key": [CellSchema, ...], "value": [CellSchema, ...]}</code></li>
+<li><code>List[dict]</code>: Each element is <code>{"key": [CellSchema, ...], "value": CellSchema}</code></li>
 </ul>
 <p><strong>Example</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">kv_items</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;団体名&quot;</span><span class="p">)</span>
@@ -2250,13 +2261,13 @@
 </span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Output</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>団 体 名 エムリズムカブシキガイシャ
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>団 体 名 MLism 株式会社
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>申込者情報_団 体 名 エムリズムカブシキガイシャ
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>申込者情報_団 体 名 MLism 株式会社
 </span></code></pre></div>
 <blockquote>
 <p>Note
-If cells have nested structures, the key may consist of multiple cells, so <code>key</code> is returned as a list.
-Multiple values may also exist depending on the search, so results are returned as a list.</p>
+If cells have nested structures, the key may consist of multiple cells, so <code>key</code> is returned as a list. In the example above, the key contains two cells: the parent header <code>申込者情報</code> and <code>団体名</code>.
+Multiple key-value pairs may match a search, so the result is returned as a list.</p>
 </blockquote>
 <hr />
 <h3 id="b-search-within-a-specific-table-table-object_1">B. Search Within a Specific Table (<code>table</code> object)<a class="headerlink" href="#b-search-within-a-specific-table-table-object_1" title="Permanent link">&para;</a></h3>
@@ -2268,7 +2279,7 @@ Multiple values may also exist depending on the search, so results are returned 
 </ul>
 <p><strong>Returns</strong></p>
 <ul>
-<li><code>List[dict]</code>: <code>{"key": [CellSchema], "value": [CellSchema]}</code></li>
+<li><code>List[dict]</code>: <code>{"key": [CellSchema, ...], "value": CellSchema}</code></li>
 </ul>
 <p><strong>Example</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">hits</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">search_kv_items_by_key</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;利用目的&quot;</span><span class="p">)</span>
@@ -2280,49 +2291,67 @@ Multiple values may also exist depending on the search, so results are returned 
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        <span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="p">[</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>            <span class="n">CellSchema</span><span class="p">(</span>
 </span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>                <span class="n">meta</span><span class="o">=</span><span class="p">{},</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>                <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;利 用 目 的&#39;</span><span class="p">,</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>                <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;利用情報&#39;</span><span class="p">,</span>
 </span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>                <span class="n">role</span><span class="o">=</span><span class="s1">&#39;header&#39;</span><span class="p">,</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>                <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;c3&#39;</span><span class="p">,</span>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>                <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">149</span><span class="p">,</span> <span class="mi">645</span><span class="p">,</span> <span class="mi">364</span><span class="p">,</span> <span class="mi">741</span><span class="p">],</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>                <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;r0c0&#39;</span><span class="p">,</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>                <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">150</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1499</span><span class="p">,</span> <span class="mi">550</span><span class="p">],</span>
 </span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>                <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>                <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>                <span class="n">row_span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>                <span class="n">col_span</span><span class="o">=</span><span class="kc">None</span>
-</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>            <span class="p">)</span>
-</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>        <span class="p">],</span> 
-</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>        <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">CellSchema</span><span class="p">(</span>
-</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>            <span class="n">meta</span><span class="o">=</span><span class="p">{},</span> 
-</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>            <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;セミナー&#39;</span><span class="p">,</span> 
-</span><span id="__span-15-19"><a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>            <span class="n">role</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span> 
-</span><span id="__span-15-20"><a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;c4&#39;</span><span class="p">,</span> 
-</span><span id="__span-15-21"><a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>            <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">365</span><span class="p">,</span> <span class="mi">645</span><span class="p">,</span> <span class="mi">1498</span><span class="p">,</span> <span class="mi">741</span><span class="p">],</span> 
-</span><span id="__span-15-22"><a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>            <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-</span><span id="__span-15-23"><a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>            <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-</span><span id="__span-15-24"><a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>            <span class="n">row_span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-</span><span id="__span-15-25"><a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>            <span class="n">col_span</span><span class="o">=</span><span class="kc">None</span>
-</span><span id="__span-15-26"><a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>        <span class="p">)</span>
-</span><span id="__span-15-27"><a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>    <span class="p">}</span>
-</span><span id="__span-15-28"><a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="p">]</span>
+</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>            <span class="p">),</span>
+</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>            <span class="n">CellSchema</span><span class="p">(</span>
+</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>                <span class="n">meta</span><span class="o">=</span><span class="p">{},</span>
+</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>                <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;利 用 目 的&#39;</span><span class="p">,</span>
+</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>                <span class="n">role</span><span class="o">=</span><span class="s1">&#39;header&#39;</span><span class="p">,</span>
+</span><span id="__span-15-19"><a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>                <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;r2c0&#39;</span><span class="p">,</span>
+</span><span id="__span-15-20"><a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>                <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">150</span><span class="p">,</span> <span class="mi">645</span><span class="p">,</span> <span class="mi">364</span><span class="p">,</span> <span class="mi">741</span><span class="p">],</span>
+</span><span id="__span-15-21"><a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>                <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-15-22"><a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>                <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-15-23"><a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>                <span class="n">row_span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-15-24"><a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>                <span class="n">col_span</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-15-25"><a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>            <span class="p">)</span>
+</span><span id="__span-15-26"><a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>        <span class="p">],</span> 
+</span><span id="__span-15-27"><a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>        <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">CellSchema</span><span class="p">(</span>
+</span><span id="__span-15-28"><a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>            <span class="n">meta</span><span class="o">=</span><span class="p">{},</span> 
+</span><span id="__span-15-29"><a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a>            <span class="n">contents</span><span class="o">=</span><span class="s1">&#39;セミナー&#39;</span><span class="p">,</span> 
+</span><span id="__span-15-30"><a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a>            <span class="n">role</span><span class="o">=</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span> 
+</span><span id="__span-15-31"><a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a>            <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;r2c1&#39;</span><span class="p">,</span> 
+</span><span id="__span-15-32"><a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a>            <span class="n">box</span><span class="o">=</span><span class="p">[</span><span class="mi">365</span><span class="p">,</span> <span class="mi">645</span><span class="p">,</span> <span class="mi">1499</span><span class="p">,</span> <span class="mi">741</span><span class="p">],</span> 
+</span><span id="__span-15-33"><a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a>            <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+</span><span id="__span-15-34"><a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a>            <span class="n">col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+</span><span id="__span-15-35"><a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a>            <span class="n">row_span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+</span><span id="__span-15-36"><a id="__codelineno-15-36" name="__codelineno-15-36" href="#__codelineno-15-36"></a>            <span class="n">col_span</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-15-37"><a id="__codelineno-15-37" name="__codelineno-15-37" href="#__codelineno-15-37"></a>        <span class="p">)</span>
+</span><span id="__span-15-38"><a id="__codelineno-15-38" name="__codelineno-15-38" href="#__codelineno-15-38"></a>    <span class="p">}</span>
+</span><span id="__span-15-39"><a id="__codelineno-15-39" name="__codelineno-15-39" href="#__codelineno-15-39"></a><span class="p">]</span>
 </span></code></pre></div>
 <hr />
 <h4 id="tableviewkv_items_to_dict"><code>table.view.kv_items_to_dict</code><a class="headerlink" href="#tableviewkv_items_to_dict" title="Permanent link">&para;</a></h4>
-<p>Expand cell references in <code>kv_items</code> and convert them into a dictionary (<code>key string → value string</code>).</p>
+<p>Expand cell references in <code>kv_items</code> and convert them into a dictionary (<code>key string → value string</code>).
+If keys are nested, the result becomes a hierarchical dict that preserves the nesting of the key cells. When the same key has multiple values, they are joined with <code>separator</code> (newline by default).</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>separator: str = "\n"</code>: Separator used to join multiple values of the same key</li>
+</ul>
 <p><strong>Returns</strong></p>
 <ul>
-<li><code>dict[str, str]</code></li>
+<li><code>dict</code>: Values are strings, nested dicts (when a key has child keys), or lists (when sibling keys share the same text).</li>
 </ul>
 <p><strong>Example</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">kv</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">kv_items_to_dict</span><span class="p">()</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">kv</span><span class="p">)</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">kv</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;利用目的&quot;</span><span class="p">))</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">kv</span><span class="p">[</span><span class="s2">&quot;利用情報&quot;</span><span class="p">][</span><span class="s2">&quot;利用目的&quot;</span><span class="p">])</span>
 </span></code></pre></div>
 <p><strong>Output</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>{
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>  &quot;施設名称&quot;: &quot;MLism株式会社&quot;,
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>  &quot;利用目的&quot;: &quot;セミナー&quot;,
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>  &quot;実施内容&quot;: &quot;YomiTokuの利用方法に関する説明会&quot;
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>}
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>セミナー
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>  &quot;利用情報&quot;: {
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    &quot;施設名称&quot;: &quot;MLism株式会社&quot;,
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    &quot;利用目的&quot;: &quot;セミナー&quot;,
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    &quot;実施内容&quot;: &quot;YomiTokuの利用方法に関する説明会&quot;
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>  }
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>}
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>セミナー
 </span></code></pre></div>
 <hr />
 <h4 id="tableviewgrids_to_dict"><code>table.view.grids_to_dict()</code><a class="headerlink" href="#tableviewgrids_to_dict" title="Permanent link">&para;</a></h4>
@@ -2351,7 +2380,7 @@ Multiple values may also exist depending on the search, so results are returned 
 <p>You can export the semantic analysis results into JSON or CSV for integration with other systems. You can export data for the entire document or for a specific table.</p>
 <h3 id="a-export-the-entire-document">A. Export the Entire Document<a class="headerlink" href="#a-export-the-entire-document" title="Permanent link">&para;</a></h3>
 <h4 id="resultsto_json"><code>results.to_json</code><a class="headerlink" href="#resultsto_json" title="Permanent link">&para;</a></h4>
-<p>Save the analysis result of the entire document as JSON.</p>
+<p>Save the analysis result of the entire document as JSON. If the output directory does not exist, create it beforehand.</p>
 <p><strong>Arguments</strong></p>
 <ul>
 <li><code>out_path: str</code>: Path to the output JSON file</li>
@@ -2369,7 +2398,7 @@ Multiple values may also exist depending on the search, so results are returned 
 </span></code></pre></div>
 <hr />
 <h4 id="tablesemanticparserschemaload_json"><code>TableSemanticParserSchema.load_json</code><a class="headerlink" href="#tablesemanticparserschemaload_json" title="Permanent link">&para;</a></h4>
-<p><code>load_json</code> is a utility that reads a saved JSON result and restores it as <code>TableSemanticParserSchema</code> (= <code>results</code>). This enables re-running extraction logic without reprocessing with AI. Page-count billing (or processing count) is performed only when AI is invoked. Therefore, running extraction on results loaded via <code>load_json</code> does not count toward processing.</p>
+<p><code>load_json</code> is a utility that reads a saved JSON result and restores it as <code>TableSemanticParserSchema</code> (= <code>results</code>). This enables re-running extraction logic without reprocessing with AI.</p>
 <p>During development/validation, or when you want to reduce processing time, it is recommended to save once with <code>to_json</code> and then reload with <code>load_json</code>.</p>
 <p><strong>Arguments</strong></p>
 <ul>
@@ -2388,8 +2417,13 @@ Multiple values may also exist depending on the search, so results are returned 
 <li><code>kv_items</code> (Key-Value structures)</li>
 <li><code>grids</code> (matrix structures)</li>
 </ul>
-<p>It converts the result into a Python <code>dict</code> (structured data). It reduces information such as cell bounding boxes and converts into structured data composed primarily of text.</p>
+<p>It converts the result into a Python <code>dict</code> (structured data). It reduces information such as cell bounding boxes and converts into structured data composed primarily of text.
+<code>kv_items</code> becomes a hierarchical dict that preserves the nesting of the key cells. When the same key has multiple values, they are joined with <code>separator</code> (newline by default).</p>
 <p>This is suitable when you want to use the parsed results directly in application logic or API responses, or when you want to feed structured document information into a generative AI model.</p>
+<p><strong>Arguments</strong></p>
+<ul>
+<li><code>separator: str = "\n"</code>: Separator used to join multiple values of the same key</li>
+</ul>
 <p><strong>Example</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pprint</span><span class="w"> </span><span class="kn">import</span> <span class="n">pprint</span>
 </span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">parsed</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
@@ -2410,31 +2444,34 @@ Multiple values may also exist depending on the search, so results are returned 
 </span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>            <span class="p">}</span>
 </span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>        <span class="p">],</span>
 </span><span id="__span-23-14"><a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a>        <span class="s1">&#39;kv_items&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>            <span class="s1">&#39;利用目的&#39;</span><span class="p">:</span> <span class="s1">&#39;セミナー&#39;</span><span class="p">,</span>
-</span><span id="__span-23-16"><a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a>            <span class="s1">&#39;実施内容&#39;</span><span class="p">:</span> <span class="s1">&#39;YomiTokuの利用方法に関する説明会&#39;</span><span class="p">,</span>
-</span><span id="__span-23-17"><a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a>            <span class="s1">&#39;施設名称&#39;</span><span class="p">:</span> <span class="s1">&#39;MLism株式会社&#39;</span>
-</span><span id="__span-23-18"><a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a>        <span class="p">}</span>
-</span><span id="__span-23-19"><a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a>    <span class="p">},</span>
-</span><span id="__span-23-20"><a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a>    <span class="s1">&#39;t1&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-23-21"><a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a>        <span class="s1">&#39;grids&#39;</span><span class="p">:</span> <span class="p">[],</span>
-</span><span id="__span-23-22"><a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a>        <span class="s1">&#39;kv_items&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-23-23"><a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a>            <span class="s1">&#39;代表者_0&#39;</span><span class="p">:</span> <span class="s1">&#39;キノシタコウタロウ&#39;</span><span class="p">,</span>
-</span><span id="__span-23-24"><a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a>            <span class="s1">&#39;代表者_1&#39;</span><span class="p">:</span> <span class="s1">&#39;木之下滉大郎&#39;</span><span class="p">,</span>
-</span><span id="__span-23-25"><a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a>            <span class="s1">&#39;住所&#39;</span><span class="p">:</span> <span class="s1">&#39;〒277-8520千葉県柏市若柴178番地4柏の葉キャンパス148街区2ショップ&amp;オフィス棟6F&#39;</span><span class="p">,</span>
-</span><span id="__span-23-26"><a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a>            <span class="s1">&#39;団体名_0&#39;</span><span class="p">:</span> <span class="s1">&#39;エムリズムカブシキガイシャ&#39;</span><span class="p">,</span>
-</span><span id="__span-23-27"><a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a>            <span class="s1">&#39;団体名_1&#39;</span><span class="p">:</span> <span class="s1">&#39;MLism株式会社&#39;</span><span class="p">,</span>
-</span><span id="__span-23-28"><a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a>            <span class="s1">&#39;電話番号&#39;</span><span class="p">:</span> <span class="s1">&#39;090-1234-5678&#39;</span>
-</span><span id="__span-23-29"><a id="__codelineno-23-29" name="__codelineno-23-29" href="#__codelineno-23-29"></a>        <span class="p">}</span>
-</span><span id="__span-23-30"><a id="__codelineno-23-30" name="__codelineno-23-30" href="#__codelineno-23-30"></a>    <span class="p">}</span>
-</span><span id="__span-23-31"><a id="__codelineno-23-31" name="__codelineno-23-31" href="#__codelineno-23-31"></a><span class="p">}</span>
+</span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>            <span class="s1">&#39;利用情報&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-23-16"><a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a>                <span class="s1">&#39;利用目的&#39;</span><span class="p">:</span> <span class="s1">&#39;セミナー&#39;</span><span class="p">,</span>
+</span><span id="__span-23-17"><a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a>                <span class="s1">&#39;実施内容&#39;</span><span class="p">:</span> <span class="s1">&#39;YomiTokuの利用方法に関する説明会&#39;</span><span class="p">,</span>
+</span><span id="__span-23-18"><a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a>                <span class="s1">&#39;施設名称&#39;</span><span class="p">:</span> <span class="s1">&#39;MLism株式会社&#39;</span>
+</span><span id="__span-23-19"><a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a>            <span class="p">}</span>
+</span><span id="__span-23-20"><a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a>        <span class="p">}</span>
+</span><span id="__span-23-21"><a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a>    <span class="p">},</span>
+</span><span id="__span-23-22"><a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a>    <span class="s1">&#39;t1&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-23-23"><a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a>        <span class="s1">&#39;grids&#39;</span><span class="p">:</span> <span class="p">[],</span>
+</span><span id="__span-23-24"><a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a>        <span class="s1">&#39;kv_items&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-23-25"><a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a>            <span class="s1">&#39;申込者情報&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-23-26"><a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a>                <span class="s1">&#39;代表者&#39;</span><span class="p">:</span> <span class="s1">&#39;キノシタコウタロウ</span><span class="se">\n</span><span class="s1">木之下滉大郎&#39;</span><span class="p">,</span>
+</span><span id="__span-23-27"><a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a>                <span class="s1">&#39;住所&#39;</span><span class="p">:</span> <span class="s1">&#39;〒277-8520千葉県柏市若柴178番地4柏の葉キャンパス148街区2ショップ&amp;オフィス棟6F&#39;</span><span class="p">,</span>
+</span><span id="__span-23-28"><a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a>                <span class="s1">&#39;団体名&#39;</span><span class="p">:</span> <span class="s1">&#39;エムリズムカブシキガイシャ</span><span class="se">\n</span><span class="s1">MLism株式会社&#39;</span><span class="p">,</span>
+</span><span id="__span-23-29"><a id="__codelineno-23-29" name="__codelineno-23-29" href="#__codelineno-23-29"></a>                <span class="s1">&#39;電話番号&#39;</span><span class="p">:</span> <span class="s1">&#39;090-1234-5678&#39;</span>
+</span><span id="__span-23-30"><a id="__codelineno-23-30" name="__codelineno-23-30" href="#__codelineno-23-30"></a>            <span class="p">}</span>
+</span><span id="__span-23-31"><a id="__codelineno-23-31" name="__codelineno-23-31" href="#__codelineno-23-31"></a>        <span class="p">}</span>
+</span><span id="__span-23-32"><a id="__codelineno-23-32" name="__codelineno-23-32" href="#__codelineno-23-32"></a>    <span class="p">}</span>
+</span><span id="__span-23-33"><a id="__codelineno-23-33" name="__codelineno-23-33" href="#__codelineno-23-33"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr />
 <h3 id="b-export-per-table">B. Export Per Table<a class="headerlink" href="#b-export-per-table" title="Permanent link">&para;</a></h3>
-<h4 id="tablekv_items_to_json"><code>table.kv_items_to_json</code><a class="headerlink" href="#tablekv_items_to_json" title="Permanent link">&para;</a></h4>
-<p>Export <code>kv_items</code> in the table into a single JSON file.</p>
+<h4 id="tableexportkv_items_to_json"><code>table.export.kv_items_to_json</code><a class="headerlink" href="#tableexportkv_items_to_json" title="Permanent link">&para;</a></h4>
+<p>Export <code>kv_items</code> in the table into a single JSON file. Like <code>results.to_dict</code>, the output is a hierarchical dict that preserves the nesting of the key cells. When the same key has multiple values, they are joined with <code>separator</code> (newline by default).</p>
 <p><strong>Arguments</strong></p>
 <ul>
-<li><code>out_path: str</code></li>
+<li><code>out_path: str</code>: Path to the output JSON file</li>
+<li><code>separator: str = "\n"</code>: Separator used to join multiple values of the same key</li>
 </ul>
 <p><strong>Returns</strong></p>
 <ul>
@@ -2447,13 +2484,15 @@ Multiple values may also exist depending on the search, so results are returned 
 </span></code></pre></div>
 <p><strong>Output</strong></p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="p">{</span>
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span><span class="nt">&quot;施設名称&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MLism株式会社&quot;</span><span class="p">,</span>
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span><span class="nt">&quot;利用目的&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;セミナー&quot;</span><span class="p">,</span>
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span><span class="nt">&quot;実施内容&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;YomiTokuの利用方法に関する説明会&quot;</span>
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="p">}</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span><span class="nt">&quot;利用情報&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">        </span><span class="nt">&quot;施設名称&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MLism株式会社&quot;</span><span class="p">,</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">        </span><span class="nt">&quot;利用目的&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;セミナー&quot;</span><span class="p">,</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">        </span><span class="nt">&quot;実施内容&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;YomiTokuの利用方法に関する説明会&quot;</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr />
-<h4 id="tablegrids_to_json"><code>table.grids_to_json</code><a class="headerlink" href="#tablegrids_to_json" title="Permanent link">&para;</a></h4>
+<h4 id="tableexportgrids_to_json"><code>table.export.grids_to_json</code><a class="headerlink" href="#tableexportgrids_to_json" title="Permanent link">&para;</a></h4>
 <p>Export <code>grids</code> in the table into a single JSON file. Since a table may contain multiple grids, the output is a list.</p>
 <p><strong>Arguments</strong></p>
 <ul>
@@ -2503,7 +2542,7 @@ Multiple values may also exist depending on the search, so results are returned 
 </span><span id="__span-27-32"><a id="__codelineno-27-32" name="__codelineno-27-32" href="#__codelineno-27-32"></a><span class="p">]</span>
 </span></code></pre></div>
 <hr />
-<h4 id="tablegrids_to_csv"><code>table.grids_to_csv</code><a class="headerlink" href="#tablegrids_to_csv" title="Permanent link">&para;</a></h4>
+<h4 id="tableexportgrids_to_csv"><code>table.export.grids_to_csv</code><a class="headerlink" href="#tableexportgrids_to_csv" title="Permanent link">&para;</a></h4>
 <p>Export <code>grids</code> in the table as CSV. You can optionally specify column names to export only certain fields.</p>
 <p><strong>Arguments</strong></p>
 <ul>
@@ -2531,8 +2570,8 @@ Exporting only “入室” and “退室” as columns:</p>
 </span></code></pre></div>
 <p><strong>Generated file names</strong></p>
 <ul>
-<li>A suffix with the <code>grid_id</code> is added, e.g. <code>out/grid_0.csv</code>.
-  If multiple grids exist in the table, the suffix changes accordingly, e.g. <code>out/grid_1.csv</code>.</li>
+<li>A suffix with the <code>grid_id</code> is added, e.g. <code>out/grid_g0.csv</code>.
+  If multiple grids exist in the table, the suffix changes accordingly, e.g. <code>out/grid_g1.csv</code>.</li>
 </ul>
 
 
