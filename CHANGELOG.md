@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD)
+## [v0.14.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.14.0) (2026-07-31)
 
-[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.1...HEAD)
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.1...v0.14.0)
 
 **Implemented enhancements:**
 
@@ -14,6 +14,7 @@
 
 **Merged pull requests:**
 
+- docs: Update CHANGELOG [\#237](https://github.com/kotaro-kinoshita/yomitoku/pull/237) ([github-actions[bot]](https://github.com/apps/github-actions))
 - docs: Update CHANGELOG [\#234](https://github.com/kotaro-kinoshita/yomitoku/pull/234) ([github-actions[bot]](https://github.com/apps/github-actions))
 
 ## [v0.13.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.1) (2026-07-15)
