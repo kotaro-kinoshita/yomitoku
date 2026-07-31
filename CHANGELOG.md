@@ -8,6 +8,10 @@
 
 - Table Semantic Parserの正式リリース [\#233](https://github.com/kotaro-kinoshita/yomitoku/pull/233) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
+**Merged pull requests:**
+
+- docs: Update CHANGELOG [\#234](https://github.com/kotaro-kinoshita/yomitoku/pull/234) ([github-actions[bot]](https://github.com/apps/github-actions))
+
 ## [v0.13.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.1) (2026-07-15)
 
 [Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.0...v0.13.1)
