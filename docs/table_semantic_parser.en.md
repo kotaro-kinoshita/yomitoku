@@ -62,6 +62,8 @@ See the [schema](schemas.en.md) for details.
 
 ## Visualization of the Results
 
+An example visualization including cell IDs (produced by the CLI with `yomitoku_table ${path_data} -o results -v --vis_id`).
+
 ![Example of Visualization](assets/vis_cell.jpg)
 
 ---
@@ -74,7 +76,7 @@ The Table Semantic Parser not only reconstructs a table as a “set of cells,”
 
 `kv_items` represent information in a table where a **header (label)** and a **value** correspond **1:1**.
 
-For example, in the sample form, the following items correspond to `kv_items` (highlighted with red boxes in the visualization):
+For example, in the sample form, the following items correspond to `kv_items` (drawn as green arrows from key to value in the visualization):
 
 * `利用目的` → `セミナー`
 * `施設名称` → `MLism株式会社`
@@ -96,7 +98,7 @@ In other words, `grids` are defined as grid-shaped data where **multiple rows ex
 
 ### Cells
 
-Cells inside each table are stored in a schema called `cells`. Each cell is assigned a table-unique identifier `id` (e.g., `c0`).
+Cells inside each table are stored in a schema called `cells`. Each cell is assigned a table-unique identifier `id` in the position-based format `r{row}c{col}` (e.g., `r0c0`).
 
 `kv_items` and `grids` store cell IDs, and by referencing these IDs you can access detailed cell information. In addition to using structured data such as `kv_items` and `grids`, APIs are also provided to reference cells by `id` or to retrieve specific cell information based on positional relationships.
 
@@ -198,7 +200,7 @@ If IDs change, you may not be able to extract information correctly. In such cas
 
 **Arguments**
 
-* `cell_id: str`: Cell ID (e.g., `"c0"`)
+* `cell_id: str`: Cell ID (e.g., `"r0c0"`)
 
 **Returns**
 
@@ -207,14 +209,14 @@ If IDs change, you may not be able to extract information correctly. In such cas
 **Example**
 
 ```python
-cell = table.find_cell_by_id("c0")
+cell = table.find_cell_by_id("r0c0")
 print(cell.id, cell.contents, cell.box)
 ```
 
 **Output**
 
 ```
-c0 利用情報 [149, 498, 1501, 550]
+r0c0 利用情報 [150, 500, 1499, 550]
 ```
 
 ---
@@ -242,8 +244,8 @@ for c in cells:
 **Output**
 
 ```
-c11 2025年 01月 30日(月 曜日) [365, 888, 946, 968]
-c14 2025年 02月 1日(火 曜日) [365, 968, 946, 1049]
+r5c0 2025年 01月 30日(月 曜日) [365, 888, 947, 968]
+r6c0 2025年 02月 1日(火 曜日) [365, 968, 947, 1049]
 ```
 
 **Use cases**
@@ -284,8 +286,8 @@ for v in vals:
 **Output**
 
 ```
-c6 YomiToku の利用方法に関する説明会
-c7 利用希望日
+r3c1 YomiToku の利用方法に関する説明会
+r4c0 利用希望日
 ```
 
 ---
@@ -308,7 +310,7 @@ Search `kv_items` across the entire analysis result (possibly including multiple
 
 **Returns**
 
-* `List[dict]`: Each element is `{"key": [CellSchema, ...], "value": [CellSchema, ...]}`
+* `List[dict]`: Each element is `{"key": [CellSchema, ...], "value": CellSchema}`
 
 **Example**
 
@@ -323,13 +325,13 @@ for kv in kv_items:
 **Output**
 
 ```
-団 体 名 エムリズムカブシキガイシャ
-団 体 名 MLism 株式会社
+申込者情報_団 体 名 エムリズムカブシキガイシャ
+申込者情報_団 体 名 MLism 株式会社
 ```
 
 > Note
-> If cells have nested structures, the key may consist of multiple cells, so `key` is returned as a list.
-> Multiple values may also exist depending on the search, so results are returned as a list.
+> If cells have nested structures, the key may consist of multiple cells, so `key` is returned as a list. In the example above, the key contains two cells: the parent header `申込者情報` and `団体名`.
+> Multiple key-value pairs may match a search, so the result is returned as a list.
 
 ---
 
@@ -345,7 +347,7 @@ Search for kv_items within table `t0` only by partial matching on the key.
 
 **Returns**
 
-* `List[dict]`: `{"key": [CellSchema], "value": [CellSchema]}`
+* `List[dict]`: `{"key": [CellSchema, ...], "value": CellSchema}`
 
 **Example**
 
@@ -362,10 +364,21 @@ print(hits)
         'key': [
             CellSchema(
                 meta={},
+                contents='利用情報',
+                role='header',
+                id='r0c0',
+                box=[150, 500, 1499, 550],
+                row=None,
+                col=None,
+                row_span=None,
+                col_span=None
+            ),
+            CellSchema(
+                meta={},
                 contents='利 用 目 的',
                 role='header',
-                id='c3',
-                box=[149, 645, 364, 741],
+                id='r2c0',
+                box=[150, 645, 364, 741],
                 row=None,
                 col=None,
                 row_span=None,
@@ -376,8 +389,8 @@ print(hits)
             meta={}, 
             contents='セミナー', 
             role='cell', 
-            id='c4', 
-            box=[365, 645, 1498, 741], 
+            id='r2c1', 
+            box=[365, 645, 1499, 741], 
             row=None, 
             col=None, 
             row_span=None, 
@@ -392,26 +405,33 @@ print(hits)
 #### `table.view.kv_items_to_dict`
 
 Expand cell references in `kv_items` and convert them into a dictionary (`key string → value string`).
+If keys are nested, the result becomes a hierarchical dict that preserves the nesting of the key cells. When the same key has multiple values, they are joined with `separator` (newline by default).
+
+**Arguments**
+
+* `separator: str = "\n"`: Separator used to join multiple values of the same key
 
 **Returns**
 
-* `dict[str, str]`
+* `dict`: Values are strings, nested dicts (when a key has child keys), or lists (when sibling keys share the same text).
 
 **Example**
 
 ```python
 kv = table.view.kv_items_to_dict()
 print(kv)
-print(kv.get("利用目的"))
+print(kv["利用情報"]["利用目的"])
 ```
 
 **Output**
 
 ```
 {
-  "施設名称": "MLism株式会社",
-  "利用目的": "セミナー",
-  "実施内容": "YomiTokuの利用方法に関する説明会"
+  "利用情報": {
+    "施設名称": "MLism株式会社",
+    "利用目的": "セミナー",
+    "実施内容": "YomiTokuの利用方法に関する説明会"
+  }
 }
 セミナー
 ```
@@ -457,7 +477,7 @@ You can export the semantic analysis results into JSON or CSV for integration wi
 
 #### `results.to_json`
 
-Save the analysis result of the entire document as JSON.
+Save the analysis result of the entire document as JSON. If the output directory does not exist, create it beforehand.
 
 **Arguments**
 
@@ -481,7 +501,7 @@ results.to_json("out/result.json")
 
 #### `TableSemanticParserSchema.load_json`
 
-`load_json` is a utility that reads a saved JSON result and restores it as `TableSemanticParserSchema` (= `results`). This enables re-running extraction logic without reprocessing with AI. Page-count billing (or processing count) is performed only when AI is invoked. Therefore, running extraction on results loaded via `load_json` does not count toward processing.
+`load_json` is a utility that reads a saved JSON result and restores it as `TableSemanticParserSchema` (= `results`). This enables re-running extraction logic without reprocessing with AI.
 
 During development/validation, or when you want to reduce processing time, it is recommended to save once with `to_json` and then reload with `load_json`.
 
@@ -508,8 +528,13 @@ results = TableSemanticParserSchema.load_json(json_path)
 * `grids` (matrix structures)
 
 It converts the result into a Python `dict` (structured data). It reduces information such as cell bounding boxes and converts into structured data composed primarily of text.
+`kv_items` becomes a hierarchical dict that preserves the nesting of the key cells. When the same key has multiple values, they are joined with `separator` (newline by default).
 
 This is suitable when you want to use the parsed results directly in application logic or API responses, or when you want to feed structured document information into a generative AI model.
+
+**Arguments**
+
+* `separator: str = "\n"`: Separator used to join multiple values of the same key
 
 **Example**
 
@@ -536,20 +561,22 @@ pprint(parsed)
             }
         ],
         'kv_items': {
-            '利用目的': 'セミナー',
-            '実施内容': 'YomiTokuの利用方法に関する説明会',
-            '施設名称': 'MLism株式会社'
+            '利用情報': {
+                '利用目的': 'セミナー',
+                '実施内容': 'YomiTokuの利用方法に関する説明会',
+                '施設名称': 'MLism株式会社'
+            }
         }
     },
     't1': {
         'grids': [],
         'kv_items': {
-            '代表者_0': 'キノシタコウタロウ',
-            '代表者_1': '木之下滉大郎',
-            '住所': '〒277-8520千葉県柏市若柴178番地4柏の葉キャンパス148街区2ショップ&オフィス棟6F',
-            '団体名_0': 'エムリズムカブシキガイシャ',
-            '団体名_1': 'MLism株式会社',
-            '電話番号': '090-1234-5678'
+            '申込者情報': {
+                '代表者': 'キノシタコウタロウ\n木之下滉大郎',
+                '住所': '〒277-8520千葉県柏市若柴178番地4柏の葉キャンパス148街区2ショップ&オフィス棟6F',
+                '団体名': 'エムリズムカブシキガイシャ\nMLism株式会社',
+                '電話番号': '090-1234-5678'
+            }
         }
     }
 }
@@ -559,13 +586,14 @@ pprint(parsed)
 
 ### B. Export Per Table
 
-#### `table.kv_items_to_json`
+#### `table.export.kv_items_to_json`
 
-Export `kv_items` in the table into a single JSON file.
+Export `kv_items` in the table into a single JSON file. Like `results.to_dict`, the output is a hierarchical dict that preserves the nesting of the key cells. When the same key has multiple values, they are joined with `separator` (newline by default).
 
 **Arguments**
 
-* `out_path: str`
+* `out_path: str`: Path to the output JSON file
+* `separator: str = "\n"`: Separator used to join multiple values of the same key
 
 **Returns**
 
@@ -583,15 +611,17 @@ print(kv)
 
 ```json
 {
-    "施設名称": "MLism株式会社",
-    "利用目的": "セミナー",
-    "実施内容": "YomiTokuの利用方法に関する説明会"
+    "利用情報": {
+        "施設名称": "MLism株式会社",
+        "利用目的": "セミナー",
+        "実施内容": "YomiTokuの利用方法に関する説明会"
+    }
 }
 ```
 
 ---
 
-#### `table.grids_to_json`
+#### `table.export.grids_to_json`
 
 Export `grids` in the table into a single JSON file. Since a table may contain multiple grids, the output is a list.
 
@@ -650,7 +680,7 @@ print(grids)
 
 ---
 
-#### `table.grids_to_csv`
+#### `table.export.grids_to_csv`
 
 Export `grids` in the table as CSV. You can optionally specify column names to export only certain fields.
 
@@ -687,7 +717,7 @@ Exporting only “入室” and “退室” as columns:
 
 **Generated file names**
 
-* A suffix with the `grid_id` is added, e.g. `out/grid_0.csv`.
-  If multiple grids exist in the table, the suffix changes accordingly, e.g. `out/grid_1.csv`.
+* A suffix with the `grid_id` is added, e.g. `out/grid_g0.csv`.
+  If multiple grids exist in the table, the suffix changes accordingly, e.g. `out/grid_g1.csv`.
 
 

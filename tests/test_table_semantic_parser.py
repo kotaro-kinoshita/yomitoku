@@ -255,8 +255,8 @@ def test_search_cells_upper_key_text(monkeypatch):
 # -------------------------
 # TableSemanticContentsView.kv_items_to_dict
 # -------------------------
-def test_view_kv_items_to_dict_merges_keys_and_makes_unique():
-    # kv_items: key=["k"], value="v"
+def test_view_kv_items_to_dict_lists_same_text_sibling_keys():
+    # 同じテキストを持つ別のキーセルは統合せず、値のリストになる
     cells = {
         "k": mk_cell("k", (0, 0, 10, 10), role="header", contents="契約 番号"),
         "v": mk_cell("v", (10, 0, 20, 10), role="cell", contents=" 123 "),
@@ -265,19 +265,15 @@ def test_view_kv_items_to_dict_merges_keys_and_makes_unique():
     }
     kv_items = [
         KvItemSchema(id=None, key=["k"], value="v"),
-        KvItemSchema(
-            id=None, key=["k2"], value="v2"
-        ),  # 同じキー文字列になる => make_unique_all で idx 付く
+        KvItemSchema(id=None, key=["k2"], value="v2"),
     ]
     t = mk_table(cells=cells, kv_items=kv_items)
 
     d = t.view.kv_items_to_dict()
 
-    # normalize で "契約番号" に統一されるはず
-    # make_unique_all の結果、片方は "['契約番号']_0" のように idx が入る（joinされる）
-    assert len(d.keys()) == 2
-    assert all("契約番号" in k for k in d.keys())
-    assert set(d.values()) == {"123", "456"}  # safe_contents は半角space除去
+    # normalize で "契約番号" に統一され、同名キーの値がリストで並ぶ
+    # (safe_contents は半角space除去)
+    assert d == {"契約番号": ["123", "456"]}
 
 
 def test_view_kv_items_to_dict_merge_vertical():
@@ -295,15 +291,10 @@ def test_view_kv_items_to_dict_merge_vertical():
     ]
     t = mk_table(cells=cells, kv_items=kv_items)
 
-    # merge_values=False (デフォルト): インデックス付与で個別に返る
-    d_separate = t.view.kv_items_to_dict(merge_values=False)
-    assert len(d_separate) == 3
-
-    # merge_values=True: y座標でソートして結合
-    d_merged = t.view.kv_items_to_dict(merge_values=True)
-    assert len(d_merged) == 1
-    assert "住所" in list(d_merged.keys())[0]
-    assert d_merged["住所"] == "東京都\n新宿区\n1-2-3"
+    # 同一キーセルの複数valueはy座標でソートして結合される
+    d = t.view.kv_items_to_dict()
+    assert len(d) == 1
+    assert d["住所"] == "東京都\n新宿区\n1-2-3"
 
 
 def test_view_kv_items_to_dict_merge_horizontal():
@@ -321,10 +312,10 @@ def test_view_kv_items_to_dict_merge_horizontal():
     ]
     t = mk_table(cells=cells, kv_items=kv_items)
 
-    # merge_values=True, separator="-": x座標でソートして結合
-    d_merged = t.view.kv_items_to_dict(merge_values=True, separator="-")
-    assert len(d_merged) == 1
-    assert d_merged["電話番号"] == "03-1234-5678"
+    # separator="-": x座標でソートして結合
+    d = t.view.kv_items_to_dict(separator="-")
+    assert len(d) == 1
+    assert d["電話番号"] == "03-1234-5678"
 
 
 def test_view_kv_items_to_dict_merge_single_value():
@@ -336,7 +327,7 @@ def test_view_kv_items_to_dict_merge_single_value():
     kv_items = [KvItemSchema(id=None, key=["k"], value="v")]
     t = mk_table(cells=cells, kv_items=kv_items)
 
-    d = t.view.kv_items_to_dict(merge_values=True)
+    d = t.view.kv_items_to_dict()
     assert d == {"名前": "太郎"}
 
 
@@ -356,10 +347,24 @@ def test_view_kv_items_to_dict_merge_mixed_keys():
     ]
     t = mk_table(cells=cells, kv_items=kv_items)
 
-    d = t.view.kv_items_to_dict(merge_values=True)
+    d = t.view.kv_items_to_dict()
     assert len(d) == 2
     assert d["名前"] == "太郎"
     assert d["住所"] == "東京都\n新宿区"
+
+
+def test_view_kv_items_to_dict_nests_parent_headers():
+    """親ヘッダーを持つキーは入れ子の階層dictになる"""
+    cells = {
+        "g": mk_cell("g", (0, 0, 300, 10), role="header", contents="申込者情報"),
+        "k": mk_cell("k", (0, 10, 100, 40), role="header", contents="名前"),
+        "v": mk_cell("v", (100, 10, 300, 40), role="cell", contents="太郎"),
+    }
+    kv_items = [KvItemSchema(id=None, key=["g", "k"], value="v")]
+    t = mk_table(cells=cells, kv_items=kv_items)
+
+    d = t.view.kv_items_to_dict()
+    assert d == {"申込者情報": {"名前": "太郎"}}
 
 
 # -------------------------
