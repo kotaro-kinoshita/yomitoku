@@ -34,6 +34,7 @@ def save_figure(
         figure_name = f"{filename}_figure_{i}.png"
         figure_path = os.path.join(save_dir, figure_name)
         save_image(figure_img, figure_path)
+        figure.figure_path = os.path.join(figure_dir, figure_name)
 
 
 def convert_json(inputs, out_path, ignore_line_break, img, export_figure, figure_dir):

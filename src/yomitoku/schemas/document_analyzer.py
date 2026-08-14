@@ -202,6 +202,10 @@ class FigureSchema(BaseSchema):
     direction: Union[str, None] = Field(
         ..., description="Text direction, e.g., ['horizontal' or 'vertical']"
     )
+    figure_path: Union[str, None] = Field(
+        None,
+        description="Relative path to the exported figure image from the output file",
+    )
 
 
 class DocumentAnalyzerSchema(BaseSchema):
