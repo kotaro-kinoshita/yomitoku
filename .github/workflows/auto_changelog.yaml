@@ -15,7 +15,10 @@ permissions:
 
 jobs:
   changelog:
-    if: ${{ github.event.pull_request.merged == true }}
+    # changelog 更新PR自身のマージで再発火すると無限ループになるため除外する
+    if: >-
+      ${{ github.event.pull_request.merged == true &&
+          !startsWith(github.event.pull_request.head.ref, 'chore/changelog-') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +37,7 @@ jobs:
             --user ${{ github.repository_owner }} \
             --project ${{ github.event.repository.name }} \
             --no-issues \
-            --exclude-labels "duplicate,question,invalid,wontfix,skip changelog"
+            --exclude-labels "duplicate,question,invalid,wontfix,skip changelog,changelog"
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
