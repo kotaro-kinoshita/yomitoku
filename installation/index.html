@@ -388,6 +388,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="../faq/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  FAQ
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../release_note/" class="md-tabs__link">
         
   
@@ -912,6 +931,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../release_note/" class="md-nav__link">
         
   
@@ -1078,6 +1124,7 @@
 
 <h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
 <p>本パッケージは Python3.10+, PyTorch が実行に必要です。PyTorch はご自身の環境に合わせて、インストールが必要です。通常モデルは GPU 向けに最適化されており、デバイスは GPU(&gt; VRAM 8G)を推奨しています。CPU でも動作しますが、実行に時間がかかりますのでご注意ください。軽量モデルは CPU でも高速に推論できます。</p>
+<p>CUDA に対応した PyTorch のインストール方法（Windows や RTX 50 シリーズなどの新しい GPU を利用する場合を含む）は <a href="../faq/#cuda-pytorch">FAQ</a> を参照してください。</p>
 <h2 id="pypi">PYPI からインストール<a class="headerlink" href="#pypi" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>yomitoku
 </span></code></pre></div>
@@ -1090,10 +1137,14 @@
 </span></code></pre></div>
 <p>uvを利用する場合、<code>pyproject.toml</code>の以下の部分をご自身のcudaのバージョンに合わせて修正する必要があります。デフォルトではCUDA12.4に対応したPyTorchがダウンロードされます。</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>[[tool.uv.index]]
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>name = &quot;pytorch-cuda124&quot;
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>url = &quot;https://download.pytorch.org/whl/cu124&quot;
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>name = "pytorch-cuda124"
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>url = "https://download.pytorch.org/whl/cu124"
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>explicit = true
 </span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>RTX 50 シリーズなどの新しい GPU では、宣言バージョンよりも新しい CUDA 対応ビルドの PyTorch が必要となる場合があります。導入手順は <a href="../faq/#cuda-pytorch">FAQ</a> を参照してください。</p>
+</div>
 <h2 id="docker">Docker 環境での実行<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h2>
 <p>リポジトリの直下に dockerfile を配置していますので、そちらも活用いただけます。</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>yomitoku<span class="w"> </span>.
