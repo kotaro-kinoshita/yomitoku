@@ -2,6 +2,8 @@
 
 本パッケージは Python3.10+, PyTorch が実行に必要です。PyTorch はご自身の環境に合わせて、インストールが必要です。通常モデルは GPU 向けに最適化されており、デバイスは GPU(> VRAM 8G)を推奨しています。CPU でも動作しますが、実行に時間がかかりますのでご注意ください。軽量モデルは CPU でも高速に推論できます。
 
+CUDA に対応した PyTorch のインストール方法（Windows や RTX 50 シリーズなどの新しい GPU を利用する場合を含む）は [FAQ](faq.md#cuda-pytorch) を参照してください。
+
 ## PYPI からインストール
 
 ```bash
@@ -30,6 +32,9 @@ name = "pytorch-cuda124"
 url = "https://download.pytorch.org/whl/cu124"
 explicit = true
 ```
+
+!!! note
+    RTX 50 シリーズなどの新しい GPU では、宣言バージョンよりも新しい CUDA 対応ビルドの PyTorch が必要となる場合があります。導入手順は [FAQ](faq.md#cuda-pytorch) を参照してください。
 
 ## Docker 環境での実行
 

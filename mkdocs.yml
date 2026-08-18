@@ -80,6 +80,7 @@ nav:
   - Table Semantic Parser: table_semantic_parser.md
   - Module Output: schemas.md
   - Model Config: configuration.md
+  - FAQ: faq.md
   - Release Note: release_note.md
   - MCP: mcp.md
   - Commercial Use: commercial_use_guideline.md
