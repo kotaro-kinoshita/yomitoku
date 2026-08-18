@@ -2,6 +2,8 @@
 
 This package requires Python 3.10 or later and PyTorch 2.5 or later for execution. PyTorch must be installed according to your CUDA version. In normal mode, the model is optimized for a GPU, and a GPU with at least 8GB of VRAM is recommended. While it can run on a CPU, expect long execution times. In efficient mode, it is designed to provide fast inference even on a CPU.
 
+For how to install a CUDA-enabled build of PyTorch (including on Windows or with newer GPUs such as the RTX 50 series), see the [FAQ](faq.md#cuda-pytorch).
+
 ## from PYPI
 
 ```bash
@@ -30,6 +32,9 @@ name = "pytorch-cuda124"
 url = "https://download.pytorch.org/whl/cu124"
 explicit = true
 ```
+
+!!! note
+    Newer GPUs such as the RTX 50 series may require a newer CUDA-enabled PyTorch build than the declared version. See the [FAQ](faq.md#cuda-pytorch) for the installation steps.
 
 ## Using docker
 
