@@ -4,7 +4,7 @@ from typing import Union
 
 import torch
 from omegaconf import OmegaConf
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from .export import export_json
 from .utils.logger import set_logger
@@ -49,9 +49,7 @@ def observer(cls, func):
 
 
 class BaseSchema(BaseModel):
-    class Config:
-        extra = Extra.forbid
-        validate_assignment = True
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
     def to_json(self, out_path: str, **kwargs):
         return export_json(self, out_path, **kwargs)
