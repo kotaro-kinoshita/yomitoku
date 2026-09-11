@@ -12,6 +12,7 @@ class Data:
     dynamic_width: bool = True
     batch_bucketing: bool = True
     resize_policy: str = "fit"
+    trailing_margin: int = 96
     width_budget: int = 8000
     max_batch_size: Optional[int] = 64
 

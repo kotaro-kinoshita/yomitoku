@@ -6,7 +6,10 @@ import pytest
 from omegaconf import OmegaConf
 
 from yomitoku.base import BaseModule
-from yomitoku.configs import TextRecognizerPARSeqTinyDynwV5Config
+from yomitoku.configs import (
+    TextRecognizerPARSeqMiddleDynwV5Config,
+    TextRecognizerPARSeqTinyDynwV5Config,
+)
 from yomitoku.data.dataset import ParseqDataset
 from yomitoku.data.functions import (
     calc_resize_without_padding,
@@ -108,3 +111,32 @@ def test_cli_selects_v5_without_forcing_runtime(monkeypatch, tmp_path, lite, exp
     monkeypatch.setattr(cli, "DocumentAnalyzer", analyzer)
     with pytest.raises(Captured):
         cli.main()
+
+
+@pytest.mark.parametrize(
+    "config_class",
+    [TextRecognizerPARSeqTinyDynwV5Config, TextRecognizerPARSeqMiddleDynwV5Config],
+)
+def test_trailing_margin_config_preserves_content(config_class):
+    cfg = OmegaConf.structured(config_class)
+    assert cfg.data.trailing_margin == 96
+    img = np.full((16, 48, 3), 255, dtype=np.uint8)
+    quads = [[[1, 1], [30, 1], [30, 9], [1, 9]]]
+    kwargs = (
+        {"det_scores": [1.0]}
+        if "det_scores" in inspect.signature(ParseqDataset).parameters
+        else {}
+    )
+    extended = ParseqDataset(cfg, img, quads, **kwargs)
+    cfg.data.trailing_margin = 64
+    reference = ParseqDataset(cfg, img, quads, **kwargs)
+    assert extended.data[0].shape[1] == reference.data[0].shape[1] + 32
+    np.testing.assert_array_equal(
+        extended.data[0][:, : reference.data[0].shape[1]], reference.data[0]
+    )
+    assert np.all(extended.data[0][:, reference.data[0].shape[1] :] == 0)
+    assert extended.content_widths == reference.content_widths
+    legacy_cfg = OmegaConf.to_container(cfg)
+    del legacy_cfg["data"]["trailing_margin"]
+    legacy = ParseqDataset(OmegaConf.create(legacy_cfg), img, quads, **kwargs)
+    np.testing.assert_array_equal(legacy.data[0], reference.data[0])

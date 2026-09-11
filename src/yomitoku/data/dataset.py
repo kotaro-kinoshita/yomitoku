@@ -58,6 +58,7 @@ class ParseqDataset(Dataset):
             if dynamic_width is None
             else dynamic_width
         )
+        self.trailing_margin = getattr(cfg.data, "trailing_margin", 64)
         self.resize_policy = getattr(cfg.data, "resize_policy", "downscale")
         if self.resize_policy not in ("fit", "downscale"):
             raise ValueError(f"Unknown resize_policy: {self.resize_policy}")
@@ -122,7 +123,10 @@ class ParseqDataset(Dataset):
         roi_img = rotate_text_image(roi_img, thresh_aspect=2)
         if self.dynamic_width:
             resized = resize_with_dynamic_padding(
-                roi_img, self.cfg.data.img_size, resize_policy=self.resize_policy
+                roi_img,
+                self.cfg.data.img_size,
+                margin=self.trailing_margin,
+                resize_policy=self.resize_policy,
             )
         else:
             resized = resize_with_padding(
