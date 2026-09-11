@@ -350,33 +350,20 @@ def rotate_text_image(img, thresh_aspect=2):
     return img
 
 
-def calc_resize_without_padding(img, target_size):
-    """
-    Calculate the resized size of the image without padding.
-    The image is only downscaled (never upscaled) to fit within target_size.
-
-    Args:
-        img (np.ndarray): target image
-        target_size (int, int): target size (height, width)
-
-    Returns:
-        Tuple[int, int]: resized size (height, width)
-    """
+def calc_resize_without_padding(img, target_size, resize_policy="fit"):
+    """Fit the canvas, optionally enlarging small crops (``fit`` policy)."""
+    if resize_policy not in ("fit", "downscale"):
+        raise ValueError(f"Unknown resize_policy: {resize_policy}")
     h, w = img.shape[:2]
-    scale_w = 1.0
-    scale_h = 1.0
-    if w > target_size[1]:
-        scale_w = target_size[1] / w
-    if h > target_size[0]:
-        scale_h = target_size[0] / h
-
-    new_w = max(1, int(w * min(scale_w, scale_h)))
-    new_h = max(1, int(h * min(scale_w, scale_h)))
-
-    return new_h, new_w
+    scale = min(target_size[0] / h, target_size[1] / w)
+    if resize_policy == "downscale":
+        scale = min(1.0, scale)
+    return max(1, int(h * scale)), max(1, int(w * scale))
 
 
-def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
+def resize_with_padding(
+    img, target_size, background_color=(0, 0, 0), resize_policy="fit"
+):
     """
     Resize the image with padding.
 
@@ -388,9 +375,11 @@ def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
     Returns:
         np.ndarray: resized image
     """
-    new_h, new_w = calc_resize_without_padding(img, target_size)
+    h = img.shape[0]
+    new_h, new_w = calc_resize_without_padding(img, target_size, resize_policy)
 
-    resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    interp = cv2.INTER_AREA if new_h <= h else cv2.INTER_LINEAR
+    resized = cv2.resize(img, (new_w, new_h), interpolation=interp)
 
     canvas = np.zeros((target_size[0], target_size[1], 3), dtype=np.uint8)
     canvas[:, :] = background_color
@@ -402,7 +391,12 @@ def resize_with_padding(img, target_size, background_color=(0, 0, 0)):
 
 
 def resize_with_dynamic_padding(
-    img, target_size, align=8, margin=64, background_color=(0, 0, 0)
+    img,
+    target_size,
+    align=8,
+    margin=64,
+    background_color=(0, 0, 0),
+    resize_policy="fit",
 ):
     """
     Resize the image with padding, keeping the canvas width to the
@@ -426,9 +420,11 @@ def resize_with_dynamic_padding(
     Returns:
         np.ndarray: resized image of shape (target_size[0], canvas_w, 3)
     """
-    new_h, new_w = calc_resize_without_padding(img, target_size)
+    h = img.shape[0]
+    new_h, new_w = calc_resize_without_padding(img, target_size, resize_policy)
 
-    resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    interp = cv2.INTER_AREA if new_h <= h else cv2.INTER_LINEAR
+    resized = cv2.resize(img, (new_w, new_h), interpolation=interp)
 
     canvas_w = min(target_size[1], ((new_w + margin + align - 1) // align) * align)
     canvas = np.zeros((target_size[0], canvas_w, 3), dtype=np.uint8)

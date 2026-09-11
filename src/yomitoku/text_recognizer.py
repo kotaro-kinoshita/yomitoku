@@ -13,6 +13,8 @@ from .configs import (
     TextRecognizerPARSeqTinyConfig,
     TextRecognizerPARSeqLargeV41Config,
     TextRecognizerPARSeqTinyDynwV4Config,
+    TextRecognizerPARSeqTinyDynwV5Config,
+    TextRecognizerPARSeqMiddleDynwV5Config,
 )
 import cv2
 
@@ -20,7 +22,7 @@ from .data.dataset import ParseqDataset
 from .data.functions import resize_with_padding
 from .models import PARSeq
 from .postprocessor import ParseqTokenizer as Tokenizer
-from .utils.misc import load_charset
+from .utils.misc import load_char_replace_table, load_charset
 from .utils.visualizer import rec_visualizer
 
 from .constants import ROOT_DIR
@@ -43,6 +45,16 @@ class TextRecognizerModelCatalog(BaseModelCatalog):
             TextRecognizerPARSeqTinyDynwV4Config,
             PARSeq,
         )
+        self.register(
+            "parseq-tiny-dynw-v5",
+            TextRecognizerPARSeqTinyDynwV5Config,
+            PARSeq,
+        )
+        self.register(
+            "parseq-middle-dynw-v5",
+            TextRecognizerPARSeqMiddleDynwV5Config,
+            PARSeq,
+        )
 
 
 class TextRecognizer(BaseModule):
@@ -50,7 +62,7 @@ class TextRecognizer(BaseModule):
 
     def __init__(
         self,
-        model_name="parseq-large-v4_1",
+        model_name="parseq-middle-dynw-v5",
         path_cfg=None,
         device="cuda",
         visualize=False,
@@ -58,8 +70,8 @@ class TextRecognizer(BaseModule):
         infer_onnx=False,
         rec_orientation_fallback=False,
         rec_orientation_fallback_thresh=0.75,
-        batch_bucketing=False,
-        dynamic_width=False,
+        batch_bucketing=None,
+        dynamic_width=None,
         num_parallel_batches=1,
         source_downscale=False,
     ):
@@ -72,6 +84,15 @@ class TextRecognizer(BaseModule):
         self.charset = load_charset(self._cfg.charset)
         self.tokenizer = Tokenizer(self.charset)
 
+        # Charsets trained without uniform NFKC normalization opt out of the
+        # NFKC pass in postprocess and instead expand composite glyphs
+        # (e.g. ℡ -> TEL) via an explicit per-character replacement table.
+        self.nfkc_normalize = getattr(self._cfg, "nfkc_normalize", True)
+        char_replace_table = getattr(self._cfg, "char_replace_table", None)
+        self.char_replace_table = (
+            load_char_replace_table(char_replace_table) if char_replace_table else None
+        )
+
         self.device = device
 
         self.model.tokenizer = self.tokenizer
@@ -82,7 +103,13 @@ class TextRecognizer(BaseModule):
         self.infer_onnx = infer_onnx
         self.rec_orientation_fallback = rec_orientation_fallback
         self.rec_orientation_fallback_thresh = rec_orientation_fallback_thresh
-        self.batch_bucketing = batch_bucketing
+        self.batch_bucketing = (
+            getattr(self._cfg.data, "batch_bucketing", False)
+            if batch_bucketing is None
+            else batch_bucketing
+        )
+        if dynamic_width is None:
+            dynamic_width = getattr(self._cfg.data, "dynamic_width", False)
         # The ONNX model is exported with a fixed input shape, so
         # dynamic-width batching is only available on the PyTorch path.
         self.dynamic_width = dynamic_width and not infer_onnx
@@ -231,7 +258,10 @@ class TextRecognizer(BaseModule):
 
     def postprocess(self, p, points):
         pred, score = self.tokenizer.decode(p)
-        pred = [unicodedata.normalize("NFKC", x) for x in pred]
+        if self.nfkc_normalize:
+            pred = [unicodedata.normalize("NFKC", x) for x in pred]
+        if self.char_replace_table is not None:
+            pred = [x.translate(self.char_replace_table) for x in pred]
 
         directions = []
         for point in points:
@@ -321,7 +351,11 @@ class TextRecognizer(BaseModule):
         tensors = []
         for i in indices:
             rotated = cv2.rotate(dataset.roi_images[i], cv2.ROTATE_180)
-            resized = resize_with_padding(rotated, img_size)
+            resized = resize_with_padding(
+                rotated,
+                img_size,
+                resize_policy=getattr(self._cfg.data, "resize_policy", "downscale"),
+            )
             tensor = dataset.transform(resized).unsqueeze(0)
             tensors.append(tensor)
         batch = torch.cat(tensors, dim=0)

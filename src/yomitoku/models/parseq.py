@@ -119,6 +119,13 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
             if n < 2 * p:
                 continue
             unit = seq[n - p : n]
+            # A constant run such as ``AAAAAA`` also trivially matches the
+            # period-2 unit ``AA`` (and every larger period). It must be
+            # governed only by the dedicated period-1 threshold; otherwise
+            # lowering the multi-token threshold truncates legitimate runs
+            # before ``rep_min_run_p1`` is reached.
+            if p > 1 and len(set(unit)) == 1:
+                continue
             k, t = 1, n - p
             while t - p >= 0 and seq[t - p : t] == unit:
                 k += 1

@@ -48,12 +48,19 @@ class ParseqDataset(Dataset):
         img,
         quads,
         num_workers=8,
-        dynamic_width=False,
+        dynamic_width=None,
         source_downscale=False,
     ):
         self.quads = quads
         self.cfg = cfg
-        self.dynamic_width = dynamic_width
+        self.dynamic_width = (
+            getattr(cfg.data, "dynamic_width", False)
+            if dynamic_width is None
+            else dynamic_width
+        )
+        self.resize_policy = getattr(cfg.data, "resize_policy", "downscale")
+        if self.resize_policy not in ("fit", "downscale"):
+            raise ValueError(f"Unknown resize_policy: {self.resize_policy}")
         self.transform = T.Compose(
             [
                 T.ToTensor(),
@@ -114,11 +121,17 @@ class ParseqDataset(Dataset):
 
         roi_img = rotate_text_image(roi_img, thresh_aspect=2)
         if self.dynamic_width:
-            resized = resize_with_dynamic_padding(roi_img, self.cfg.data.img_size)
+            resized = resize_with_dynamic_padding(
+                roi_img, self.cfg.data.img_size, resize_policy=self.resize_policy
+            )
         else:
-            resized = resize_with_padding(roi_img, self.cfg.data.img_size)
+            resized = resize_with_padding(
+                roi_img, self.cfg.data.img_size, resize_policy=self.resize_policy
+            )
 
-        _, content_width = calc_resize_without_padding(roi_img, self.cfg.data.img_size)
+        _, content_width = calc_resize_without_padding(
+            roi_img, self.cfg.data.img_size, resize_policy=self.resize_policy
+        )
 
         return resized, roi_img, content_width
 

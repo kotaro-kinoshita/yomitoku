@@ -17,7 +17,7 @@ class Data:
     # with batch_bucketing so batches stay width-homogeneous).
     dynamic_width: bool = True
     batch_bucketing: bool = True
-    resize_policy: str = "downscale"
+    resize_policy: str = "fit"
     width_budget: int = 8000
     # Optional hard cap on batch size to bound decode-time memory on many
     # very narrow crops. None = no cap.
@@ -49,26 +49,42 @@ class Visualize:
 
 
 @dataclass
-class TextRecognizerPARSeqTinyDynwV4Config:
-    """Config for the lite dynamic-width PARSeq recognizer (parseq-tiny-dynw-v4).
+class TextRecognizerPARSeqTinyDynwV5Config:
+    """Config for the charset-v3 lite dynamic-width PARSeq recognizer
+    (parseq-tiny-dynw-v5).
 
-    A compact recognizer: 32px input height with a [4, 8] patch (8 patch rows
-    x 100 columns over a 32x800 canvas), a 192-dim encoder/decoder, and 6
-    attention heads. Trained with the dynamic-width recipe (width bucketing +
-    trailing margin) so it stays accurate on narrow canvases, which unlocks
-    dynamic-width batching at inference time (``dynamic_width=True``, paired
-    with ``batch_bucketing=True``). This is the recognizer selected by the CLI
-    ``--lite`` option for fast CPU inference.
+    Same architecture as ``parseq-tiny-dynw-v4`` (32x800 canvas, [4, 8] patch,
+    192-dim encoder/decoder, 6 heads), trained on charset v3 (7519 chars,
+    2026-07-31 revision) WITHOUT uniform NFKC normalization of the labels. Accordingly, inference
+    must not NFKC-normalize predictions either; instead an explicit
+    per-character replacement table (character_post_expand_table_v3) expands
+    the few composite glyphs (e.g. ℡ -> TEL) in post-processing.
+
     """
 
-    hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-recognizer-parseq-tiny-dynw-v4"
-    charset: str = str(ROOT_DIR + "/resource/charsetv2.txt")
-    num_tokens: int = 7121
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-text-recognizer-parseq-tiny-dynw-v5"
+    charset: str = str(ROOT_DIR + "/resource/charsetv3.txt")
+    num_tokens: int = 7522
     max_label_length: int = 100
     decode_ar: int = 1
     refine_iters: int = 1
+    # Preserve legitimate receipt masks and leader lines up to a 16-character
+    # constant run, while stopping genuine multi-token loops after 3 repeats.
+    # PARSeq's repeat detector excludes constant units from period > 1 so the
+    # two thresholds can be tuned independently.
+    repetition_stop: bool = True
+    rep_period_max: int = 8
+    rep_min_run_p1: int = 16
+    rep_min_repeats: int = 3
     rec_orientation_fallback: bool = False
     rec_orientation_fallback_thresh: float = 0.75
+
+    # charset v3 keeps compatibility characters verbatim, so the uniform
+    # NFKC pass must be skipped; the table below replaces it.
+    nfkc_normalize: bool = False
+    char_replace_table: Optional[str] = str(
+        ROOT_DIR + "/resource/character_post_expand_table_v3.csv"
+    )
 
     data: Data = field(default_factory=Data)
     encoder: Encoder = field(default_factory=Encoder)
