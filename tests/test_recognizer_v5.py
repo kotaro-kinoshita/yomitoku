@@ -7,7 +7,9 @@ from omegaconf import OmegaConf
 
 from yomitoku.base import BaseModule
 from yomitoku.configs import (
+    TextRecognizerPARSeqLargeV41Config,
     TextRecognizerPARSeqMiddleDynwV5Config,
+    TextRecognizerPARSeqTinyDynwV4Config,
     TextRecognizerPARSeqTinyDynwV5Config,
 )
 from yomitoku.data.dataset import ParseqDataset
@@ -48,6 +50,52 @@ def test_dataset_uses_config_and_explicit_override():
     assert dynamic.data[0].shape[1] < 800
     assert fixed.data[0].shape[1] == 800
     assert dynamic.content_widths == fixed.content_widths
+
+
+@pytest.mark.parametrize(
+    "config_class,expected_dynamic,expected_bucketing",
+    [
+        (TextRecognizerPARSeqLargeV41Config, False, False),
+        (TextRecognizerPARSeqTinyDynwV4Config, True, True),
+    ],
+)
+def test_v4_config_keeps_legacy_preprocessing(
+    config_class, expected_dynamic, expected_bucketing
+):
+    cfg = OmegaConf.structured(config_class)
+    assert cfg.data.dynamic_width is expected_dynamic
+    assert cfg.data.batch_bucketing is expected_bucketing
+    assert cfg.data.resize_policy == "downscale"
+    assert "trailing_margin" not in cfg.data
+
+    img = np.full((16, 48, 3), 255, dtype=np.uint8)
+    quads = [[[1, 1], [21, 1], [21, 9], [1, 9]]]
+    dataset = ParseqDataset(cfg, img, quads)
+    assert dataset.trailing_margin == 64
+    assert dataset.resize_policy == "downscale"
+    assert dataset.dynamic_width is expected_dynamic
+    assert dataset.data[0].shape[0] == 32
+    assert dataset.data[0].shape[1] == (88 if expected_dynamic else 800)
+    assert dataset.content_widths == [20]
+
+
+def test_v4_runtime_keeps_nfkc_and_allows_explicit_dynamic_override(monkeypatch):
+    cfg = OmegaConf.structured(TextRecognizerPARSeqLargeV41Config)
+    monkeypatch.setattr(BaseModule, "__init__", lambda self, **kwargs: None)
+
+    def load(self, *args, **kwargs):
+        self._cfg = cfg
+        self.model = Mock()
+
+    monkeypatch.setattr(TextRecognizer, "load_model", load)
+    rec = object.__new__(TextRecognizer)
+    TextRecognizer.__init__(
+        rec, device="cpu", dynamic_width=True, batch_bucketing=True
+    )
+    assert rec.dynamic_width is True
+    assert rec.batch_bucketing is True
+    assert rec.nfkc_normalize is True
+    assert rec.char_replace_table is None
 
 
 @pytest.mark.parametrize(
