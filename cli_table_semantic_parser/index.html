@@ -786,6 +786,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="テンプレートの適用">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#yomitoku-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        YomiToku Studioテンプレートの適用
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1216,6 +1233,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="テンプレートの適用">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#yomitoku-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        YomiToku Studioテンプレートの適用
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1339,6 +1373,10 @@
 <tr>
 <td style="text-align: left;"><code>--template</code></td>
 <td style="text-align: left;">テーブルテンプレートJSONを適用します（grid/kvの推論をスキップ）。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--studio-template</code></td>
+<td style="text-align: left;">YomiToku Studioで作成した帳票テンプレートJSON（v2/v3）を適用します。テンプレートの表・セル構造を使用し、OCRのみ実行します。<code>--template</code>との併用はできません。</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>--grid_only</code></td>
@@ -1512,16 +1550,25 @@
 <p><code>--template</code> にテンプレートJSONを指定すると、grid / kv の推論をスキップしてテンプレートの定義を適用します。テンプレートは <code>--raw</code> 出力の <code>save_template_json()</code> で作成できます。</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--template<span class="w"> </span>template.json
 </span></code></pre></div>
+<h3 id="yomitoku-studio">YomiToku Studioテンプレートの適用<a class="headerlink" href="#yomitoku-studio" title="Permanent link">&para;</a></h3>
+<p>YomiToku Studioから保存した <code>kind: "form-template"</code> のテンプレートには、<code>--studio-template</code> を使用します。画像・PDFファイルだけでなくディレクトリも指定でき、配下の対応ファイルを再帰的にバッチ解析します。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>yomitoku_table<span class="w"> </span>./input<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--studio-template<span class="w"> </span>table.template.json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>--simple<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span>-o<span class="w"> </span>results
+</span></code></pre></div>
+<p>Studioテンプレート適用時は、表・セル検出およびgrid/kv推論を行わず、テンプレートに保存された構造へ現在の画像のOCR結果を割り当てます。OCRできなかった見出し（<code>header</code> / <code>group</code>）にはテンプレート作成時の文字を補いますが、値セルには作成時の値を補わず空文字にします。</p>
+<p>対応するStudioテンプレートのバージョンは2と3です。通常の <code>--template</code> とはJSON形式が異なるため、両オプションは同時に指定できません。</p>
 <h2 id="key-value">グリッド / Key-Value のみを解析する<a class="headerlink" href="#key-value" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># グリッド (格子データ) のみ</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--grid_only
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Key-Value のみ</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--kv_only
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># グリッド (格子データ) のみ</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--grid_only
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Key-Value のみ</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--kv_only
 </span></code></pre></div>
 <h2 id="_4">読み取り対象ページを指定する<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
 <p><code>--pages</code> で処理するページを指定します（1始まり、カンマ区切り・範囲指定可）。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5
 </span></code></pre></div>
 <h2 id="_5">解析結果の可視化<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <p><code>-v</code> を付与すると、ページごとに以下の画像を出力します。</p>
@@ -1529,7 +1576,7 @@
 <li><code>*_layout.jpg</code> : テーブル・段落・セル役割（緑=ヘッダー、青=セル、マゼンタ=空セル）の可視化。確定した Key-Value のキー→値の連なりを<strong>緑の矢印</strong>、グリッドの構造を<strong>青枠と矢印</strong>で描画します。</li>
 <li><code>*_ocr.jpg</code> : 文字検出・認識結果の可視化。</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-o<span class="w"> </span>results<span class="w"> </span>-v
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-o<span class="w"> </span>results<span class="w"> </span>-v
 </span></code></pre></div>
 
 

@@ -786,6 +786,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Applying a Template">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#applying-a-yomitoku-studio-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Applying a YomiToku Studio template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1216,6 +1233,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Applying a Template">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#applying-a-yomitoku-studio-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Applying a YomiToku Studio template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1339,6 +1373,10 @@
 <tr>
 <td style="text-align: left;"><code>--template</code></td>
 <td style="text-align: left;">Apply a table template JSON (skips grid/kv inference).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--studio-template</code></td>
+<td style="text-align: left;">Apply a YomiToku Studio form-template JSON (v2/v3). Uses its fixed table/cell structure and runs OCR only. Mutually exclusive with <code>--template</code>.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>--grid_only</code></td>
@@ -1489,16 +1527,25 @@
 <p>With <code>--template</code>, grid/kv inference is skipped and the definitions in the template JSON are applied instead. Templates can be created from <code>--raw</code> output via <code>save_template_json()</code>.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--template<span class="w"> </span>template.json
 </span></code></pre></div>
+<h3 id="applying-a-yomitoku-studio-template">Applying a YomiToku Studio template<a class="headerlink" href="#applying-a-yomitoku-studio-template" title="Permanent link">&para;</a></h3>
+<p>Use <code>--studio-template</code> for a <code>kind: "form-template"</code> JSON saved by YomiToku Studio. The input may be an image, PDF, or directory; directories are processed recursively in a batch.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>yomitoku_table<span class="w"> </span>./input<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--studio-template<span class="w"> </span>table.template.json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--simple<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span>-o<span class="w"> </span>results
+</span></code></pre></div>
+<p>In this mode, table/cell detection and grid/kv inference are skipped. Current-page OCR text is assigned to the structure stored in the template. Missing header/group text may fall back to the template label, but a value cell is never populated from the template's original value.</p>
+<p>Studio template versions 2 and 3 are supported. Studio templates use a different JSON schema from <code>--template</code>, so the two options cannot be combined.</p>
 <h2 id="parsing-only-grids-key-values">Parsing Only Grids / Key-Values<a class="headerlink" href="#parsing-only-grids-key-values" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># grids only</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--grid_only
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># key-value items only</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--kv_only
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># grids only</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--grid_only
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># key-value items only</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--kv_only
 </span></code></pre></div>
 <h2 id="selecting-pages">Selecting Pages<a class="headerlink" href="#selecting-pages" title="Permanent link">&para;</a></h2>
 <p>Specify pages to process with <code>--pages</code> (1-indexed, comma-separated, ranges allowed).</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5
 </span></code></pre></div>
 <h2 id="visualization">Visualization<a class="headerlink" href="#visualization" title="Permanent link">&para;</a></h2>
 <p>With <code>-v</code>, the following images are exported per page:</p>
@@ -1506,7 +1553,7 @@
 <li><code>*_layout.jpg</code>: tables, paragraphs, and cell roles (green = header, blue = cell, magenta = empty). Resolved key-value links are drawn as <strong>green arrows</strong> and grid structures as <strong>blue boxes and arrows</strong>.</li>
 <li><code>*_ocr.jpg</code>: text detection/recognition results.</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-o<span class="w"> </span>results<span class="w"> </span>-v
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>yomitoku_table<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-o<span class="w"> </span>results<span class="w"> </span>-v
 </span></code></pre></div>
 
 
