@@ -180,6 +180,7 @@ yomitoku_table ${path_data} -o results -v
 | `--simple` | 座標などのメタ情報を持たない、テキストのみの構造化JSONを出力します。 |
 | `--raw` | 正規化スキーマ（`TableSemanticParserSchema`）のまま出力します（テンプレート往復用）。 |
 | `--lite` | 軽量モデルで実行します（CPU向け）。 |
+| `--studio-template FILE` | YomiToku Studioの帳票テンプレート（v2/v3）を使い、OCRのみでバッチ解析します。 |
 | `--grid_only` / `--kv_only` | グリッドのみ / Key-Valueのみを解析します。 |
 
 その他のオプション（モデル・Configの個別指定、テンプレート適用、ページ指定など）は[Table Semantic Parser CLIのドキュメント](https://kotaro-kinoshita.github.io/yomitoku/cli_table_semantic_parser/)を参照してください。Python APIの詳細は[Table Semantic Parserのドキュメント](https://kotaro-kinoshita.github.io/yomitoku/table_semantic_parser/)を参照してください。

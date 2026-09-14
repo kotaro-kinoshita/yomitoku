@@ -24,6 +24,7 @@ yomitoku_table ${path_data} -o results -v
 | `--td_name` / `--td_cfg` | 文字検出モデルの名前 / 設定ファイルを指定します。デフォルト: `dbnetv2_1` |
 | `--tr_name` / `--tr_cfg` | 文字認識モデルの名前 / 設定ファイルを指定します。デフォルト: `parseq-large-v4_1` |
 | `--template` | テーブルテンプレートJSONを適用します（grid/kvの推論をスキップ）。 |
+| `--studio-template` | YomiToku Studioで作成した帳票テンプレートJSON（v2/v3）を適用します。テンプレートの表・セル構造を使用し、OCRのみ実行します。`--template`との併用はできません。 |
 | `--grid_only` | グリッド領域のみを解析します（Key-Valueをスキップ）。 |
 | `--kv_only` | Key-Valueのみを解析します（グリッドをスキップ）。 |
 | `--pages` | 読み取り対象ページを指定します（例: `1,2,5-10`、1始まり）。デフォルト: 全ページ |
@@ -182,6 +183,21 @@ yomitoku_table ${path_data} \
 ```bash
 yomitoku_table ${path_data} --template template.json
 ```
+
+### YomiToku Studioテンプレートの適用
+
+YomiToku Studioから保存した `kind: "form-template"` のテンプレートには、`--studio-template` を使用します。画像・PDFファイルだけでなくディレクトリも指定でき、配下の対応ファイルを再帰的にバッチ解析します。
+
+```bash
+yomitoku_table ./input \
+  --studio-template table.template.json \
+  --simple \
+  -o results
+```
+
+Studioテンプレート適用時は、表・セル検出およびgrid/kv推論を行わず、テンプレートに保存された構造へ現在の画像のOCR結果を割り当てます。OCRできなかった見出し（`header` / `group`）にはテンプレート作成時の文字を補いますが、値セルには作成時の値を補わず空文字にします。
+
+対応するStudioテンプレートのバージョンは2と3です。通常の `--template` とはJSON形式が異なるため、両オプションは同時に指定できません。
 
 ## グリッド / Key-Value のみを解析する
 

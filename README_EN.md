@@ -122,6 +122,7 @@ By default, the output is structured JSON with the resolved key-value/grid texts
 | `--simple` | Output text-only structured JSON without coordinates and other metadata. |
 | `--raw` | Output the normalized `TableSemanticParserSchema` JSON (for template round-trips). |
 | `--lite` | Use lite models (for CPU). |
+| `--studio-template FILE` | Batch-analyze with a YomiToku Studio form template (v2/v3), using OCR only. |
 | `--grid_only` / `--kv_only` | Parse only grids / key-value items. |
 
 For the other options (per-module model/config overrides, templates, page selection, etc.), see the [Table Semantic Parser CLI documentation](https://kotaro-kinoshita.github.io/yomitoku/en/cli_table_semantic_parser/). For the Python API, see the [Table Semantic Parser documentation](https://kotaro-kinoshita.github.io/yomitoku/en/table_semantic_parser/).

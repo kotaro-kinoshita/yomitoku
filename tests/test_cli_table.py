@@ -39,6 +39,75 @@ def test_run_not_exist_template(monkeypatch, tmp_path):
         table.main()
 
 
+def test_run_not_exist_studio_template(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "table.py",
+            "tests/data/test.jpg",
+            "-o",
+            str(tmp_path),
+            "--studio-template",
+            "tests/data/dummy.template.json",
+        ],
+    )
+    with pytest.raises(FileNotFoundError):
+        table.main()
+
+
+def test_run_template_options_conflict(monkeypatch, tmp_path):
+    native = tmp_path / "native.json"
+    studio = tmp_path / "studio.json"
+    native.write_text("{}", encoding="utf-8")
+    studio.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "table.py",
+            "tests/data/test.jpg",
+            "--template",
+            str(native),
+            "--studio-template",
+            str(studio),
+        ],
+    )
+    with pytest.raises(ValueError, match="cannot be used together"):
+        table.main()
+
+
+def test_studio_template_initializes_ocr_only_parser(monkeypatch, tmp_path):
+    template_path = tmp_path / "studio.json"
+    template_path.write_text("{}", encoding="utf-8")
+    captured = {}
+
+    class FakeStudioParser:
+        def __init__(self, template_path, **kwargs):
+            captured["template_path"] = template_path
+            captured.update(kwargs)
+
+    monkeypatch.setattr(table, "StudioFormTemplateParser", FakeStudioParser)
+    monkeypatch.setattr(table, "collect_files", lambda _path: [])
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "table.py",
+            "tests/data/test.jpg",
+            "-o",
+            str(tmp_path / "results"),
+            "--studio-template",
+            str(template_path),
+            "--device",
+            "cpu",
+        ],
+    )
+
+    table.main()
+
+    assert captured["template_path"] == str(template_path)
+    assert captured["device"] == "cpu"
+    assert set(captured["configs"]) == {"text_detector", "text_recognizer"}
+
+
 def test_run_raw_and_simple_conflict(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "sys.argv",

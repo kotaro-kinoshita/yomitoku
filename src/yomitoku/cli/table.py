@@ -7,6 +7,7 @@ import torch
 
 from ..constants import ROOT_DIR, SUPPORT_INPUT_FORMAT
 from ..data.functions import load_image, load_pdf
+from ..studio_form_template import StudioFormTemplateParser
 from ..table_semantic_parser import TableSemanticParser
 from ..utils.logger import set_logger
 from ..utils.misc import save_image
@@ -61,12 +62,15 @@ def process_single_file(file_path, args, tsp):
         logger.info(f"Processing page {page + 1}...")
         start = time.time()
 
-        semantic_info, vis_layout, vis_ocr = tsp(
-            img,
-            template=args.template,
-            grid_only=args.grid_only,
-            kv_only=args.kv_only,
-        )
+        if args.studio_template is not None:
+            semantic_info, vis_layout, vis_ocr = tsp(img)
+        else:
+            semantic_info, vis_layout, vis_ocr = tsp(
+                img,
+                template=args.template,
+                grid_only=args.grid_only,
+                kv_only=args.kv_only,
+            )
 
         # TableSemanticParser は visualize=False でも入力画像のコピーを
         # 返すため、None 判定ではなく args.vis でゲートする
@@ -217,6 +221,15 @@ def main():
         help="path of table template JSON to apply instead of inference",
     )
     parser.add_argument(
+        "--studio-template",
+        type=str,
+        default=None,
+        help=(
+            "path of a YomiToku Studio form-template JSON; applies its fixed "
+            "structure and runs OCR only"
+        ),
+    )
+    parser.add_argument(
         "--grid_only",
         action="store_true",
         help="if set, parse only grid regions (skip key-value items)",
@@ -255,6 +268,14 @@ def main():
 
     if args.template is not None and not os.path.exists(args.template):
         raise FileNotFoundError(f"Template file not found: {args.template}")
+
+    if args.studio_template is not None and not os.path.exists(args.studio_template):
+        raise FileNotFoundError(
+            f"Studio template file not found: {args.studio_template}"
+        )
+
+    if args.template is not None and args.studio_template is not None:
+        raise ValueError("--template and --studio-template cannot be used together")
 
     if args.raw and args.simple:
         raise ValueError("--raw and --simple cannot be used together")
@@ -296,11 +317,24 @@ def main():
             configs["text_detector"]["infer_onnx"] = True
             configs["text_recognizer"]["num_parallel_batches"] = 4
 
-    tsp = TableSemanticParser(
-        configs=configs,
-        device=args.device,
-        visualize=args.vis,
-    )
+    if args.studio_template is not None:
+        # Studio templates provide table/cell structure, so only OCR models are
+        # needed. Table/cell model options intentionally do not affect this path.
+        tsp = StudioFormTemplateParser(
+            args.studio_template,
+            configs={
+                "text_detector": configs["text_detector"],
+                "text_recognizer": configs["text_recognizer"],
+            },
+            device=args.device,
+            visualize=args.vis,
+        )
+    else:
+        tsp = TableSemanticParser(
+            configs=configs,
+            device=args.device,
+            visualize=args.vis,
+        )
 
     os.makedirs(args.outdir, exist_ok=True)
     logger.info(f"Output directory: {args.outdir}")
