@@ -24,6 +24,7 @@ yomitoku_table ${path_data} -o results -v
 | `--td_name` / `--td_cfg` | Text detector model name / config file. Default: `dbnetv2_1` |
 | `--tr_name` / `--tr_cfg` | Text recognizer model name / config file. Default: `parseq-large-v4_1` |
 | `--template` | Apply a table template JSON (skips grid/kv inference). |
+| `--studio-template` | Apply a YomiToku Studio form-template JSON (v2/v3). Uses its fixed table/cell structure and runs OCR only. Mutually exclusive with `--template`. |
 | `--grid_only` | Parse only grid regions (skip key-value items). |
 | `--kv_only` | Parse only key-value items (skip grids). |
 | `--pages` | Pages to process (e.g. `1,2,5-10`, 1-indexed). Default: all pages |
@@ -157,6 +158,21 @@ With `--template`, grid/kv inference is skipped and the definitions in the templ
 ```bash
 yomitoku_table ${path_data} --template template.json
 ```
+
+### Applying a YomiToku Studio template
+
+Use `--studio-template` for a `kind: "form-template"` JSON saved by YomiToku Studio. The input may be an image, PDF, or directory; directories are processed recursively in a batch.
+
+```bash
+yomitoku_table ./input \
+  --studio-template table.template.json \
+  --simple \
+  -o results
+```
+
+In this mode, table/cell detection and grid/kv inference are skipped. Current-page OCR text is assigned to the structure stored in the template. Missing header/group text may fall back to the template label, but a value cell is never populated from the template's original value.
+
+Studio template versions 2 and 3 are supported. Studio templates use a different JSON schema from `--template`, so the two options cannot be combined.
 
 ## Parsing Only Grids / Key-Values
 
