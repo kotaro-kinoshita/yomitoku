@@ -147,7 +147,7 @@ def main():
         "-l",
         "--lite",
         action="store_true",
-        help="use the lite recognizer (parseq-tiny-dynw-v4 with dynamic-width batching) for faster CPU inference",
+        help="use the lite recognizer (parseq-tiny-dynw-v5 with dynamic-width batching) for faster CPU inference",
     )
     parser.add_argument(
         "-v",
@@ -232,9 +232,7 @@ def main():
         # Dynamic-width lite recognizer: keep each crop at its native width and
         # bucket similar-width crops together (mirrors the main CLI --lite).
         configs["text_recognizer"] = {
-            "model_name": "parseq-tiny-dynw-v4",
-            "dynamic_width": True,
-            "batch_bucketing": True,
+            "model_name": "parseq-tiny-dynw-v5",
         }
         if args.device == "cpu":
             configs.setdefault("text_detector", {})["infer_onnx"] = True

@@ -6,6 +6,9 @@ from ..constants import ROOT_DIR
 
 @dataclass
 class Data:
+    dynamic_width: bool = False
+    batch_bucketing: bool = False
+    resize_policy: str = "downscale"
     num_workers: int = 4
     batch_size: int = 128
     img_size: List[int] = field(default_factory=lambda: [32, 400])

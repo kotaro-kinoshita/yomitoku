@@ -354,8 +354,8 @@ def main():
     parser.add_argument(
         "--tr_name",
         type=str,
-        default="parseq-large-v4_1",
-        help="name of text recognizer model (default: parseq-large-v4_1)",
+        default=None,
+        help="name of text recognizer model (default: parseq-middle-dynw-v5)",
     )
     parser.add_argument(
         "--td_name",
@@ -503,17 +503,11 @@ def main():
     }
 
     if args.lite:
-        # Lite mode uses the compact 32px, 192-dim, [4, 8]-patch recognizer
-        # (parseq-tiny-dynw-v4) run in PyTorch with dynamic-width batching.
-        # Text crops are mostly narrow (median ~120px), so padding each batch
-        # only to its widest crop (dynamic_width) instead of to the fixed 800px
-        # ONNX canvas is ~15x faster on CPU; batch bucketing groups
-        # similar-width crops to cut padding waste further.
-        # (ONNX cannot do dynamic width here: the decoder's MultiheadAttention
-        # bakes the encoder-memory length at export time.)
-        configs["ocr"]["text_recognizer"]["model_name"] = "parseq-tiny-dynw-v4"
-        configs["ocr"]["text_recognizer"]["dynamic_width"] = True
-        configs["ocr"]["text_recognizer"]["batch_bucketing"] = True
+        # Model config selects dynamic width, bucketing and resize policy.
+        lite_tr_name = "parseq-tiny-dynw-v5"
+        if args.tr_name is not None:
+            lite_tr_name = args.tr_name
+        configs["ocr"]["text_recognizer"]["model_name"] = lite_tr_name
         # Shrink high-resolution sources once before cropping (bounded by the
         # smallest detected text height; crops are 32px tall anyway).
         configs["ocr"]["text_recognizer"]["source_downscale"] = True
@@ -528,7 +522,9 @@ def main():
         # configs["layout_analyzer"]["table_structure_recognizer"]["infer_onnx"] = True
         # configs["layout_analyzer"]["layout_parser"]["infer_onnx"] = True
     else:
-        configs["ocr"]["text_recognizer"]["model_name"] = args.tr_name
+        configs["ocr"]["text_recognizer"]["model_name"] = (
+            args.tr_name or "parseq-middle-dynw-v5"
+        )
         configs["ocr"]["text_detector"]["model_name"] = args.td_name
 
     if args.enable_rec_orientation_fallback:
