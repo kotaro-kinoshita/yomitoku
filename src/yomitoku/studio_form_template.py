@@ -264,19 +264,26 @@ def apply_studio_form_template(
 
 
 class StudioFormTemplateParser:
-    """OCR-only parser used by ``yomitoku_table --studio-template``."""
+    """Run OCR and apply a YomiToku Studio form template to an image.
+
+    Args:
+        template_path: Path to a Studio v2/v3 ``form-template`` JSON file.
+        configs: Optional ``text_detector`` and ``text_recognizer`` settings.
+        device: Device used for OCR inference.
+        visualize: Whether to draw template and OCR visualization images.
+    """
 
     def __init__(
         self,
         template_path: str | Path,
         *,
-        configs: dict,
-        device: str,
-        visualize: bool,
+        configs: dict | None = None,
+        device: str = "cuda",
+        visualize: bool = False,
     ):
         self.template = load_studio_form_template(template_path)
         self.visualize = visualize
-        self.ocr = OCR(configs=configs, device=device, visualize=visualize)
+        self.ocr = OCR(configs=configs or {}, device=device, visualize=visualize)
 
     def __call__(self, image):
         ocr_result, vis_ocr = self.ocr(image)
