@@ -28,6 +28,51 @@
 [demo/simple_table_semantic_analysis.py](../demo/simple_table_semantic_analysis.py)
 <!--/codeinclude-->
 
+
+## YomiToku StudioテンプレートをPython APIで使う
+
+YomiToku Studioの帳票解析画面から保存した`kind: "form-template"`のテンプレートは、`StudioFormTemplateParser`で画像へ適用できます。バージョン2と3に対応しています。テンプレートが表・セル・Key-Value・グリッド・段落の構造を提供するため、実行時はOCRのみを行います。
+
+```python
+import cv2
+
+from yomitoku import StudioFormTemplateParser
+
+image = cv2.imread("application.jpg")
+parser = StudioFormTemplateParser(
+    "application.template.json",
+    device="cuda",
+)
+result, _, _ = parser(image)
+
+# セルID参照を保持するraw JSON
+result.to_json("application.raw.json")
+
+# テキストへ解決した構造を取得
+structured = result.to_structured()
+simple = result.to_simple()
+print(simple.model_dump())
+```
+
+`visualize=True`を指定すると、第2戻り値にテンプレートの表・セル枠、第3戻り値にOCR結果を描画した画像を返します。OCRモデルを変更する場合は、`configs`へ`text_detector`と`text_recognizer`の設定を渡します。
+
+```python
+parser = StudioFormTemplateParser(
+    "application.template.json",
+    configs={
+        "text_recognizer": {
+            "model_name": "parseq-middle-dynw-v5",
+        },
+    },
+    device="cuda",
+    visualize=True,
+)
+```
+
+OCRできなかった見出し（`header` / `group`）にはテンプレート作成時の文字を補います。値セルには作成時の値を補わず、空文字にします。テンプレートの読み込み・検証だけを行う場合は`load_studio_form_template()`、既に得たOCR単語へ構造を適用する場合は`apply_studio_form_template()`を利用できます。これらも`yomitoku`からimportできます。
+
+---
+
 ## CLI での利用（yomitoku_table）
 
 `yomitoku_table` コマンドで、ドキュメント全体を構造化した JSON をページ単位で出力できます。

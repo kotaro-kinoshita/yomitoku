@@ -3,12 +3,13 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from yomitoku.schemas.document_analyzer import WordPrediction
-from yomitoku.studio_form_template import (
+from yomitoku import (
     StudioFormTemplate,
+    StudioFormTemplateParser,
     apply_studio_form_template,
     load_studio_form_template,
 )
+from yomitoku.schemas.document_analyzer import WordPrediction
 
 
 def _template():
@@ -120,3 +121,38 @@ def test_rejects_unknown_cell_reference():
     data["structure"]["tables"][0]["kvItems"][0]["value"] = "missing"
     with pytest.raises(ValidationError, match="unknown cells"):
         StudioFormTemplate.model_validate(data)
+
+
+def test_studio_template_api_is_exported_from_package():
+    assert StudioFormTemplate is not None
+    assert StudioFormTemplateParser is not None
+    assert apply_studio_form_template is not None
+    assert load_studio_form_template is not None
+
+
+def test_parser_uses_public_api_defaults(tmp_path, monkeypatch):
+    calls = {}
+
+    class FakeOCR:
+        def __init__(self, *, configs, device, visualize):
+            calls.update(
+                configs=configs,
+                device=device,
+                visualize=visualize,
+            )
+
+    monkeypatch.setattr("yomitoku.studio_form_template.OCR", FakeOCR)
+    template_path = tmp_path / "table.template.json"
+    template_path.write_text(
+        _template().model_dump_json(by_alias=True),
+        encoding="utf-8",
+    )
+
+    parser = StudioFormTemplateParser(template_path)
+
+    assert parser.template.version == 3
+    assert calls == {
+        "configs": {},
+        "device": "cuda",
+        "visualize": False,
+    }

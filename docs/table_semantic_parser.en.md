@@ -34,6 +34,51 @@ In the following sections, we explain the functionality with source code and exa
 
 ---
 
+
+## Using a YomiToku Studio template from Python
+
+Use `StudioFormTemplateParser` to apply a `kind: "form-template"` JSON saved from YomiToku Studio to an image. Template versions 2 and 3 are supported. Because the template supplies the table, cell, key-value, grid, and paragraph structure, the parser runs OCR only.
+
+```python
+import cv2
+
+from yomitoku import StudioFormTemplateParser
+
+image = cv2.imread("application.jpg")
+parser = StudioFormTemplateParser(
+    "application.template.json",
+    device="cuda",
+)
+result, _, _ = parser(image)
+
+# Raw JSON retains cell-id references.
+result.to_json("application.raw.json")
+
+# Resolve the result into structured or text-only views.
+structured = result.to_structured()
+simple = result.to_simple()
+print(simple.model_dump())
+```
+
+With `visualize=True`, the second return value shows the template table and cell boxes, and the third shows the OCR result. To select different OCR models, pass `text_detector` and `text_recognizer` settings through `configs`.
+
+```python
+parser = StudioFormTemplateParser(
+    "application.template.json",
+    configs={
+        "text_recognizer": {
+            "model_name": "parseq-middle-dynw-v5",
+        },
+    },
+    device="cuda",
+    visualize=True,
+)
+```
+
+When OCR does not read a `header` or `group` cell, its saved template text is used as a fallback. Saved values are never copied into unread value cells. `load_studio_form_template()` is also available for loading and validating a template, and `apply_studio_form_template()` applies its structure to existing OCR words. Both functions can be imported directly from `yomitoku`.
+
+---
+
 ## CLI Usage (yomitoku_table)
 
 The `yomitoku_table` command exports whole-document structured JSON per page.
