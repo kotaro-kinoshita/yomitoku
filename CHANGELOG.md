@@ -2,7 +2,23 @@
 
 ## [Unreleased](https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD)
 
-[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.1...HEAD)
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.14.0...HEAD)
+
+**Implemented enhancements:**
+
+- feat: 図表エクスポート時にJSONへ画像の相対パスを格納 [\#241](https://github.com/kotaro-kinoshita/yomitoku/pull/241) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+**Fixed bugs:**
+
+- ci: changelog自動更新の無限ループを修正 [\#242](https://github.com/kotaro-kinoshita/yomitoku/pull/242) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+**Merged pull requests:**
+
+- docs: add FAQ page with CUDA-enabled PyTorch installation guide [\#245](https://github.com/kotaro-kinoshita/yomitoku/pull/245) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+## [v0.14.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.14.0) (2026-07-31)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.1...v0.14.0)
 
 **Implemented enhancements:**
 
@@ -11,10 +27,6 @@
 **Fixed bugs:**
 
 - table semantic parserに関するドキュメントの更新 [\#235](https://github.com/kotaro-kinoshita/yomitoku/pull/235) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
-
-**Merged pull requests:**
-
-- docs: Update CHANGELOG [\#234](https://github.com/kotaro-kinoshita/yomitoku/pull/234) ([github-actions[bot]](https://github.com/apps/github-actions))
 
 ## [v0.13.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.1) (2026-07-15)
 
@@ -33,10 +45,7 @@
 
 **Merged pull requests:**
 
-- docs: Update CHANGELOG [\#228](https://github.com/kotaro-kinoshita/yomitoku/pull/228) ([github-actions[bot]](https://github.com/apps/github-actions))
-- docs: Update CHANGELOG [\#227](https://github.com/kotaro-kinoshita/yomitoku/pull/227) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Docs/add yomitoku studio link [\#226](https://github.com/kotaro-kinoshita/yomitoku/pull/226) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
-- docs: Update CHANGELOG [\#217](https://github.com/kotaro-kinoshita/yomitoku/pull/217) ([github-actions[bot]](https://github.com/apps/github-actions))
 
 ## [v0.13.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.0) (2026-05-14)
 
@@ -49,10 +58,6 @@
 ## [v0.12.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.12.1) (2026-04-09)
 
 [Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.11.2...v0.12.1)
-
-**Merged pull requests:**
-
-- docs: Update CHANGELOG [\#209](https://github.com/kotaro-kinoshita/yomitoku/pull/209) ([github-actions[bot]](https://github.com/apps/github-actions))
 
 ## [v0.11.2](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.11.2) (2026-04-09)
 
@@ -171,18 +176,13 @@
 
 **Merged pull requests:**
 
-- docs: Update CHANGELOG [\#197](https://github.com/kotaro-kinoshita/yomitoku/pull/197) ([github-actions[bot]](https://github.com/apps/github-actions))
-- docs: Update CHANGELOG [\#195](https://github.com/kotaro-kinoshita/yomitoku/pull/195) ([github-actions[bot]](https://github.com/apps/github-actions))
-- docs: Update CHANGELOG [\#192](https://github.com/kotaro-kinoshita/yomitoku/pull/192) ([github-actions[bot]](https://github.com/apps/github-actions))
 - ドキュメントの記述修正とスキーマページの変更 [\#178](https://github.com/kotaro-kinoshita/yomitoku/pull/178) ([m5t0](https://github.com/m5t0))
 - 商用利用判断ガイドラインの追加 [\#177](https://github.com/kotaro-kinoshita/yomitoku/pull/177) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - READMEにライセンス情報の追記 [\#176](https://github.com/kotaro-kinoshita/yomitoku/pull/176) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - READMEに注意事項を加筆 [\#175](https://github.com/kotaro-kinoshita/yomitoku/pull/175) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - バージョン情報の修正 [\#173](https://github.com/kotaro-kinoshita/yomitoku/pull/173) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - Explicitly set file encoding to UTF-8 to prevent UnicodeDecodeError. [\#148](https://github.com/kotaro-kinoshita/yomitoku/pull/148) ([Utakata](https://github.com/Utakata))
-- docs: Update CHANGELOG [\#135](https://github.com/kotaro-kinoshita/yomitoku/pull/135) ([github-actions[bot]](https://github.com/apps/github-actions))
 - 相対パスを利用して対象画像ファイルを指定した際に、resultファイルが隠しファイルになってしまう問題を修正 [\#132](https://github.com/kotaro-kinoshita/yomitoku/pull/132) ([moznion](https://github.com/moznion))
-- docs: Update CHANGELOG [\#130](https://github.com/kotaro-kinoshita/yomitoku/pull/130) ([github-actions[bot]](https://github.com/apps/github-actions))
 - CIの修正 [\#126](https://github.com/kotaro-kinoshita/yomitoku/pull/126) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - CIの修正 [\#124](https://github.com/kotaro-kinoshita/yomitoku/pull/124) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - docs: Update CHANGELOG [\#123](https://github.com/kotaro-kinoshita/yomitoku/pull/123) ([github-actions[bot]](https://github.com/apps/github-actions))
