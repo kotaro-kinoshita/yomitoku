@@ -946,6 +946,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#v0150-2026-09-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.15.0 (2026-09-14)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v0140-2026-07-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.14.0 (2026-07-31)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#v0131-2026-07-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1423,6 +1445,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#v0150-2026-09-14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.15.0 (2026-09-14)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v0140-2026-07-31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.14.0 (2026-07-31)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#v0131-2026-07-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1814,7 +1858,34 @@
 
 <h2 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h2>
 <h3 id="unreleased"><a href="https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.1...HEAD">Full Changelog</a></p>
+<p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.15.0...HEAD">Full Changelog</a></p>
+<p><strong>Implemented enhancements:</strong></p>
+<ul>
+<li>YomiToku StudioテンプレートのPytyhon APIのサポート <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/254">#254</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
+</ul>
+<p><strong>Fixed bugs:</strong></p>
+<ul>
+<li>test: TableSemanticParserの段落ID重複によるOCR混入を回帰テストで防ぐ <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/253">#253</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
+</ul>
+<h3 id="v0150-2026-09-14"><a href="https://github.com/kotaro-kinoshita/yomitoku/tree/v0.15.0">v0.15.0</a> (2026-09-14)<a class="headerlink" href="#v0150-2026-09-14" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.14.0...v0.15.0">Full Changelog</a></p>
+<p><strong>Implemented enhancements:</strong></p>
+<ul>
+<li>YomiToku Studioの帳票テンプレートをCLIでサポート <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/251">#251</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
+<li>feat: 図表エクスポート時にJSONへ画像の相対パスを格納 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/241">#241</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
+</ul>
+<p><strong>Fixed bugs:</strong></p>
+<ul>
+<li>migrate <code>BaseSchema</code> to pydantic v2 <code>model_config</code> <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/248">#248</a> (<a href="https://github.com/xyf5432">xyf5432</a>)</li>
+<li>ci: changelog自動更新の無限ループを修正 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/242">#242</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
+</ul>
+<p><strong>Merged pull requests:</strong></p>
+<ul>
+<li>文字認識モデルをv5へ更新し、可変幅・resize policyをconfig駆動化 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/249">#249</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
+<li>docs: add FAQ page with CUDA-enabled PyTorch installation guide <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/245">#245</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
+</ul>
+<h3 id="v0140-2026-07-31"><a href="https://github.com/kotaro-kinoshita/yomitoku/tree/v0.14.0">v0.14.0</a> (2026-07-31)<a class="headerlink" href="#v0140-2026-07-31" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.1...v0.14.0">Full Changelog</a></p>
 <p><strong>Implemented enhancements:</strong></p>
 <ul>
 <li>Table Semantic Parserの正式リリース <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/233">#233</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
@@ -1822,10 +1893,6 @@
 <p><strong>Fixed bugs:</strong></p>
 <ul>
 <li>table semantic parserに関するドキュメントの更新 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/235">#235</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
-</ul>
-<p><strong>Merged pull requests:</strong></p>
-<ul>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/234">#234</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
 </ul>
 <h3 id="v0131-2026-07-15"><a href="https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.1">v0.13.1</a> (2026-07-15)<a class="headerlink" href="#v0131-2026-07-15" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.13.0...v0.13.1">Full Changelog</a></p>
@@ -1842,10 +1909,7 @@
 </ul>
 <p><strong>Merged pull requests:</strong></p>
 <ul>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/228">#228</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/227">#227</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
 <li>Docs/add yomitoku studio link <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/226">#226</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/217">#217</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
 </ul>
 <h3 id="v0130-2026-05-14"><a href="https://github.com/kotaro-kinoshita/yomitoku/tree/v0.13.0">v0.13.0</a> (2026-05-14)<a class="headerlink" href="#v0130-2026-05-14" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.1...v0.13.0">Full Changelog</a></p>
@@ -1855,10 +1919,6 @@
 </ul>
 <h3 id="v0121-2026-04-09"><a href="https://github.com/kotaro-kinoshita/yomitoku/tree/v0.12.1">v0.12.1</a> (2026-04-09)<a class="headerlink" href="#v0121-2026-04-09" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.11.2...v0.12.1">Full Changelog</a></p>
-<p><strong>Merged pull requests:</strong></p>
-<ul>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/209">#209</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
-</ul>
 <h3 id="v0112-2026-04-09"><a href="https://github.com/kotaro-kinoshita/yomitoku/tree/v0.11.2">v0.11.2</a> (2026-04-09)<a class="headerlink" href="#v0112-2026-04-09" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/kotaro-kinoshita/yomitoku/compare/v0.12.0...v0.11.2">Full Changelog</a></p>
 <p><strong>Implemented enhancements:</strong></p>
@@ -1972,18 +2032,13 @@
 </ul>
 <p><strong>Merged pull requests:</strong></p>
 <ul>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/197">#197</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/195">#195</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/192">#192</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
 <li>ドキュメントの記述修正とスキーマページの変更 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/178">#178</a> (<a href="https://github.com/m5t0">m5t0</a>)</li>
 <li>商用利用判断ガイドラインの追加 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/177">#177</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
 <li>READMEにライセンス情報の追記 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/176">#176</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
 <li>READMEに注意事項を加筆 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/175">#175</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
 <li>バージョン情報の修正 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/173">#173</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
 <li>Explicitly set file encoding to UTF-8 to prevent UnicodeDecodeError. <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/148">#148</a> (<a href="https://github.com/Utakata">Utakata</a>)</li>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/135">#135</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
 <li>相対パスを利用して対象画像ファイルを指定した際に、resultファイルが隠しファイルになってしまう問題を修正 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/132">#132</a> (<a href="https://github.com/moznion">moznion</a>)</li>
-<li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/130">#130</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
 <li>CIの修正 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/126">#126</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
 <li>CIの修正 <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/124">#124</a> (<a href="https://github.com/kotaro-kinoshita">kotaro-kinoshita</a>)</li>
 <li>docs: Update CHANGELOG <a href="https://github.com/kotaro-kinoshita/yomitoku/pull/123">#123</a> (<a href="https://github.com/apps/github-actions">github-actions[bot]</a>)</li>
