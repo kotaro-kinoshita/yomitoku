@@ -6,6 +6,8 @@
 
 **Implemented enhancements:**
 
+- feat\(recognizer\): organize repetition stop / orientation fallback options and unify defaults [\#258](https://github.com/kotaro-kinoshita/yomitoku/pull/258) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+- feat\(cli\): add --split\_text\_across\_cells option [\#257](https://github.com/kotaro-kinoshita/yomitoku/pull/257) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - YomiToku StudioテンプレートのPytyhon APIのサポート [\#254](https://github.com/kotaro-kinoshita/yomitoku/pull/254) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
 **Fixed bugs:**
