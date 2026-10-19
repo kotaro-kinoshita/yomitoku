@@ -68,10 +68,11 @@ class TextRecognizer(BaseModule):
         visualize=False,
         from_pretrained=True,
         infer_onnx=False,
-        rec_orientation_fallback=False,
-        rec_orientation_fallback_thresh=0.75,
+        rec_orientation_fallback=None,
+        rec_orientation_fallback_thresh=None,
         batch_bucketing=None,
         dynamic_width=None,
+        repetition_stop=None,
         num_parallel_batches=1,
         source_downscale=False,
     ):
@@ -98,11 +99,23 @@ class TextRecognizer(BaseModule):
         self.model.tokenizer = self.tokenizer
         self.model.eval()
 
+        # Decode-time repetition early-stop (PyTorch path only). An
+        # explicit argument overrides the model config.
+        if repetition_stop is None:
+            repetition_stop = getattr(self._cfg, "repetition_stop", True)
+        self.repetition_stop = bool(repetition_stop)
+        self.model.repetition_stop = self.repetition_stop
+
         self.visualize = visualize
 
         self.infer_onnx = infer_onnx
-        self.rec_orientation_fallback = rec_orientation_fallback
-        self.rec_orientation_fallback_thresh = rec_orientation_fallback_thresh
+        # Explicit arguments override the model config.
+        if rec_orientation_fallback is None:
+            rec_orientation_fallback = self._cfg.rec_orientation_fallback
+        if rec_orientation_fallback_thresh is None:
+            rec_orientation_fallback_thresh = self._cfg.rec_orientation_fallback_thresh
+        self.rec_orientation_fallback = bool(rec_orientation_fallback)
+        self.rec_orientation_fallback_thresh = float(rec_orientation_fallback_thresh)
         self.batch_bucketing = (
             getattr(self._cfg.data, "batch_bucketing", False)
             if batch_bucketing is None

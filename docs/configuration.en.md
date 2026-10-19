@@ -72,6 +72,28 @@ rec_orientation_fallback: bool
 rec_orientation_fallback_thresh: float
 ```
 
+The defaults are the same for all models: `rec_orientation_fallback: false` and `rec_orientation_fallback_thresh: 0.75`. Values given with `--enable-rec-orientation-fallback` / `--rec-orientation-fallback-thresh` in the CLI, or `TextRecognizer(rec_orientation_fallback=..., rec_orientation_fallback_thresh=...)` in the Python API, take precedence over the model config.
+
+### Repetition Stop
+
+```yaml
+# Whether to stop decoding as soon as a loop of repeated characters or strings is detected, collapsing the repetition to a single unit.
+repetition_stop: bool
+
+# The maximum length (in tokens) of a unit regarded as repeating.
+rep_period_max: int
+
+# The minimum run length required to suppress a single repeated character.
+rep_min_run_p1: int
+
+# The minimum number of repeats required to suppress a multi-character unit.
+rep_min_repeats: int
+```
+
+The defaults are the same for all models: `repetition_stop: true`, `rep_period_max: 8`, `rep_min_run_p1: 16`, and `rep_min_repeats: 3`. It only works with PyTorch inference and is not applied with ONNX inference (`infer_onnx=True`).
+
+You can disable it with `--disable-repetition-stop` in the CLI or `TextRecognizer(repetition_stop=False)` in the Python API; these take precedence over the model config. For `DocumentAnalyzer` / `OCR`, pass `configs={"ocr": {"text_recognizer": {"repetition_stop": False}}}`.
+
 ### visualization
 
 ```yaml

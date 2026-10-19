@@ -187,6 +187,18 @@ You can specify the confidence threshold for triggering the fallback using `--re
 
 ```bash
 yomitoku ${path_data} --enable-rec-orientation-fallback --rec-orientation-fallback-thresh 0.6
+```
+
+## Disabling Repetition Stop
+
+During text recognition, when a loop of abnormally repeated characters or strings is detected, decoding stops at that point and the repetition is collapsed to a single unit. This is enabled by default. If you want to keep long repetitions as they are, such as leader dots (`……`) or long runs of symbols, disable it with `--disable-repetition-stop`.
+
+```bash
+yomitoku ${path_data} --disable-repetition-stop
+```
+
+The detection thresholds can be tuned in the YAML passed to `--tr_cfg`. See [Model Configuration](configuration.md) for details.
+
 ## Excluding Ruby (Furigana) Text
 
 You can exclude ruby (furigana) text from the output. When the `--ignore_ruby` option is set, text whose line height is below a certain threshold relative to the median line height within each paragraph or cell, and consists solely of hiragana or katakana characters, is identified as ruby and excluded.

@@ -93,6 +93,7 @@ yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 | `--ignore_meta` | Excludes text information such as headers and footers from the output file. |
 | `--ignore_ruby` | Excludes ruby (furigana) text from the output. |
 | `--ruby_threshold` | Specifies the threshold for ruby detection (default: 0.5). Used together with `--ignore_ruby`. |
+| `--disable-repetition-stop` | Disables early stopping of repeated-character loops in text recognition (enabled by default). |
 
 For other options, please refer to the help documentation.
 

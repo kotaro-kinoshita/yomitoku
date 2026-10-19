@@ -46,6 +46,10 @@ class TextRecognizerPARSeqTinyConfig:
     max_label_length: int = 50
     decode_ar: int = 1
     refine_iters: int = 1
+    repetition_stop: bool = True
+    rep_period_max: int = 8
+    rep_min_run_p1: int = 16
+    rep_min_repeats: int = 3
     rec_orientation_fallback: bool = False
     rec_orientation_fallback_thresh: float = 0.75
 
