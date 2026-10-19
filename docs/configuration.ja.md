@@ -73,6 +73,8 @@ rec_orientation_fallback: bool
 rec_orientation_fallback_thresh: float
 ```
 
+デフォルト値は全モデル共通で、`rec_orientation_fallback: false`、`rec_orientation_fallback_thresh: 0.75` です。CLI の `--enable-rec-orientation-fallback` / `--rec-orientation-fallback-thresh`、または Python API の `TextRecognizer(rec_orientation_fallback=..., rec_orientation_fallback_thresh=...)` で指定した値はモデルconfigより優先されます。
+
 ### 繰り返し抑制
 
 ```yaml
@@ -89,7 +91,7 @@ rep_min_run_p1: int
 rep_min_repeats: int
 ```
 
-全モデルでデフォルトは有効です。`rep_min_run_p1` は v5 モデル（`parseq-middle-dynw-v5` / `parseq-tiny-dynw-v5`）が `16`、それ以外のモデルが `8` です。PyTorch 推論でのみ動作し、ONNX 推論（`infer_onnx=True`）では適用されません。
+デフォルト値は全モデル共通で、`repetition_stop: true`、`rep_period_max: 8`、`rep_min_run_p1: 16`、`rep_min_repeats: 3` です。PyTorch 推論でのみ動作し、ONNX 推論（`infer_onnx=True`）では適用されません。
 
 CLI の `--disable-repetition-stop`、または Python API の `TextRecognizer(repetition_stop=False)` で無効化できます。これらの指定はモデルconfigより優先されます。`DocumentAnalyzer` / `OCR` では `configs={"ocr": {"text_recognizer": {"repetition_stop": False}}}` のように指定します。
 

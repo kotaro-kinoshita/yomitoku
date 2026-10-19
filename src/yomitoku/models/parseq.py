@@ -92,7 +92,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         # long run) so genuine text is never truncated. Tunable via config.
         self.repetition_stop = bool(getattr(self.cfg, "repetition_stop", True))
         self.rep_period_max = int(getattr(self.cfg, "rep_period_max", 8))
-        self.rep_min_run_p1 = int(getattr(self.cfg, "rep_min_run_p1", 8))
+        self.rep_min_run_p1 = int(getattr(self.cfg, "rep_min_run_p1", 16))
         self.rep_min_repeats = int(getattr(self.cfg, "rep_min_repeats", 3))
 
     @property

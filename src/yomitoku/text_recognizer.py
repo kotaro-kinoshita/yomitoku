@@ -68,8 +68,8 @@ class TextRecognizer(BaseModule):
         visualize=False,
         from_pretrained=True,
         infer_onnx=False,
-        rec_orientation_fallback=False,
-        rec_orientation_fallback_thresh=0.75,
+        rec_orientation_fallback=None,
+        rec_orientation_fallback_thresh=None,
         batch_bucketing=None,
         dynamic_width=None,
         repetition_stop=None,
@@ -109,8 +109,13 @@ class TextRecognizer(BaseModule):
         self.visualize = visualize
 
         self.infer_onnx = infer_onnx
-        self.rec_orientation_fallback = rec_orientation_fallback
-        self.rec_orientation_fallback_thresh = rec_orientation_fallback_thresh
+        # Explicit arguments override the model config.
+        if rec_orientation_fallback is None:
+            rec_orientation_fallback = self._cfg.rec_orientation_fallback
+        if rec_orientation_fallback_thresh is None:
+            rec_orientation_fallback_thresh = self._cfg.rec_orientation_fallback_thresh
+        self.rec_orientation_fallback = bool(rec_orientation_fallback)
+        self.rec_orientation_fallback_thresh = float(rec_orientation_fallback_thresh)
         self.batch_bucketing = (
             getattr(self._cfg.data, "batch_bucketing", False)
             if batch_bucketing is None
