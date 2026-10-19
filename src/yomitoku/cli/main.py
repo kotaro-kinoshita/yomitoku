@@ -449,6 +449,11 @@ def main():
         help="confidence threshold for orientation fallback (default: 0.75)",
     )
     parser.add_argument(
+        "--disable-repetition-stop",
+        action="store_true",
+        help="if set, disable early stopping of repeated-character loops in text recognition",
+    )
+    parser.add_argument(
         "--ignore_ruby",
         action="store_true",
         help="if set, ignore ruby (furigana) text in the output",
@@ -532,6 +537,9 @@ def main():
         configs["ocr"]["text_recognizer"]["rec_orientation_fallback_thresh"] = (
             args.rec_orientation_fallback_thresh
         )
+
+    if args.disable_repetition_stop:
+        configs["ocr"]["text_recognizer"]["repetition_stop"] = False
 
     analyzer = DocumentAnalyzer(
         configs=configs,

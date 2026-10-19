@@ -185,6 +185,18 @@ yomitoku ${path_data} --enable-rec-orientation-fallback
 
 ```bash
 yomitoku ${path_data} --enable-rec-orientation-fallback --rec-orientation-fallback-thresh 0.6
+```
+
+## 繰り返し抑制の無効化
+
+文字認識では、同じ文字や文字列が異常に繰り返されるループを検出すると、その時点でデコードを打ち切り、繰り返しを1回分に縮約します。この機能はデフォルトで有効です。リーダー（`……`）や記号の長い連続など、繰り返しをそのまま出力したい場合は `--disable-repetition-stop` で無効化できます。
+
+```bash
+yomitoku ${path_data} --disable-repetition-stop
+```
+
+判定の閾値は `--tr_cfg` に渡す YAML で調整できます。詳しくは[モデルの詳細設定](configuration.md)を参照してください。
+
 ## ふりがな（ルビ）の除外
 
 文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。`--ignore_ruby` オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。

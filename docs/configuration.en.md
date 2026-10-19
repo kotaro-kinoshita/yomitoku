@@ -72,6 +72,26 @@ rec_orientation_fallback: bool
 rec_orientation_fallback_thresh: float
 ```
 
+### Repetition Stop
+
+```yaml
+# Whether to stop decoding as soon as a loop of repeated characters or strings is detected, collapsing the repetition to a single unit.
+repetition_stop: bool
+
+# The maximum length (in tokens) of a unit regarded as repeating.
+rep_period_max: int
+
+# The minimum run length required to suppress a single repeated character.
+rep_min_run_p1: int
+
+# The minimum number of repeats required to suppress a multi-character unit.
+rep_min_repeats: int
+```
+
+It is enabled by default for all models. `rep_min_run_p1` is `16` for the v5 models (`parseq-middle-dynw-v5` / `parseq-tiny-dynw-v5`) and `8` for the others. It only works with PyTorch inference and is not applied with ONNX inference (`infer_onnx=True`).
+
+You can disable it with `--disable-repetition-stop` in the CLI or `TextRecognizer(repetition_stop=False)` in the Python API; these take precedence over the model config. For `DocumentAnalyzer` / `OCR`, pass `configs={"ocr": {"text_recognizer": {"repetition_stop": False}}}`.
+
 ### visualization
 
 ```yaml

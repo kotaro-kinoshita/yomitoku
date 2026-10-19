@@ -72,6 +72,7 @@ class TextRecognizer(BaseModule):
         rec_orientation_fallback_thresh=0.75,
         batch_bucketing=None,
         dynamic_width=None,
+        repetition_stop=None,
         num_parallel_batches=1,
         source_downscale=False,
     ):
@@ -97,6 +98,13 @@ class TextRecognizer(BaseModule):
 
         self.model.tokenizer = self.tokenizer
         self.model.eval()
+
+        # Decode-time repetition early-stop (PyTorch path only). An
+        # explicit argument overrides the model config.
+        if repetition_stop is None:
+            repetition_stop = getattr(self._cfg, "repetition_stop", True)
+        self.repetition_stop = bool(repetition_stop)
+        self.model.repetition_stop = self.repetition_stop
 
         self.visualize = visualize
 
