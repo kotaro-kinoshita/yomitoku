@@ -407,6 +407,11 @@ def main():
         help="if set, ignore meta information(header, footer) in the output",
     )
     parser.add_argument(
+        "--split_text_across_cells",
+        action="store_true",
+        help="if set, split detected text lines at table cell boundaries",
+    )
+    parser.add_argument(
         "--reading_order",
         default="auto",
         type=str,
@@ -546,6 +551,7 @@ def main():
         configs=configs,
         visualize=args.vis,
         device=args.device,
+        split_text_across_cells=args.split_text_across_cells,
         ignore_meta=args.ignore_meta,
         reading_order=args.reading_order,
         ignore_ruby=args.ignore_ruby,
