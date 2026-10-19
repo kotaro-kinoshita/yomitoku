@@ -788,6 +788,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#split-text-spanning-table-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Split text spanning table cells
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#combine-multiple-pages" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -836,6 +847,28 @@
     <span class="md-ellipsis">
       
         Enabling Recognition Orientation Fallback
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disabling-repetition-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disabling Repetition Stop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#excluding-ruby-furigana-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Excluding Ruby (Furigana) Text
       
     </span>
   </a>
@@ -1306,6 +1339,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#split-text-spanning-table-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Split text spanning table cells
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#combine-multiple-pages" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1354,6 +1398,28 @@
     <span class="md-ellipsis">
       
         Enabling Recognition Orientation Fallback
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disabling-repetition-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disabling Repetition Stop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#excluding-ruby-furigana-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Excluding Ruby (Furigana) Text
       
     </span>
   </a>
@@ -1510,9 +1576,13 @@ mini-batches are executed concurrently.</p>
 <p>You can exclude metadata such as headers and footers from the output file.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_meta
 </span></code></pre></div>
+<h2 id="split-text-spanning-table-cells">Split text spanning table cells<a class="headerlink" href="#split-text-spanning-table-cells" title="Permanent link">&para;</a></h2>
+<p>Text lines detected across multiple table cells are split at the cell boundaries before recognition, so that each cell receives only its own text.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--split_text_across_cells
+</span></code></pre></div>
 <h2 id="combine-multiple-pages">Combine multiple pages<a class="headerlink" href="#combine-multiple-pages" title="Permanent link">&para;</a></h2>
 <p>If the PDF contains multiple pages, you can export them as a single file.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>md<span class="w"> </span>--combine
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>md<span class="w"> </span>--combine
 </span></code></pre></div>
 <h2 id="pdf-output-image-quality">PDF Output Image Quality<a class="headerlink" href="#pdf-output-image-quality" title="Permanent link">&para;</a></h2>
 <p>You can specify the image quality preset for searchable PDF output using <code>--pdf_quality</code>. The default is <code>high</code>.</p>
@@ -1546,17 +1616,17 @@ mini-batches are executed concurrently.</p>
 </tr>
 </tbody>
 </table>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>pdf<span class="w"> </span>--pdf_quality<span class="w"> </span>middle
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>pdf<span class="w"> </span>--pdf_quality<span class="w"> </span>middle
 </span></code></pre></div>
 <h2 id="setting-the-pdf-reading-resolution">Setting the PDF Reading Resolution<a class="headerlink" href="#setting-the-pdf-reading-resolution" title="Permanent link">&para;</a></h2>
 <p>Specifies the resolution (DPI) when reading a PDF (default DPI = 200). Increasing the DPI value may improve recognition accuracy when dealing with fine text or small details within the PDF.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--dpi<span class="w"> </span><span class="m">250</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--dpi<span class="w"> </span><span class="m">250</span>
 </span></code></pre></div>
 <h2 id="specifying-reading-order">Specifying Reading Order<a class="headerlink" href="#specifying-reading-order" title="Permanent link">&para;</a></h2>
 <p>By default, the reading order option is set to <code>auto</code>.</p>
 <p>When <code>auto</code> is specified, the system identifies the document's orientation (horizontal or vertical) and automatically estimates the reading order. Specifically, the order is estimated as <code>top2left</code> for horizontal documents and <code>top2bottom</code> for vertical documents.</p>
 <p>The reading order can also be specified manually, as follows:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--reading_order<span class="w"> </span>left2right
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--reading_order<span class="w"> </span>left2right
 </span></code></pre></div>
 <table>
 <thead>
@@ -1586,24 +1656,27 @@ mini-batches are executed concurrently.</p>
 </table>
 <h2 id="enabling-recognition-orientation-fallback">Enabling Recognition Orientation Fallback<a class="headerlink" href="#enabling-recognition-orientation-fallback" title="Permanent link">&para;</a></h2>
 <p>By default, orientation fallback is disabled. When enabled with <code>--enable-rec-orientation-fallback</code>, if the confidence score of text recognition is low, the system retries recognition with the ROI image rotated 180 degrees and adopts the result with the higher confidence.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback
 </span></code></pre></div>
 <p>You can specify the confidence threshold for triggering the fallback using <code>--rec-orientation-fallback-thresh</code>. (Default: 0.75)</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback<span class="w"> </span>--rec-orientation-fallback-thresh<span class="w"> </span><span class="m">0</span>.6
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="c1">## Excluding Ruby (Furigana) Text</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>You<span class="w"> </span>can<span class="w"> </span>exclude<span class="w"> </span>ruby<span class="w"> </span><span class="o">(</span>furigana<span class="o">)</span><span class="w"> </span>text<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>output.<span class="w"> </span>When<span class="w"> </span>the<span class="w"> </span><span class="sb">`</span>--ignore_ruby<span class="sb">`</span><span class="w"> </span>option<span class="w"> </span>is<span class="w"> </span>set,<span class="w"> </span>text<span class="w"> </span>whose<span class="w"> </span>line<span class="w"> </span>height<span class="w"> </span>is<span class="w"> </span>below<span class="w"> </span>a<span class="w"> </span>certain<span class="w"> </span>threshold<span class="w"> </span>relative<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>median<span class="w"> </span>line<span class="w"> </span>height<span class="w"> </span>within<span class="w"> </span>each<span class="w"> </span>paragraph<span class="w"> </span>or<span class="w"> </span>cell,<span class="w"> </span>and<span class="w"> </span>consists<span class="w"> </span>solely<span class="w"> </span>of<span class="w"> </span>hiragana<span class="w"> </span>or<span class="w"> </span>katakana<span class="w"> </span>characters,<span class="w"> </span>is<span class="w"> </span>identified<span class="w"> </span>as<span class="w"> </span>ruby<span class="w"> </span>and<span class="w"> </span>excluded.
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="sb">```</span>bash
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback<span class="w"> </span>--rec-orientation-fallback-thresh<span class="w"> </span><span class="m">0</span>.6
+</span></code></pre></div>
+<h2 id="disabling-repetition-stop">Disabling Repetition Stop<a class="headerlink" href="#disabling-repetition-stop" title="Permanent link">&para;</a></h2>
+<p>During text recognition, when a loop of abnormally repeated characters or strings is detected, decoding stops at that point and the repetition is collapsed to a single unit. This is enabled by default. If you want to keep long repetitions as they are, such as leader dots (<code>……</code>) or long runs of symbols, disable it with <code>--disable-repetition-stop</code>.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--disable-repetition-stop
+</span></code></pre></div>
+<p>The detection thresholds can be tuned in the YAML passed to <code>--tr_cfg</code>. See <a href="../configuration/">Model Configuration</a> for details.</p>
+<h2 id="excluding-ruby-furigana-text">Excluding Ruby (Furigana) Text<a class="headerlink" href="#excluding-ruby-furigana-text" title="Permanent link">&para;</a></h2>
+<p>You can exclude ruby (furigana) text from the output. When the <code>--ignore_ruby</code> option is set, text whose line height is below a certain threshold relative to the median line height within each paragraph or cell, and consists solely of hiragana or katakana characters, is identified as ruby and excluded.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
 </span></code></pre></div>
 <p>You can adjust the ruby detection threshold using the <code>--ruby_threshold</code> option (default: 0.5). Increasing the value widens the range of text identified as ruby.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
 </span></code></pre></div>
 <h2 id="specifying-pages-to-process">Specifying Pages to Process<a class="headerlink" href="#specifying-pages-to-process" title="Permanent link">&para;</a></h2>
 <p>You can choose to process only specific pages.
 Pages can be specified either as a comma-separated list or as a range using a hyphen.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
 </span></code></pre></div>
 
 

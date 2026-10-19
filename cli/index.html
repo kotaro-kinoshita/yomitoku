@@ -791,6 +791,17 @@
   <a href="#_10" class="md-nav__link">
     <span class="md-ellipsis">
       
+        表のセルをまたぐテキストを分割する
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         複数ページを統合する
       
     </span>
@@ -821,7 +832,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
         読み取り順を指定する
@@ -832,7 +843,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         認識方向フォールバックの有効化
@@ -843,7 +854,29 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        繰り返し抑制の無効化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ふりがな（ルビ）の除外
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
     <span class="md-ellipsis">
       
         読み取り対象ページを指定する
@@ -1309,6 +1342,17 @@
   <a href="#_10" class="md-nav__link">
     <span class="md-ellipsis">
       
+        表のセルをまたぐテキストを分割する
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         複数ページを統合する
       
     </span>
@@ -1339,7 +1383,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
         読み取り順を指定する
@@ -1350,7 +1394,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         認識方向フォールバックの有効化
@@ -1361,7 +1405,29 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        繰り返し抑制の無効化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ふりがな（ルビ）の除外
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
     <span class="md-ellipsis">
       
         読み取り対象ページを指定する
@@ -1509,9 +1575,13 @@
 <p>ヘッダーやフッター等のメタデータを出力ファイルに加えないようにすることができます。</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_meta
 </span></code></pre></div>
-<h2 id="_10">複数ページを統合する<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<h2 id="_10">表のセルをまたぐテキストを分割する<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>テキスト検出で複数の表セルにまたがって1行として検出されたテキストを、セル境界で分割してから認識します。セル内の文字列がより正確に各セルへ割り当てられます。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--split_text_across_cells
+</span></code></pre></div>
+<h2 id="_11">複数ページを統合する<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
 <p>PDFに複数ページが含まれる場合に複数ページを一つのファイルにまとめてエクスポートできます。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>md<span class="w"> </span>--combine
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>md<span class="w"> </span>--combine
 </span></code></pre></div>
 <h2 id="pdf">PDF出力の画質設定<a class="headerlink" href="#pdf" title="Permanent link">&para;</a></h2>
 <p>サーチャブルPDFを出力する際の画質プリセットを <code>--pdf_quality</code> で指定できます。デフォルトは <code>high</code> です。</p>
@@ -1545,18 +1615,18 @@
 </tr>
 </tbody>
 </table>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>pdf<span class="w"> </span>--pdf_quality<span class="w"> </span>middle
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>-f<span class="w"> </span>pdf<span class="w"> </span>--pdf_quality<span class="w"> </span>middle
 </span></code></pre></div>
 <h2 id="pdf_1">PDFの読み取り解像度の設定<a class="headerlink" href="#pdf_1" title="Permanent link">&para;</a></h2>
 <p>PDFを読み取る際の解像度の大きさを設定します(標準DPI=200)。PDF内の文字が微細な場合など、細部の文字を読み取りたい場合にDPI値を上げることで読み取り精度が向上する場合があります。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--dpi<span class="w"> </span><span class="m">250</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--dpi<span class="w"> </span><span class="m">250</span>
 </span></code></pre></div>
-<h2 id="_11">読み取り順を指定する<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<h2 id="_12">読み取り順を指定する<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
 <p>デフォルトでは読み取り順のオプションは <code>auto</code> に設定します。</p>
 <p><code>auto</code> が指定されている場合、システムは文書の向き（横書きか縦書きか）を識別し、読み取り順を自動で推定します。
 具体的には、横書きの文書は <code>top2left</code> 、縦書きの文書は <code>top2bottom</code> と推定されます。</p>
 <p>読み取り順は、以下のように手動で指定することも可能です。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--reading_order<span class="w"> </span>left2right
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--reading_order<span class="w"> </span>left2right
 </span></code></pre></div>
 <table>
 <thead>
@@ -1584,25 +1654,28 @@
 </tr>
 </tbody>
 </table>
-<h2 id="_12">認識方向フォールバックの有効化<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<h2 id="_13">認識方向フォールバックの有効化<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
 <p>デフォルトでは、認識方向フォールバックは無効化されています。<code>--enable-rec-orientation-fallback</code> オプションを使用することで、文字認識の信頼度が低い場合にROI画像を180度回転して再認識を行い、信頼度が高い方の結果を採用する機能を有効化できます。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback
 </span></code></pre></div>
 <p><code>--rec-orientation-fallback-thresh</code> オプションで、フォールバックを実行する信頼度の閾値を指定できます。（デフォルト: 0.75）</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback<span class="w"> </span>--rec-orientation-fallback-thresh<span class="w"> </span><span class="m">0</span>.6
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="c1">## ふりがな（ルビ）の除外</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。<span class="sb">`</span>--ignore_ruby<span class="sb">`</span><span class="w"> </span>オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="sb">```</span>bash
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--enable-rec-orientation-fallback<span class="w"> </span>--rec-orientation-fallback-thresh<span class="w"> </span><span class="m">0</span>.6
+</span></code></pre></div>
+<h2 id="_14">繰り返し抑制の無効化<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>文字認識では、同じ文字や文字列が異常に繰り返されるループを検出すると、その時点でデコードを打ち切り、繰り返しを1回分に縮約します。この機能はデフォルトで有効です。リーダー（<code>……</code>）や記号の長い連続など、繰り返しをそのまま出力したい場合は <code>--disable-repetition-stop</code> で無効化できます。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--disable-repetition-stop
+</span></code></pre></div>
+<p>判定の閾値は <code>--tr_cfg</code> に渡す YAML で調整できます。詳しくは<a href="../configuration/">モデルの詳細設定</a>を参照してください。</p>
+<h2 id="_15">ふりがな（ルビ）の除外<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p>文書画像に含まれるふりがな（ルビ）テキストを出力から除外することができます。<code>--ignore_ruby</code> オプションを使用すると、各段落・セル内の文字の行高さの中央値に対して一定の閾値未満かつ、ひらがなのみ・カタカナのみで構成されるテキストをルビとみなし、除外します。</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby
 </span></code></pre></div>
 <p><code>--ruby_threshold</code> オプションで、ルビ判定の閾値を調整できます（デフォルト: 0.5）。値を大きくするとルビと判定される範囲が広がります。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--ignore_ruby<span class="w"> </span>--ruby_threshold<span class="w"> </span><span class="m">0</span>.6
 </span></code></pre></div>
-<h2 id="_13">読み取り対象ページを指定する<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<h2 id="_16">読み取り対象ページを指定する<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
 <p>特定のページのみを対象として処理することが可能です。処理対象のページをコンマ区切り、もしくはハイフンによって連続するページを指定できます。</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>yomitoku<span class="w"> </span><span class="si">${</span><span class="nv">path_data</span><span class="si">}</span><span class="w"> </span>--pages<span class="w"> </span><span class="m">1</span>,3-5,10
 </span></code></pre></div>
 
 
