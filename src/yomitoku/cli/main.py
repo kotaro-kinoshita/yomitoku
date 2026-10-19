@@ -408,10 +408,8 @@ def main():
     )
     parser.add_argument(
         "--split_text_across_cells",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help="split detected text lines at table cell boundaries "
-        "(use --no-split_text_across_cells to disable; default: disabled)",
+        action="store_true",
+        help="if set, split detected text lines at table cell boundaries",
     )
     parser.add_argument(
         "--reading_order",

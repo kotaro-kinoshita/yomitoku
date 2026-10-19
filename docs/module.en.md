@@ -22,7 +22,7 @@ Following 4 models are utilized in the module:
 | `visualize` | `bool` | Specifies whether to visualize the processing results. | We recommend `False` if not for debugging. If `True`, the OCR results are returned as the 2nd return value and the layout analysis results as the 3rd return value. If `False`, `None` is returned. |
 | `device` | `str` | Specifies the device to be used for processing. | The default is `"cuda"`. If a GPU is unavailable, it automatically switches to `"cpu"`. |
 | `configs` | `dict` | Used to set more detailed parameters for module processing. | Refer to [Model Detailed Config](#model-config) for details. |
-| `split_text_across_cells` | `bool` | Specifies whether text lines detected across multiple table cells are split at cell boundaries before recognition. | Default is `False`. In the CLI, toggle it with `--split_text_across_cells`. |
+| `split_text_across_cells` | `bool` | Specifies whether text lines detected across multiple table cells are split at cell boundaries before recognition. | Default is `False`. In the CLI, enable it with `--split_text_across_cells`. |
 | `ignore_ruby` | `bool` | Specifies whether to exclude ruby (furigana) text from the output. | Default is `False`. |
 | `ruby_threshold` | `float` | Specifies the threshold for ruby detection as a ratio to the median line height. Text consisting solely of hiragana or katakana below this threshold is identified as ruby. | Default is `0.5`. Only effective when `ignore_ruby=True`. |
 

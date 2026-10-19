@@ -91,7 +91,7 @@ yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 | `--encoding` | Specifies the character encoding for the output file to be exported. If unsupported characters are included, they will be ignored. (Supported encodings: `utf-8`, `utf-8-sig`, `shift-jis`, `enc-jp`, `cp932`) |
 | `--combine` | When a PDF is provided as input and contains multiple pages, this option combines their prediction results into a single file for export. |
 | `--ignore_meta` | Excludes text information such as headers and footers from the output file. |
-| `--split_text_across_cells` / `--no-split_text_across_cells` | Toggles whether detected text lines spanning multiple table cells are split at cell boundaries (default: disabled). |
+| `--split_text_across_cells` | Splits detected text lines spanning multiple table cells at cell boundaries before recognition. |
 | `--ignore_ruby` | Excludes ruby (furigana) text from the output. |
 | `--ruby_threshold` | Specifies the threshold for ruby detection (default: 0.5). Used together with `--ignore_ruby`. |
 
