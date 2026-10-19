@@ -124,6 +124,14 @@ yomitoku ${path_data} --td_cfg ${path_yaml}
 yomitoku ${path_data} --ignore_meta
 ```
 
+## 表のセルをまたぐテキストを分割する
+
+テキスト検出で複数の表セルにまたがって1行として検出されたテキストを、セル境界で分割してから認識します。セル内の文字列がより正確に各セルへ割り当てられます。デフォルトは無効です。
+
+```bash
+yomitoku ${path_data} --split_text_across_cells
+```
+
 ## 複数ページを統合する
 
 PDFに複数ページが含まれる場合に複数ページを一つのファイルにまとめてエクスポートできます。

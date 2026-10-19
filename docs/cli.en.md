@@ -127,6 +127,14 @@ You can exclude metadata such as headers and footers from the output file.
 yomitoku ${path_data} --ignore_meta
 ```
 
+## Split text spanning table cells
+
+Text lines detected across multiple table cells are split at the cell boundaries before recognition, so that each cell receives only its own text. This is disabled by default.
+
+```bash
+yomitoku ${path_data} --split_text_across_cells
+```
+
 ## Combine multiple pages
 
 If the PDF contains multiple pages, you can export them as a single file.
