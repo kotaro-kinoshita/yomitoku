@@ -6,11 +6,17 @@
 
 **Implemented enhancements:**
 
+- feat\(recognizer\): organize repetition stop / orientation fallback options and unify defaults [\#258](https://github.com/kotaro-kinoshita/yomitoku/pull/258) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+- feat\(cli\): add --split\_text\_across\_cells option [\#257](https://github.com/kotaro-kinoshita/yomitoku/pull/257) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - YomiToku StudioテンプレートのPytyhon APIのサポート [\#254](https://github.com/kotaro-kinoshita/yomitoku/pull/254) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
 **Fixed bugs:**
 
 - test: TableSemanticParserの段落ID重複によるOCR混入を回帰テストで防ぐ [\#253](https://github.com/kotaro-kinoshita/yomitoku/pull/253) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+**Merged pull requests:**
+
+- docs: expand configuration guide and document all tunable parameters [\#261](https://github.com/kotaro-kinoshita/yomitoku/pull/261) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
 ## [v0.15.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.15.0) (2026-09-14)
 
