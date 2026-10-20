@@ -89,6 +89,9 @@ The following parameters can be set for the model:
 | `visualize` | `bool` | Specifies whether to perform visualization. |
 | `from_pretrained` | `bool` | Specifies whether to use a Pretrained Model (a previously trained model). |
 | `infer_onnx` | `bool` | Specifies whether to use ONNX Runtime instead of PyTorch for inference. |
+| `repetition_stop` | `bool` | (Text recognition only) Whether to detect and stop loops of repeated characters or strings. If omitted, the model config value (default: `True`) is used. |
+| `rec_orientation_fallback` | `bool` | (Text recognition only) Whether to re-recognize low-confidence lines rotated by 180 degrees. If omitted, the model config value (default: `False`) is used. |
+| `rec_orientation_fallback_thresh` | `float` | (Text recognition only) The confidence threshold for triggering the orientation fallback. If omitted, the model config value (default: `0.75`) is used. |
 
 ### Supported Model Names (`model_name`)
 
@@ -154,6 +157,8 @@ if __name__ == "__main__":
 
 By providing the path to a YAML file in the config, you can adjust detailed parameters for inference. Examples of YAML files can be found in the `configs` directory within the repository.
 While the model's network parameters cannot be modified, certain aspects like post-processing parameters and input image size can be adjusted. Refer to [Model Config](configuration.en.md) for configurable parameters.
+
+For the precedence of arguments, YAML and model defaults, and where to specify settings for each usage, see [How to Configure](configuration.md#how-to-configure).
 
 For instance, you can define post-processing thresholds for the Text Detector in a YAML file and set its path in the config. The config file does not need to include all parameters; you only need to specify the parameters that require changes.
 
