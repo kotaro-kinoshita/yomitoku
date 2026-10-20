@@ -1470,6 +1470,21 @@ The following parameters can be set for the model:</p>
 <td style="text-align: left;"><code>bool</code></td>
 <td style="text-align: left;">Specifies whether to use ONNX Runtime instead of PyTorch for inference.</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>repetition_stop</code></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">(Text recognition only) Whether to detect and stop loops of repeated characters or strings. If omitted, the model config value (default: <code>True</code>) is used.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rec_orientation_fallback</code></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">(Text recognition only) Whether to re-recognize low-confidence lines rotated by 180 degrees. If omitted, the model config value (default: <code>False</code>) is used.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rec_orientation_fallback_thresh</code></td>
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">(Text recognition only) The confidence threshold for triggering the orientation fallback. If omitted, the model config value (default: <code>0.75</code>) is used.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="supported-model-names-model_name">Supported Model Names (<code>model_name</code>)<a class="headerlink" href="#supported-model-names-model_name" title="Permanent link">&para;</a></h3>
@@ -1545,6 +1560,7 @@ a dynamic-width model, so it should be combined with <code>dynamic_width=True</c
 <h2 id="defining-parameters-in-an-yaml-file">Defining Parameters in an YAML File<a class="headerlink" href="#defining-parameters-in-an-yaml-file" title="Permanent link">&para;</a></h2>
 <p>By providing the path to a YAML file in the config, you can adjust detailed parameters for inference. Examples of YAML files can be found in the <code>configs</code> directory within the repository.
 While the model's network parameters cannot be modified, certain aspects like post-processing parameters and input image size can be adjusted. Refer to <a href="../configuration/">Model Config</a> for configurable parameters.</p>
+<p>For the precedence of arguments, YAML and model defaults, and where to specify settings for each usage, see <a href="../configuration/#how-to-configure">How to Configure</a>.</p>
 <p>For instance, you can define post-processing thresholds for the Text Detector in a YAML file and set its path in the config. The config file does not need to include all parameters; you only need to specify the parameters that require changes.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>post_process:
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  thresh: 0.1

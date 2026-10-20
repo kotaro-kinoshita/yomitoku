@@ -1469,6 +1469,21 @@
 <td style="text-align: left;"><code>bool</code></td>
 <td style="text-align: left;">PyTorch の代わりに ONNX Runtime を使用して推論するかどうかを指定します。</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>repetition_stop</code></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">（テキスト認識のみ）同じ文字・文字列が繰り返されるループを検出して打ち切るかどうかを指定します。未指定の場合はモデルconfigの値（既定: <code>True</code>）に従います。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rec_orientation_fallback</code></td>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;">（テキスト認識のみ）信頼度が低い行を180度回転して再認識するかどうかを指定します。未指定の場合はモデルconfigの値（既定: <code>False</code>）に従います。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rec_orientation_fallback_thresh</code></td>
+<td style="text-align: left;"><code>float</code></td>
+<td style="text-align: left;">（テキスト認識のみ）認識方向フォールバックを実行する信頼度の閾値です。未指定の場合はモデルconfigの値（既定: <code>0.75</code>）に従います。</td>
+</tr>
 </tbody>
 </table>
 <h3 id="model_name">サポートされるモデル名(<code>model_name</code>)<a class="headerlink" href="#model_name" title="Permanent link">&para;</a></h3>
@@ -1544,6 +1559,7 @@
 <h2 id="yaml">YAML ファイルでのパラメータの定義<a class="headerlink" href="#yaml" title="Permanent link">&para;</a></h2>
 <p>Config に YAML ファイルのパスを与えることで、推論時の細部のパラメータの調整が可能です。YAML ファイルの例はリポジトリ内の<code>configs</code>ディレクトリ内にあります。
 モデルのネットワークのパラメータは変更できませんが、後処理のパラメータや入力画像のサイズなどは一部変更が可能です。変更可能なパラメータについては<a href="../configuration/">Model Config</a>をご確認ください。</p>
+<p>引数・YAML・モデルの既定値の優先順位や、使い方ごとの指定場所は <a href="../configuration/#how-to-configure">設定の与え方</a> を参照してください。</p>
 <p>例えば、以下のように Text Detector の後処理の閾値を YAML ファイルに定義し、Config にその YAML ファイルのパスを設定することができます。Config ファイルはすべてのパラメータを記載する必要はなく、変更が必要なパラメータのみの記載が可能です。</p>
 <p><code>text_detector.yaml</code>の記述</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">post_process</span><span class="p">:</span>
