@@ -168,6 +168,7 @@ class TextRecognizer(BaseModule):
             self._cfg,
             img,
             polygons,
+            num_workers=getattr(self._cfg.data, "num_workers", 8),
             dynamic_width=self.dynamic_width,
             source_downscale=self.source_downscale,
         )

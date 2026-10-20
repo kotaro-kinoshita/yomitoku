@@ -2,6 +2,7 @@ import sys
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import numpy as np
 import pytest
 from omegaconf import OmegaConf
 
@@ -148,3 +149,35 @@ def test_cli_recognizer_options(monkeypatch, tmp_path, args, expected):
     monkeypatch.setattr(cli, "DocumentAnalyzer", analyzer)
     with pytest.raises(Captured):
         cli.main()
+
+
+@pytest.mark.parametrize("model_name", MODEL_NAMES)
+def test_num_workers_config_reaches_dataset(monkeypatch, model_name):
+    import yomitoku.text_recognizer as tr_module
+
+    config_class, _ = CATALOG.get(model_name)
+    cfg = OmegaConf.structured(config_class)
+    assert cfg.data.num_workers == 8
+    cfg.data.num_workers = 3
+    monkeypatch.setattr(BaseModule, "__init__", lambda self, **kwargs: None)
+
+    def load(self, *args, **kwargs):
+        self._cfg = cfg
+        self.model = Mock()
+
+    captured = {}
+
+    class Stop(Exception):
+        pass
+
+    def dataset(*args, **kwargs):
+        captured.update(kwargs)
+        raise Stop
+
+    monkeypatch.setattr(TextRecognizer, "load_model", load)
+    monkeypatch.setattr(tr_module, "ParseqDataset", dataset)
+    rec = object.__new__(TextRecognizer)
+    TextRecognizer.__init__(rec, device="cpu")
+    with pytest.raises(Stop):
+        rec.preprocess(np.zeros((8, 8, 3), dtype=np.uint8), None)
+    assert captured["num_workers"] == 3

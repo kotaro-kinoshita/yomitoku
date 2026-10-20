@@ -6,7 +6,7 @@ from ..constants import ROOT_DIR
 
 @dataclass
 class Data:
-    num_workers: int = 4
+    num_workers: int = 8
     batch_size: int = 10
     img_size: List[int] = field(default_factory=lambda: [32, 800])
     dynamic_width: bool = True
