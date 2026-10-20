@@ -36,7 +36,19 @@ YomiToku の商用版は **AWS Marketplace** でも提供しています。
 すべての解析処理は **お客様の AWS 環境内で完結** し、外部ネットワークや第三者サーバーへの送信は一切発生しません。  
 機密文書・社内資料・個人情報を扱うワークロードでも安心してご利用いただけます。
 
-- **AWS Marketplace – YomiToku-Pro Document Analyzer**  
-  <https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku>
-- **利用手順（YomiToku-Client ドキュメント）**  
+提供している製品は次のとおりです。いずれも別の AWS Marketplace 製品のため、利用する製品をそれぞれサブスクライブしてください。
+
+| 製品 | 内容 |
+| :--- | :--- |
+| [YomiToku-Pro - Document Analyzer](https://aws.amazon.com/marketplace/pp/prodview-64qkuwrqi4lhi) | 文書画像の OCR・レイアウト解析（通常版） |
+| [YomiToku-Pro Lite - Document Analyzer](https://aws.amazon.com/marketplace/pp/prodview-zh2ubewvb6hxe) | Document Analyzer の軽量版（通常版との精度・処理時間の比較は[技術記事](https://mlism.com/blog/tech/yomitoku-pro-lite-gpu-marketplace)を参照） |
+| [YomiToku-Pro - Table Semantic Parser](https://aws.amazon.com/marketplace/pp/prodview-mqprrj24bp4w6) | 帳票の表構造（セル・キーと値・グリッド）の抽出 |
+
+製品の一覧は [AWS Marketplace の検索結果](https://aws.amazon.com/marketplace/search/results?searchTerms=yomitoku) からも確認できます。
+
+デプロイや解析の手順は、専用のクライアントライブラリ **YomiToku-Client** の案内を参照してください。
+
+- **YomiToku-Client の README（製品ごとの設定とクイックスタート）**  
+  <https://github.com/MLism-Inc/yomitoku-client/blob/main/README.md>
+- **YomiToku-Client ドキュメント（詳しい利用手順）**  
   <https://mlism-inc.github.io/yomitoku-client/>
