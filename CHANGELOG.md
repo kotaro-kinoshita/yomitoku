@@ -16,6 +16,7 @@
 
 **Merged pull requests:**
 
+- docs: list AWS Marketplace products and link the YomiToku-Client README [\#263](https://github.com/kotaro-kinoshita/yomitoku/pull/263) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 - docs: expand configuration guide and document all tunable parameters [\#261](https://github.com/kotaro-kinoshita/yomitoku/pull/261) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
 ## [v0.15.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.15.0) (2026-09-14)
