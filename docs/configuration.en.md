@@ -2,6 +2,101 @@
 
 This page explains the configurable parameters for each model.
 
+## How to Configure {: #how-to-configure}
+
+The settings of each module (Text Detector / Text Recognizer / Layout Parser / Table Structure Recognizer) are determined by the following three layers. Higher layers take precedence.
+
+| Priority | Layer | How to specify |
+| :---: | :--- | :--- |
+| High | Arguments | CLI options, constructor arguments in the Python API, and values in the `configs` dictionary |
+| Middle | YAML | `--td_cfg` / `--tr_cfg` / `--lp_cfg` / `--tsr_cfg` in the CLI, `path_cfg` in the Python API |
+| Low | Model defaults | Values defined in the config of the model selected with `model_name` |
+
+- In YAML, you only need to write the items you want to change. Items you omit keep the model defaults. For nested items (e.g. `data.batch_size`), you can also write only the items you change.
+- Only items that are available as constructor arguments of a module can be passed as arguments (e.g. `repetition_stop` and `rec_orientation_fallback` of the Text Recognizer). Other items, such as thresholds, are set in YAML. See the [Module Usage](module.en.md) for the available arguments.
+- If the same item is set both in YAML and as an argument, the argument value is used.
+
+### Where to Specify Settings
+
+The keys of the `configs` dictionary depend on how you use YomiToku. Under each key, write the module's arguments (including `path_cfg`) as a dictionary.
+
+| Usage | Text Detector | Text Recognizer | Layout Parser | Table Structure Recognizer |
+| :--- | :--- | :--- | :--- | :--- |
+| CLI (`yomitoku`) | `--td_cfg` | `--tr_cfg` | `--lp_cfg` | `--tsr_cfg` |
+| `DocumentAnalyzer(configs=...)` | `["ocr"]["text_detector"]` | `["ocr"]["text_recognizer"]` | `["layout_analyzer"]["layout_parser"]` | `["layout_analyzer"]["table_structure_recognizer"]` |
+| `OCR(configs=...)` | `["text_detector"]` | `["text_recognizer"]` | — | — |
+| `LayoutAnalyzer(configs=...)` | — | — | `["layout_parser"]` | `["table_structure_recognizer"]` |
+| `TableSemanticParser(configs=...)` | `["text_detector"]` | `["text_recognizer"]` | — | — |
+| A module on its own | `TextDetector(...)` | `TextRecognizer(...)` | `LayoutParser(...)` | `TableStructureRecognizer(...)` |
+
+### Example: Changing Text Recognizer Settings
+
+Write thresholds and other items in `tr.yaml`.
+
+```yaml
+# tr.yaml
+rep_min_run_p1: 24     # allow a single character to repeat up to 24 times
+data:
+  batch_size: 32       # other items under data keep their defaults
+```
+
+In the CLI, pass the YAML with `--tr_cfg` and switch features on or off with options.
+
+```bash
+yomitoku ${path_data} --tr_cfg tr.yaml --disable-repetition-stop
+```
+
+In the Python API, write `path_cfg` and the arguments in the same dictionary.
+
+```python
+from yomitoku import OCR, DocumentAnalyzer
+
+# DocumentAnalyzer: write under "ocr"
+analyzer = DocumentAnalyzer(
+    configs={
+        "ocr": {
+            "text_recognizer": {
+                "path_cfg": "tr.yaml",
+                "repetition_stop": False,
+                "rec_orientation_fallback": True,
+            },
+        },
+    },
+)
+
+# OCR: write directly under configs
+ocr = OCR(
+    configs={
+        "text_recognizer": {
+            "path_cfg": "tr.yaml",
+            "repetition_stop": False,
+        },
+    },
+)
+```
+
+### Notes on Writing YAML
+
+- Writing an item that does not exist causes an error when loading. Check the error message to catch typos in item names.
+
+    ```
+    omegaconf.errors.ConfigKeyError: Key 'repetition_stopp' not in 'TextRecognizer...Config'
+    ```
+
+- YAML values are applied on top of the defaults of the model selected with `model_name`, so the same YAML can be reused when you switch models.
+- Do not change items related to the model's network architecture (such as `encoder` / `decoder`), because they would no longer match the pretrained weights.
+
+### Checking the Applied Settings
+
+Use `log_config()` of each module to log the final settings with arguments and YAML applied. You can also save them to a YAML file with `save_config(path)`.
+
+```python
+analyzer.text_recognizer.log_config()   # DocumentAnalyzer
+ocr.recognizer.log_config()             # OCR
+```
+
+The saved file also contains environment-specific values (such as the absolute path to the charset file). Use it to check the settings; in the YAML you pass to `path_cfg`, write only the items you want to change.
+
 ## Text Detector
 
 ### input data
@@ -92,7 +187,7 @@ rep_min_repeats: int
 
 The defaults are the same for all models: `repetition_stop: true`, `rep_period_max: 8`, `rep_min_run_p1: 16`, and `rep_min_repeats: 3`. It only works with PyTorch inference and is not applied with ONNX inference (`infer_onnx=True`).
 
-You can disable it with `--disable-repetition-stop` in the CLI or `TextRecognizer(repetition_stop=False)` in the Python API; these take precedence over the model config. For `DocumentAnalyzer` / `OCR`, pass `configs={"ocr": {"text_recognizer": {"repetition_stop": False}}}`.
+You can disable it with `--disable-repetition-stop` in the CLI or `TextRecognizer(repetition_stop=False)` in the Python API; these take precedence over the model config. See [How to Configure](#how-to-configure) for how to set them from `DocumentAnalyzer` / `OCR`.
 
 ### visualization
 

@@ -2,6 +2,101 @@
 
 各モデルに対して、設定可能なパラメータについて説明します。
 
+## 設定の与え方 {: #how-to-configure}
+
+各モジュール（Text Detector / Text Recognizer / Layout Parser / Table Structure Recognizer）の設定は、次の 3 つの層で決まります。上の層ほど優先されます。
+
+| 優先度 | 層 | 指定方法 |
+| :---: | :--- | :--- |
+| 高 | 引数 | CLI のオプション、Python API のコンストラクタ引数、`configs` 辞書に書いた値 |
+| 中 | YAML | CLI の `--td_cfg` / `--tr_cfg` / `--lp_cfg` / `--tsr_cfg`、Python API の `path_cfg` |
+| 低 | モデルの既定値 | `model_name` で選んだモデルの config に定義された値 |
+
+- YAML には、変更したい項目だけを書けば十分です。書かなかった項目はモデルの既定値のままです。入れ子の項目（例: `data.batch_size`）も、変更する項目だけを書けます。
+- 引数として指定できるのは、各モジュールのコンストラクタ引数として用意されている項目だけです（例: Text Recognizer の `repetition_stop`、`rec_orientation_fallback`）。閾値などそれ以外の項目は YAML で指定します。指定できる引数は [モジュールの利用](module.md) を参照してください。
+- 同じ項目を YAML と引数の両方で指定した場合は、引数の値が使われます。
+
+### 使い方ごとの指定場所
+
+`configs` 辞書のキーは使い方によって異なります。各キーの中には、そのモジュールの引数（`path_cfg` を含む）を辞書で書きます。
+
+| 使い方 | Text Detector | Text Recognizer | Layout Parser | Table Structure Recognizer |
+| :--- | :--- | :--- | :--- | :--- |
+| CLI（`yomitoku`） | `--td_cfg` | `--tr_cfg` | `--lp_cfg` | `--tsr_cfg` |
+| `DocumentAnalyzer(configs=...)` | `["ocr"]["text_detector"]` | `["ocr"]["text_recognizer"]` | `["layout_analyzer"]["layout_parser"]` | `["layout_analyzer"]["table_structure_recognizer"]` |
+| `OCR(configs=...)` | `["text_detector"]` | `["text_recognizer"]` | — | — |
+| `LayoutAnalyzer(configs=...)` | — | — | `["layout_parser"]` | `["table_structure_recognizer"]` |
+| `TableSemanticParser(configs=...)` | `["text_detector"]` | `["text_recognizer"]` | — | — |
+| モジュール単体 | `TextDetector(...)` | `TextRecognizer(...)` | `LayoutParser(...)` | `TableStructureRecognizer(...)` |
+
+### 例: 文字認識の設定を変える
+
+`tr.yaml` に閾値などを書きます。
+
+```yaml
+# tr.yaml
+rep_min_run_p1: 24     # 1 文字の繰り返しを 24 回まで許容する
+data:
+  batch_size: 32       # data の他の項目は既定値のまま
+```
+
+CLI では `--tr_cfg` で YAML を渡し、ON/OFF はオプションで指定します。
+
+```bash
+yomitoku ${path_data} --tr_cfg tr.yaml --disable-repetition-stop
+```
+
+Python API では、`path_cfg` と引数を同じ辞書に書きます。
+
+```python
+from yomitoku import OCR, DocumentAnalyzer
+
+# DocumentAnalyzer: "ocr" の下に書く
+analyzer = DocumentAnalyzer(
+    configs={
+        "ocr": {
+            "text_recognizer": {
+                "path_cfg": "tr.yaml",
+                "repetition_stop": False,
+                "rec_orientation_fallback": True,
+            },
+        },
+    },
+)
+
+# OCR: configs の直下に書く
+ocr = OCR(
+    configs={
+        "text_recognizer": {
+            "path_cfg": "tr.yaml",
+            "repetition_stop": False,
+        },
+    },
+)
+```
+
+### YAML を書くときの注意
+
+- 存在しない項目を書くと、読み込み時にエラーになります。項目名のタイプミスに気付けるよう、エラーメッセージを確認してください。
+
+    ```
+    omegaconf.errors.ConfigKeyError: Key 'repetition_stopp' not in 'TextRecognizer...Config'
+    ```
+
+- YAML の値は、`model_name` で選んだモデルの既定値に上書きされます。モデルを切り替えても、同じ YAML をそのまま使えます。
+- モデルのネットワーク構造に関する項目（`encoder` / `decoder` など）は、学習済みの重みと一致しなくなるため変更しないでください。
+
+### 適用された設定を確認する
+
+各モジュールの `log_config()` で、引数と YAML を反映した最終的な設定をログに出力できます。`save_config(path)` で YAML ファイルに保存することもできます。
+
+```python
+analyzer.text_recognizer.log_config()   # DocumentAnalyzer の場合
+ocr.recognizer.log_config()             # OCR の場合
+```
+
+保存されるファイルには、環境に依存する値（文字セットファイルの絶対パスなど）も含まれます。設定の確認用として使い、`path_cfg` に渡す YAML には変更したい項目だけを書いてください。
+
 ## Text Detector
 
 ### 入力画像サイズに関する設定
@@ -93,7 +188,7 @@ rep_min_repeats: int
 
 デフォルト値は全モデル共通で、`repetition_stop: true`、`rep_period_max: 8`、`rep_min_run_p1: 16`、`rep_min_repeats: 3` です。PyTorch 推論でのみ動作し、ONNX 推論（`infer_onnx=True`）では適用されません。
 
-CLI の `--disable-repetition-stop`、または Python API の `TextRecognizer(repetition_stop=False)` で無効化できます。これらの指定はモデルconfigより優先されます。`DocumentAnalyzer` / `OCR` では `configs={"ocr": {"text_recognizer": {"repetition_stop": False}}}` のように指定します。
+CLI の `--disable-repetition-stop`、または Python API の `TextRecognizer(repetition_stop=False)` で無効化できます。これらの指定はモデルconfigより優先されます。`DocumentAnalyzer` / `OCR` からの指定方法は [設定の与え方](#how-to-configure) を参照してください。
 
 ### 可視化設定
 

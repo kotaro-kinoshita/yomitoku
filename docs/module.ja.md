@@ -89,6 +89,9 @@ Config を与えることで、より細かい振る舞いを調整できます�
 | `visualize` | `bool` | 可視化処理を実施するかどうかを指定します。 |
 | `from_pretrained` | `bool` | Pretrained モデル（学習済みモデル）を使用するかどうかを指定します。 |
 | `infer_onnx` | `bool` | PyTorch の代わりに ONNX Runtime を使用して推論するかどうかを指定します。 |
+| `repetition_stop` | `bool` | （テキスト認識のみ）同じ文字・文字列が繰り返されるループを検出して打ち切るかどうかを指定します。未指定の場合はモデルconfigの値（既定: `True`）に従います。 |
+| `rec_orientation_fallback` | `bool` | （テキスト認識のみ）信頼度が低い行を180度回転して再認識するかどうかを指定します。未指定の場合はモデルconfigの値（既定: `False`）に従います。 |
+| `rec_orientation_fallback_thresh` | `float` | （テキスト認識のみ）認識方向フォールバックを実行する信頼度の閾値です。未指定の場合はモデルconfigの値（既定: `0.75`）に従います。 |
 
 ### サポートされるモデル名(`model_name`)
 
@@ -154,6 +157,8 @@ if __name__ == "__main__":
 
 Config に YAML ファイルのパスを与えることで、推論時の細部のパラメータの調整が可能です。YAML ファイルの例はリポジトリ内の`configs`ディレクトリ内にあります。
 モデルのネットワークのパラメータは変更できませんが、後処理のパラメータや入力画像のサイズなどは一部変更が可能です。変更可能なパラメータについては[Model Config](configuration.ja.md)をご確認ください。
+
+引数・YAML・モデルの既定値の優先順位や、使い方ごとの指定場所は [設定の与え方](configuration.md#how-to-configure) を参照してください。
 
 例えば、以下のように Text Detector の後処理の閾値を YAML ファイルに定義し、Config にその YAML ファイルのパスを設定することができます。Config ファイルはすべてのパラメータを記載する必要はなく、変更が必要なパラメータのみの記載が可能です。
 
