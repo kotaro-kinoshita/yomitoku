@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD)
 
-[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.15.0...HEAD)
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.15.1...HEAD)
+
+**Merged pull requests:**
+
+- chore: bump certifi to 2026.10.19 in uv.lock [\#265](https://github.com/kotaro-kinoshita/yomitoku/pull/265) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+## [v0.15.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.15.1) (2026-10-20)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.15.0...v0.15.1)
 
 **Implemented enhancements:**
 
