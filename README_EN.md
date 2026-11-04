@@ -92,7 +92,7 @@ The first row shows OCR (text detection and recognition) on a receipt (the upper
 
 ## 📣 Release
 
-- **November 4, 2026 – YomiToku v0.15.0**: Added **geometric correction (dewarping) preprocessing** for photographed documents.
+- **November 4, 2026 – YomiToku v0.16.0**: Added **geometric correction (dewarping) preprocessing** for photographed documents.
 - **July 30, 2026 – YomiToku v0.14.0**: Official release of the **Table Semantic Parser** (semantic table analysis with key-value/grid extraction and the `yomitoku_table` command).
 - **November 5, 2025 – YomiToku v0.10.1**: Added support for a **GPU-free OCR model optimized for CPU inference**.
 - **April 4, 2025 – YomiToku v0.8.0**: Added support for **handwritten character recognition**.
