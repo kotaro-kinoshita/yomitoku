@@ -66,6 +66,46 @@ class DecoderLayer(nn.Module):
             state["activation"] = F.gelu
         super().__setstate__(state)
 
+    def _split_heads(self, x: Tensor) -> Tensor:
+        # (N, L, E) -> (N, num_heads, L, E / num_heads)
+        num_heads = self.cross_attn.num_heads
+        return x.unflatten(-1, (num_heads, -1)).transpose(1, 2)
+
+    def project_memory(self, memory: Tensor) -> tuple[Tensor, Tensor]:
+        """Project the encoder memory to the cross-attention keys and values.
+
+        The memory is fixed for a whole decode, so the result can be computed
+        once and reused by every decoding step.
+        """
+        embed_dim = self.cross_attn.embed_dim
+        weight = self.cross_attn.in_proj_weight
+        bias = self.cross_attn.in_proj_bias
+        key = F.linear(
+            memory, weight[embed_dim : 2 * embed_dim], bias[embed_dim : 2 * embed_dim]
+        )
+        value = F.linear(memory, weight[2 * embed_dim :], bias[2 * embed_dim :])
+        return self._split_heads(key), self._split_heads(value)
+
+    def _cross_attn_projected(
+        self, tgt: Tensor, memory_kv: tuple[Tensor, Tensor]
+    ) -> Tensor:
+        """Equivalent to self.cross_attn(tgt, memory, memory)[0], given
+        memory_kv = self.project_memory(memory)."""
+        embed_dim = self.cross_attn.embed_dim
+        query = F.linear(
+            tgt,
+            self.cross_attn.in_proj_weight[:embed_dim],
+            self.cross_attn.in_proj_bias[:embed_dim],
+        )
+        key, value = memory_kv
+        out = F.scaled_dot_product_attention(
+            self._split_heads(query),
+            key,
+            value,
+            dropout_p=self.cross_attn.dropout if self.training else 0.0,
+        )
+        return self.cross_attn.out_proj(out.transpose(1, 2).flatten(2))
+
     def forward_stream(
         self,
         tgt: Tensor,
@@ -74,11 +114,14 @@ class DecoderLayer(nn.Module):
         memory: Tensor,
         tgt_mask: Optional[Tensor],
         tgt_key_padding_mask: Optional[Tensor],
+        memory_kv: Optional[tuple[Tensor, Tensor]] = None,
     ):
         """Forward pass for a single stream (i.e. content or query)
         tgt_norm is just a LayerNorm'd tgt. Added as a separate parameter for efficiency.
         Both tgt_kv and memory are expected to be LayerNorm'd too.
         memory is LayerNorm'd by ViT.
+        memory_kv, if given, is project_memory(memory) and replaces the
+        per-call projection of memory in the cross-attention.
         """
         tgt2, sa_weights = self.self_attn(
             tgt_norm,
@@ -89,7 +132,11 @@ class DecoderLayer(nn.Module):
         )
         tgt = tgt + self.dropout1(tgt2)
 
-        tgt2, ca_weights = self.cross_attn(self.norm1(tgt), memory, memory)
+        if memory_kv is None:
+            tgt2, ca_weights = self.cross_attn(self.norm1(tgt), memory, memory)
+        else:
+            tgt2 = self._cross_attn_projected(self.norm1(tgt), memory_kv)
+            ca_weights = None
         tgt = tgt + self.dropout2(tgt2)
 
         tgt2 = self.linear2(
@@ -107,6 +154,7 @@ class DecoderLayer(nn.Module):
         content_mask: Optional[Tensor] = None,
         content_key_padding_mask: Optional[Tensor] = None,
         update_content: bool = True,
+        memory_kv: Optional[tuple[Tensor, Tensor]] = None,
     ):
         query_norm = self.norm_q(query)
         content_norm = self.norm_c(content)
@@ -117,6 +165,7 @@ class DecoderLayer(nn.Module):
             memory,
             query_mask,
             content_key_padding_mask,
+            memory_kv,
         )[0]
         if update_content:
             content = self.forward_stream(
@@ -126,6 +175,7 @@ class DecoderLayer(nn.Module):
                 memory,
                 content_mask,
                 content_key_padding_mask,
+                memory_kv,
             )[0]
         return query, content
 
@@ -145,6 +195,10 @@ class Decoder(nn.Module):
         self.num_layers = cfg.depth
         self.norm = norm
 
+    def project_memory(self, memory: Tensor) -> list[tuple[Tensor, Tensor]]:
+        """Per-layer cross-attention keys and values for forward(memory_kv=...)."""
+        return [mod.project_memory(memory) for mod in self.layers]
+
     def forward(
         self,
         query,
@@ -153,6 +207,7 @@ class Decoder(nn.Module):
         query_mask: Optional[Tensor] = None,
         content_mask: Optional[Tensor] = None,
         content_key_padding_mask: Optional[Tensor] = None,
+        memory_kv: Optional[list[tuple[Tensor, Tensor]]] = None,
     ):
         for i, mod in enumerate(self.layers):
             last = i == len(self.layers) - 1
@@ -164,6 +219,7 @@ class Decoder(nn.Module):
                 content_mask,
                 content_key_padding_mask,
                 update_content=not last,
+                memory_kv=None if memory_kv is None else memory_kv[i],
             )
         query = self.norm(query)
         return query
