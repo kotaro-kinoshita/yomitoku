@@ -113,6 +113,7 @@ def process_single_file(args, analyzer, path, format):
         target_pages = parse_pages(args.pages)
 
     format_results = []
+    page_imgs = []
     for page, img in enumerate(imgs):
         if (page + 1) not in target_pages:
             continue
@@ -142,6 +143,7 @@ def process_single_file(args, analyzer, path, format):
                     f"Dewarping rejected ({', '.join(dewarp.reasons)}): {path} p{page + 1}; the page was analyzed without it"
                 )
             img = analyzer.img  # coordinates of the results (figure crops)
+        page_imgs.append(img)
 
         if ocr is not None:
             out_path = os.path.join(
@@ -305,7 +307,7 @@ def process_single_file(args, analyzer, path, format):
             out_path,
             args,
             out,
-            imgs,
+            page_imgs,
         )
 
 
