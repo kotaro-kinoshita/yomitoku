@@ -9,6 +9,7 @@ from typing import Dict
 
 from ..base import BaseSchema
 from . import WordPrediction, ParagraphSchema, Element
+from .document_analyzer import PreprocessSchema, _DropUnsetDewarpFields
 from ..reading_order import prediction_reading_order
 
 
@@ -59,7 +60,7 @@ class TemplateMetaSchema(BaseSchema):
     match_policy: MatchPolicy = Field("cell_id", description="How to match cells")
 
 
-class CellSchema(BaseSchema):
+class CellSchema(_DropUnsetDewarpFields, BaseSchema):
     meta: Dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata for template/semantics"
     )
@@ -79,6 +80,10 @@ class CellSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4) = Field(
         ...,
         description="Bounding box of the cell in the format [x1, y1, x2, y2]",
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     row: Union[int, None] = Field(
         ...,
@@ -140,7 +145,7 @@ class TableDetectorSchema(BaseSchema):
     )
 
 
-class KvItemSchema(BaseSchema):
+class KvItemSchema(_DropUnsetDewarpFields, BaseSchema):
     id: Union[str, None] = Field(
         ...,
         description="Unique identifier of the key-value item",
@@ -151,9 +156,13 @@ class KvItemSchema(BaseSchema):
         None,
         description="Bounding box of the key-value item in the format [x1, y1, x2, y2]",
     )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+    )
 
 
-class TableGridSchema(BaseSchema):
+class TableGridSchema(_DropUnsetDewarpFields, BaseSchema):
     id: Union[str, None] = Field(
         ...,
         description="Unique identifier of the table grid",
@@ -161,6 +170,10 @@ class TableGridSchema(BaseSchema):
     box: conlist(int, min_length=4, max_length=4) = Field(
         ...,
         description="Bounding box of the table grid in the format [x1, y1, x2, y2]",
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     n_row: int = Field(
         ...,
@@ -296,13 +309,17 @@ class SimpleDocumentSchema(BaseSchema):
     )
 
 
-class TableSemanticContentsSchema(BaseSchema):
+class TableSemanticContentsSchema(_DropUnsetDewarpFields, BaseSchema):
     id: str | None = Field(None, description="Unique identifier of the table")
     style: str = Field(
         ..., description="Border style of the table, e.g., ['border', 'borderless']"
     )
     box: conlist(int, min_length=4, max_length=4) = Field(
         ..., description="Bounding box [x1, y1, x2, y2]"
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
 
     cells: Dict[str, CellSchema] = Field(..., description="Cells keyed by cell_id")
@@ -889,7 +906,11 @@ class TableSemanticParserTemplateSchema(BaseSchema):
                 return table
 
 
-class TableSemanticParserSchema(BaseSchema):
+class TableSemanticParserSchema(_DropUnsetDewarpFields, BaseSchema):
+    preprocess: Union[PreprocessSchema, None] = Field(
+        None,
+        description="Preprocessing information (rotation / geometric correction); None when disabled",
+    )
     tables: List[TableSemanticContentsSchema] = Field(
         ...,
         description="List of tables with semantic information",

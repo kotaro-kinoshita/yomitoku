@@ -121,6 +121,28 @@ def process_single_file(args, analyzer, path, format):
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
 
+        dewarp = result.preprocess.dewarp if result.preprocess is not None else None
+        if dewarp is not None:
+            if args.vis:
+                pre = analyzer.preprocessor
+                out_path = os.path.join(
+                    args.outdir,
+                    f"{dirname}_{filename}_p{page + 1}_dewarp_grid.jpg",
+                )
+                save_image(pre.dewarper.visualize(pre.rotated_img), out_path)
+                logger.info(f"Output file: {out_path}")
+            if dewarp.status == "ok":
+                out_path = os.path.join(
+                    args.outdir, f"{dirname}_{filename}_p{page + 1}_dewarped.jpg"
+                )
+                save_image(analyzer.preprocessor.dewarper.last_dewarped_img, out_path)
+                logger.info(f"Output file: {out_path}")
+            else:
+                logger.warning(
+                    f"Dewarping rejected ({', '.join(dewarp.reasons)}): {path} p{page + 1}; the page was analyzed without it"
+                )
+            img = analyzer.img  # coordinates of the results (figure crops)
+
         if ocr is not None:
             out_path = os.path.join(
                 args.outdir, f"{dirname}_{filename}_p{page + 1}_ocr.jpg"
@@ -469,6 +491,25 @@ def main():
         default=1.0,
         help="bimodality separation threshold for ruby detection; higher values require stronger bimodality to use valley split (default: 2.0)",
     )
+    parser.add_argument(
+        "--dewarp",
+        action="store_true",
+        default=False,
+        help="if set, apply geometric correction (dewarping of curled, curved, tilted or keystoned pages); the dewarped image is saved as *_dewarped.jpg",
+    )
+    parser.add_argument(
+        "--dewarp_coordinate",
+        type=str,
+        default="dewarped",
+        choices=["dewarped", "photo"],
+        help="coordinates of the results with --dewarp: 'dewarped' (the dewarped image, default) or 'photo' (mapped back to the input image, with curved polygons)",
+    )
+    parser.add_argument(
+        "--dewarp_cfg",
+        type=str,
+        default=None,
+        help="path to the dewarper config yaml (e.g. hf_hub_repo pointing at local weights)",
+    )
     args = parser.parse_args()
 
     path = Path(args.arg1)
@@ -494,6 +535,11 @@ def main():
         format = "md"
 
     configs = {
+        "preprocess": {
+            "dewarper": {
+                "path_cfg": args.dewarp_cfg,
+            },
+        },
         "ocr": {
             "text_detector": {
                 "path_cfg": args.td_cfg,
@@ -556,6 +602,8 @@ def main():
         reading_order=args.reading_order,
         ignore_ruby=args.ignore_ruby,
         ruby_threshold=args.ruby_threshold,
+        enable_dewarp=args.dewarp,
+        dewarp_coordinate=args.dewarp_coordinate,
     )
 
     os.makedirs(args.outdir, exist_ok=True)

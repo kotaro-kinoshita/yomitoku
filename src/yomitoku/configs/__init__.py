@@ -1,4 +1,5 @@
 from .cfg_layout_parser_rtdtrv2 import LayoutParserRTDETRv2Config
+from .cfg_dewarper_uvdoc_v1 import DewarperUVDocV1Config
 from .cfg_layout_parser_rtdtrv2_v2 import LayoutParserRTDETRv2V2Config
 from .cfg_table_structure_recognizer_rtdtrv2 import (
     TableStructureRecognizerRTDETRv2Config,
@@ -31,6 +32,7 @@ DEFAULT_CONFIGS = [
 ]
 
 __all__ = [
+    "DewarperUVDocV1Config",
     "TextDetectorDBNetConfig",
     "TextDetectorDBNetV2Config",
     "TextDetectorDBNetV2_1Config",

@@ -30,6 +30,9 @@ yomitoku_table ${path_data} -o results -v
 | `--pages` | 読み取り対象ページを指定します（例: `1,2,5-10`、1始まり）。デフォルト: 全ページ |
 | `--dpi` | PDF読み込み時の解像度を指定します。デフォルト: `200` |
 | `--encoding` | 出力ファイルの文字コードを指定します（`utf-8` \| `utf-8-sig` \| `shift-jis` \| `euc-jp` \| `cp932`）。 |
+| `--dewarp` | 撮影した文書の湾曲・カール・傾き・台形の歪みを補正してから解析します。補正後の画像を `*_dewarped.jpg` として出力します。`--studio-template`との併用はできません。 |
+| `--dewarp_coordinate` | `--dewarp` 使用時の出力座標を指定します（`dewarped`: 補正後の画像（デフォルト） \| `photo`: 元の画像）。 |
+| `--dewarp_cfg` | 幾何補正モデルの設定ファイル（YAML）のパスを指定します。 |
 
 出力ファイルはページ単位で `{ファイル名}_p{ページ番号}.json` として保存されます。
 
@@ -227,3 +230,13 @@ yomitoku_table ${path_data} --pages 1,3-5
 ```bash
 yomitoku_table ${path_data} -o results -v
 ```
+
+## 幾何補正（歪み補正）
+
+`--dewarp` を付与すると、スマートフォン等で撮影した帳票の湾曲・カール・傾き・台形の歪みを補正してからテーブルを解析します。補正後の画像を `*_dewarped.jpg` として出力し、`-v` を併用した場合は推定した紙の領域と Grid を `*_dewarp_grid.jpg` として出力します。補正に失敗したと判定したページは補正せずに解析を続行します。
+
+```bash
+yomitoku_table ${path_data} -o results -v --dewarp
+```
+
+`--dewarp_coordinate photo` を指定すると、解析結果の座標を元の画像に逆投影して出力します（可視化画像は補正後の画像上に描画されます）。補正結果（`preprocess.dewarp`）は `--raw` の JSON に記録されます。詳細は [CLI Usage](cli.ja.md) の幾何補正の節を参照してください。

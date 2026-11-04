@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 from yomitoku.text_detector import TextDetector
+from .preprocessor import Preprocessor
 from yomitoku.text_recognizer import TextRecognizer
 
 from .layout_analyzer import LayoutAnalyzer
@@ -434,8 +435,20 @@ class DocumentAnalyzer:
         split_text_across_cells=False,
         ignore_ruby=False,
         ruby_threshold=2.0,
+        enable_dewarp=False,
+        dewarp_coordinate="dewarped",
     ):
+        """enable_dewarp: run geometric correction (dewarping of curled, curved, tilted or keystoned pages) before
+        the analysis; when the predicted correction looks broken the page is not dewarped and
+        `results.preprocess.dewarp.status` is "rejected". dewarp_coordinate: coordinates of the results with
+        dewarping, "dewarped" (the dewarped image, `self.processed_img`) or "photo" (mapped back to the input image; elements
+        get a curved `polygon` and `box` becomes its bounding box)."""
         default_configs = {
+            "preprocess": {
+                "dewarper": {
+                    "device": device,
+                },
+            },
             "ocr": {
                 "text_detector": {
                     "device": device,
@@ -478,6 +491,14 @@ class DocumentAnalyzer:
             configs=default_configs["layout_analyzer"],
         )
         self.visualize = visualize
+        self.preprocessor = None
+        if enable_dewarp:
+            self.preprocessor = Preprocessor(
+                configs=default_configs["preprocess"],
+                dewarp_coordinate=dewarp_coordinate,
+            )
+        self.dewarp_coordinate = dewarp_coordinate
+        self.processed_img = None  # the image analyzed (dewarped or not), as in TableSemanticParser and pro
 
         self.ignore_meta = ignore_meta
         self.split_text_across_cells = split_text_across_cells
@@ -620,6 +641,15 @@ class DocumentAnalyzer:
         return results_det, results_rec, ocr
 
     async def run(self, img):
+        results_preprocess = None
+        paper = None  # paper mask of the dewarped image
+        if self.preprocessor is not None:
+            results_preprocess, img = self.preprocessor(img)
+            dewarper = self.preprocessor.dewarper
+            if dewarper is not None and dewarper.last_result is not None:
+                paper = dewarper.last_result.paper
+        self.img = img
+
         with ThreadPoolExecutor(max_workers=2) as executor:
             loop = asyncio.get_running_loop()
 
@@ -629,7 +659,7 @@ class DocumentAnalyzer:
                 # ordering: det || layout, then recognize.
                 tasks = [
                     loop.run_in_executor(executor, self.text_detector, img),
-                    loop.run_in_executor(executor, self.layout, img),
+                    loop.run_in_executor(executor, self.layout, img, paper),
                 ]
 
                 results = await asyncio.gather(*tasks)
@@ -653,7 +683,7 @@ class DocumentAnalyzer:
                 # det -> rec chain runs concurrently with layout analysis.
                 tasks = [
                     loop.run_in_executor(executor, self._detect_and_recognize, img),
-                    loop.run_in_executor(executor, self.layout, img),
+                    loop.run_in_executor(executor, self.layout, img, paper),
                 ]
 
                 results = await asyncio.gather(*tasks)
@@ -664,6 +694,7 @@ class DocumentAnalyzer:
             outputs = {"words": ocr_aggregate(results_det, results_rec)}
             results_ocr = OCRSchema(**outputs)
             outputs = self.aggregate(results_ocr, results_layout)
+            outputs["preprocess"] = results_preprocess
 
         results = DocumentAnalyzerSchema(**outputs)
         return results, ocr, layout
@@ -672,7 +703,26 @@ class DocumentAnalyzer:
         self.img = img
         results, ocr, layout = asyncio.run(self.run(img))
 
-        if self.visualize:
+        dewarp = results.preprocess.dewarp if results.preprocess is not None else None
+        if (
+            dewarp is not None
+            and dewarp.status == "ok"
+            and self.dewarp_coordinate == "photo"
+        ):
+            from .utils.dewarp import draw_document, reproject_results
+
+            photo = self.preprocessor.rotated_img
+            results = reproject_results(
+                results, self.preprocessor.dewarper.last_result, photo.shape[:2]
+            )
+            self.img = photo
+            if self.visualize:
+                ocr = draw_document(photo, results, words_only=True)
+                layout = reading_order_visualizer(
+                    draw_document(photo, results), results
+                )
+        elif self.visualize:
             layout = reading_order_visualizer(layout, results)
 
+        self.processed_img = self.img
         return results, ocr, layout

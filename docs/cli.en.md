@@ -229,3 +229,67 @@ Pages can be specified either as a comma-separated list or as a range using a hy
 ```bash
 yomitoku ${path_data} --pages 1,3-5,10
 ```
+
+## Geometric Correction (Dewarping)
+
+With the `--dewarp` option, the curvature, curl, tilt and keystone distortion of documents photographed with a smartphone or similar are corrected before the analysis. Text lines and layout become straight in the dewarped image, which makes OCR and layout analysis more stable.
+
+Rather than a simple correction that extracts the paper outline and applies a projective transform to its four corners, it estimates the distortion over the whole page (non-linear correction), so curved and curled paper is flattened as well. It is robust to photos where part of the paper is cut off by the frame and to shadows and uneven lighting.
+
+```bash
+yomitoku ${path_data} -v --dewarp
+```
+
+| Option Name | Description |
+| :--- | :--- |
+| `--dewarp` | Enables the geometric correction. |
+| `--dewarp_coordinate` | Coordinates of the output: `dewarped` (the dewarped image, default) or `photo` (the input image). |
+| `--dewarp_cfg` | Path to the config (YAML) of the dewarping model. |
+
+Output files:
+
+| File | Description |
+| :--- | :--- |
+| `*_dewarped.jpg` | The dewarped image (only when the correction succeeded). Results in `dewarped` coordinates refer to this image. |
+| `*_dewarp_grid.jpg` | Only with `--vis`. Draws the estimated paper region (yellow line, the outside darkened), where the rows (red) and columns (blue) of the dewarped image lie in the input image (grid), and the outer frame of the dewarped image (green). |
+
+With `--dewarp_coordinate photo`, the results obtained on the dewarped image are mapped back to the input image. Every element (paragraph, table, cell, figure, word) gets a curved `polygon` on the input image and `box` becomes its bounding box. The visualizations are drawn on the input image as well.
+
+```bash
+yomitoku ${path_data} -f json -v --dewarp --dewarp_coordinate photo
+```
+
+### Detecting Failed Corrections
+
+When the estimated correction is judged broken (the paper region and the grid disagree, the grid folds over itself, ...), the page is analyzed on the input image without correction and a warning is logged. The outcome is recorded in `preprocess.dewarp` of the JSON output.
+
+```json
+"preprocess": {
+  "dewarp": {
+    "status": "ok",
+    "reasons": [],
+    "coordinate": "dewarped",
+    "size": [6792, 4120],
+    "mask_iou": 0.9995,
+    "flipped_cells": 0.022,
+    "spacing_ratio": 2.34,
+    "outside": 0.082
+  }
+}
+```
+
+| Field | Description |
+| :--- | :--- |
+| `status` | `ok`: corrected, `rejected`: judged failed and analyzed without correction |
+| `reasons` | Reasons of a `rejected` status (`mask_iou`, `flipped_cells`, `spacing`, `outside`) |
+| `coordinate` | Coordinate system of the results (`dewarped` / `photo`); always `photo` when `rejected` |
+| `size` | Size of the dewarped image `[width, height]` |
+| `mask_iou` | IoU of the estimated paper region and the grid outline |
+| `flipped_cells` | Share of grid cells turned over |
+| `spacing_ratio` | Longest grid edge / median grid edge length |
+| `outside` | Share of grid points far outside the image |
+
+!!! note
+    - The geometric correction targets documents photographed with a smartphone or similar. Do not use it for documents that are already flat, such as scans or PDFs: without the paper outline the correction brings nothing and may slightly distort the page.
+    - The correction of creases is limited.
+    - In the dewarped image, what lies outside the paper (desk, outside the photo) is painted with the paper colour.
