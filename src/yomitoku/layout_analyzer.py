@@ -2,6 +2,8 @@ from .layout_parser import LayoutParser
 from .table_structure_recognizer import TableStructureRecognizer
 
 from .schemas import LayoutAnalyzerSchema
+from .utils.dewarp import drop_off_paper_figures
+from .utils.visualizer import layout_visualizer
 
 
 class LayoutAnalyzer:
@@ -35,8 +37,24 @@ class LayoutAnalyzer:
             **table_structure_recognizer_kwargs,
         )
 
-    def __call__(self, img):
+    def _drop_off_paper_figures(self, img, layout_results, vis, paper):
+        if paper is None:
+            return layout_results, vis
+        figures = drop_off_paper_figures(layout_results.figures, paper)
+        if len(figures) == len(layout_results.figures):
+            return layout_results, vis
+        layout_results.figures = figures
+        if vis is not None:
+            vis = layout_visualizer(layout_results, img)
+        return layout_results, vis
+
+    def __call__(self, img, paper=None):
+        """paper: for a dewarped image, its paper mask (`DewarpResult.paper`); figures off the paper or containing
+        the whole page are dropped."""
         layout_results, vis = self.layout_parser(img)
+        layout_results, vis = self._drop_off_paper_figures(
+            img, layout_results, vis, paper
+        )
         table_boxes = [table.box for table in layout_results.tables]
         table_results, vis = self.table_structure_recognizer(img, table_boxes, vis=vis)
 

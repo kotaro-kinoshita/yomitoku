@@ -557,6 +557,8 @@ def _mk_parser():
     parser = TableSemanticParser.__new__(TableSemanticParser)
     parser.visualize = False
     parser.merge_same_column_values = False
+    parser.preprocessor = None
+    parser.dewarp_coordinate = "dewarped"
     return parser
 
 

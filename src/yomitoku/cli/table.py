@@ -72,6 +72,29 @@ def process_single_file(file_path, args, tsp):
                 kv_only=args.kv_only,
             )
 
+        pre = getattr(semantic_info, "preprocess", None)
+        dewarp = pre.dewarp if pre is not None else None
+        if dewarp is not None:
+            if dewarp.status == "ok":
+                out_path = os.path.join(
+                    args.outdir, f"{file_path.stem}_p{page + 1}_dewarped.jpg"
+                )
+                save_image(tsp.preprocessor.dewarper.last_dewarped_img, out_path)
+                logger.info(f"Output file: {out_path}")
+            else:
+                logger.warning(
+                    f"Dewarping rejected ({', '.join(dewarp.reasons)}): {file_path} p{page + 1}; the page was analyzed without it"
+                )
+            if args.vis:
+                out_path = os.path.join(
+                    args.outdir, f"{file_path.stem}_p{page + 1}_dewarp_grid.jpg"
+                )
+                save_image(
+                    tsp.preprocessor.dewarper.visualize(tsp.preprocessor.rotated_img),
+                    out_path,
+                )
+                logger.info(f"Output file: {out_path}")
+
         # TableSemanticParser は visualize=False でも入力画像のコピーを
         # 返すため、None 判定ではなく args.vis でゲートする
         if args.vis:
@@ -260,6 +283,24 @@ def main():
             "If unsupported characters are included, they will be ignored."
         ),
     )
+    parser.add_argument(
+        "--dewarp",
+        action="store_true",
+        help="if set, apply geometric correction (dewarping of curled, curved, tilted or keystoned pages); the dewarped image is saved as *_dewarped.jpg (with --vis also the paper mask and grid as *_dewarp_grid.jpg)",
+    )
+    parser.add_argument(
+        "--dewarp_coordinate",
+        type=str,
+        default="dewarped",
+        choices=["dewarped", "photo"],
+        help="coordinates of the results with --dewarp: 'dewarped' (default) or 'photo' (mapped back to the input image; layout visualizations stay on the dewarped image)",
+    )
+    parser.add_argument(
+        "--dewarp_cfg",
+        type=str,
+        default=None,
+        help="path to the dewarper config yaml (e.g. hf_hub_repo pointing at local weights)",
+    )
     args = parser.parse_args()
 
     path = Path(args.input)
@@ -280,6 +321,9 @@ def main():
     if args.raw and args.simple:
         raise ValueError("--raw and --simple cannot be used together")
 
+    if args.dewarp and args.studio_template is not None:
+        raise ValueError("--dewarp and --studio-template cannot be used together")
+
     validate_encoding(args.encoding)
 
     configs = {
@@ -298,6 +342,11 @@ def main():
         "text_recognizer": {
             "model_name": args.tr_name,
             "path_cfg": args.tr_cfg,
+        },
+        "preprocess": {
+            "dewarper": {
+                "path_cfg": args.dewarp_cfg,
+            },
         },
     }
 
@@ -334,6 +383,8 @@ def main():
             configs=configs,
             device=args.device,
             visualize=args.vis,
+            enable_dewarp=args.dewarp,
+            dewarp_coordinate=args.dewarp_coordinate,
         )
 
     os.makedirs(args.outdir, exist_ok=True)

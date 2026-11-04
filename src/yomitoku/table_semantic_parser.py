@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw, ImageFont, features
 from .grid_parser import parse_grid_from_bottom_up
 from .kv_parser import parse_kv_items
 from .layout_parser import LayoutParser
+from .preprocessor import Preprocessor
 from .ocr import OCRSchema, ocr_aggregate
 from .reading_order import prediction_reading_order
 from .schemas import Element, TableCellSchema
@@ -626,6 +627,8 @@ class TableSemanticParser:
         configs={},
         device="cuda:0",
         visualize=True,
+        enable_dewarp=False,
+        dewarp_coordinate="dewarped",
     ):
         table_detector_kwargs = {
             "device": device,
@@ -677,6 +680,19 @@ class TableSemanticParser:
         )
 
         self.visualize = visualize
+
+        self.preprocessor = None
+        if enable_dewarp:
+            preprocess_configs = {"dewarper": {"device": device}}
+            if isinstance(configs, dict) and "preprocess" in configs:
+                for k, v in configs["preprocess"].items():
+                    preprocess_configs.setdefault(k, {}).update(v)
+            self.preprocessor = Preprocessor(
+                configs=preprocess_configs,
+                dewarp_coordinate=dewarp_coordinate,
+            )
+        self.dewarp_coordinate = dewarp_coordinate
+        self.processed_img = None
 
         self.merge_same_column_values = False
 
@@ -830,6 +846,11 @@ class TableSemanticParser:
         return vis_layout
 
     def __call__(self, img, template=None, id=None, grid_only=False, kv_only=False):
+        results_preprocess = None
+        if self.preprocessor is not None:
+            results_preprocess, img = self.preprocessor(img)
+        self.processed_img = img
+
         results_ocr, results_table, paragraphs = asyncio.run(self.run_models(img))
 
         semantic_info = []
@@ -987,5 +1008,23 @@ class TableSemanticParser:
             # テーブル構造のグラフ (DAG) をセル塗り・枠の上に描画して見やすくする
             for dag in dags:
                 vis_layout = dag_visualizer(dag, vis_layout)
+
+        if results_preprocess is not None:
+            semantic_info.preprocess = results_preprocess
+            dewarp = semantic_info.preprocess.dewarp
+            if (
+                dewarp is not None
+                and dewarp.status == "ok"
+                and self.dewarp_coordinate == "photo"
+            ):
+                from .utils.dewarp import reproject_results
+
+                photo = self.preprocessor.rotated_img
+                reproject_results(
+                    semantic_info,
+                    self.preprocessor.dewarper.last_result,
+                    photo.shape[:2],
+                )
+                self.processed_img = photo
 
         return semantic_info, vis_layout, vis_ocr

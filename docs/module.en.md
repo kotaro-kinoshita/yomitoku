@@ -25,6 +25,8 @@ Following 4 models are utilized in the module:
 | `split_text_across_cells` | `bool` | Specifies whether text lines detected across multiple table cells are split at cell boundaries before recognition. | Default is `False`. In the CLI, enable it with `--split_text_across_cells`. |
 | `ignore_ruby` | `bool` | Specifies whether to exclude ruby (furigana) text from the output. | Default is `False`. |
 | `ruby_threshold` | `float` | Specifies the threshold for ruby detection as a ratio to the median line height. Text consisting solely of hiragana or katakana below this threshold is identified as ruby. | Default is `0.5`. Only effective when `ignore_ruby=True`. |
+| `enable_dewarp` | `bool` | Specifies whether to run the geometric correction (dewarping) as a preprocessing step. | Default is `False`. See [Using the Geometric Correction](#dewarper). |
+| `dewarp_coordinate` | `str` | Coordinates of the output with the geometric correction. (`dewarped` \| `photo`) | Default is `"dewarped"` (the dewarped image). |
 
 The results of DocumentAnalyzer can be exported in the following formats:
 
@@ -77,6 +79,71 @@ Following 2 models are utilized in the module:
 
 The results of LayoutAnalyzer processing support export only in JSON format (to_json()).
 
+## Using the Geometric Correction (Dewarper) {: #dewarper}
+
+Corrects the curvature, curl, tilt and keystone distortion of photographed document images.
+
+### Within the Document Analyzer
+
+With `enable_dewarp=True`, the geometric correction runs as a preprocessing step of the analysis. Pages whose correction is judged to have failed are analyzed without it and `results.preprocess.dewarp.status` is `"rejected"`.
+
+<!--codeinclude-->
+[demo/simple_dewarp.py](../demo/simple_dewarp.py)
+<!--/codeinclude-->
+
+| Attribute | Description |
+| :--- | :--- |
+| `results.preprocess.dewarp` | Outcome of the correction (`status`, `reasons`, `coordinate`, `size`, ...). See the geometric correction section of [CLI Usage](cli.en.md). |
+| `analyzer.processed_img` | The image analyzed: the dewarped image when `dewarp_coordinate="dewarped"` and the correction succeeded. |
+| `analyzer.preprocessor.dewarper.last_dewarped_img` | The dewarped image of the last call (`numpy.ndarray`, BGR); `None` when the correction failed. |
+| `analyzer.preprocessor.dewarper.visualize(img)` | Returns the estimated correction of the last call (paper region and grid) drawn on its input image `img`. |
+
+With `dewarp_coordinate="photo"`, the results are mapped back to the coordinates of the input image: every element gets a curved `polygon` on the input image and `box` becomes its bounding box.
+
+### Getting the Dewarped Image
+
+The dewarped image is obtained in either of the following ways. When the correction is judged to have failed (`status == "rejected"`) there is no dewarped image.
+
+```python
+import cv2
+
+from yomitoku import DocumentAnalyzer, Dewarper
+from yomitoku.data.functions import load_image
+
+img = load_image("static/in/gallery4.jpg")[0]
+
+# 1. The image corrected by the preprocessing of the Document Analyzer
+analyzer = DocumentAnalyzer(device="cuda", enable_dewarp=True)
+results, _, _ = analyzer(img)
+if results.preprocess.dewarp.status == "ok":
+    dewarped_img = analyzer.preprocessor.dewarper.last_dewarped_img  # the dewarped image, whatever dewarp_coordinate
+    # with dewarp_coordinate="dewarped" (default), analyzer.processed_img (the image analyzed) is the dewarped image too
+    cv2.imwrite("dewarped.jpg", dewarped_img)
+
+# 2. The Dewarper alone: the 2nd return value is the dewarped image (the input image itself when rejected)
+dewarper = Dewarper(device="cuda")
+dewarp_results, dewarped_img = dewarper(img)
+if dewarp_results.status == "ok":
+    cv2.imwrite("dewarped.jpg", dewarped_img)
+```
+
+The size of the dewarped image is also recorded in `results.preprocess.dewarp.size` (`[width, height]`).
+
+### Using the Dewarper alone
+
+<!--codeinclude-->
+[demo/simple_dewarper.py](../demo/simple_dewarper.py)
+<!--/codeinclude-->
+
+`Dewarper` returns `(results, image)`: the dewarped image when the correction succeeded, the input image unchanged when it was judged to have failed.
+
+| Option Name | Type | Description | Notes |
+| :--- | :--- | :--- | :--- |
+| `device` | `str` | Specifies the device to be used for processing. (`cuda` \| `cpu` \| `mps`) | The default is `"cuda"`. |
+| `path_cfg` | `str` | Path to a YAML file with the post-processing parameters and the failure-check thresholds. | |
+
+In the `configs` of `DocumentAnalyzer`, the same parameters go under `{"preprocess": {"dewarper": {...}}}`.
+
 ## Model Detailed Config {:#model-config}
 
 By providing a config, you can adjust the behavior in greater detail.
@@ -102,6 +169,7 @@ The following parameters can be set for the model:
 | `TextDetector` | `"dbnetv2_1"` (default), `"dbnet"`, `"dbnetv2"` |
 | `LayoutParser` | `"rtdetrv2"` |
 | `TableStructureRecognizer` | `"rtdetrv2"` |
+| `Dewarper` | `"uvdoc_v1"` |
 
 `"parseq-tiny-dynw-v4"` is the recognizer used by the CLI `--lite` option. It is
 a dynamic-width model, so it should be combined with `dynamic_width=True` and

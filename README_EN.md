@@ -22,6 +22,35 @@ YomiToku is a Document AI engine specialized in Japanese document image analysis
 - 📈 By leveraging layout analysis, table structure parsing, and reading order estimation, it extracts information while preserving the semantic structure of the document layout.
 - 📄 Supports a variety of output formats, including HTML, Markdown, JSON, and CSV. It also allows for the extraction of diagrams and images contained within the documents.
 - ⚡ Operates efficiently in GPU environments, enabling fast document transcription and analysis. It requires less than 8GB of VRAM, eliminating the need for high-end GPUs.
+- 📷 Includes an optional geometric correction (dewarping) preprocessing step that removes the curvature, curl, tilt and keystone distortion of documents photographed with a smartphone. Being a non-linear correction, it also handles curved and curled paper and is robust to paper cut off by the frame and to poor lighting. Pages whose correction is judged to have failed are analyzed without it.
+
+### Processing Pipeline
+
+```mermaid
+flowchart LR
+    IN[/Input image/] --> PRE
+    subgraph PRE["Preprocessing (optional)"]
+        DW["Geometric correction<br>Dewarper"]
+    end
+    PRE --> OCR
+    PRE --> LA
+    subgraph OCR["OCR"]
+        direction TB
+        TD["Text Detector"] --> TR["Text Recognizer"]
+    end
+    subgraph LA["Layout Analysis"]
+        direction TB
+        LP["Layout Parser"] --> TSR["Table Structure Recognizer"]
+    end
+    OCR --> RO["Reading order estimation"]
+    LA --> RO
+    RO --> OUT[/"Output<br>JSON / HTML / Markdown / CSV / PDF"/]
+```
+
+- **Preprocessing (geometric correction)**: runs only with `--dewarp`. Estimates the paper region and its distortion and corrects the image into a flat document.
+- **OCR**: detects the text lines and recognizes the characters of each of them.
+- **Layout analysis**: detects paragraphs, figures and tables, and recognizes the cell structure (rows, columns, spans) of the tables.
+- **Reading order estimation**: merges the OCR and layout analysis results and estimates the reading order of the document.
 
 ## 🖼️ Demo
 
@@ -45,8 +74,25 @@ For the results exported in Markdown, please refer to [static/out/in_demo_p1.md]
 
 Source of the image: Created by processing content from “Reiwa 6 Edition Information and Communications White Paper, Chapter 3, Section 2: Technologies Advancing with AI Evolution” (<https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf>)：(Ministry of Internal Affairs and Communications).
 
+### Geometric Correction (Dewarping)
+
+With `--dewarp`, the curvature, curl, tilt and keystone distortion of photographed documents are corrected before the analysis. Rather than a simple correction that extracts the paper outline and applies a projective transform to its four corners, it estimates the distortion over the whole page (non-linear correction), so curved and curled paper is flattened as well. It is robust to photos where part of the paper is cut off by the frame and to shadows and uneven lighting.
+
+|               Estimated correction (paper region and grid)                |                     Results on the dewarped image                      |              Results mapped back to the input image               |
+| :-----------------------------------------------------------------------: | :----------------------------------------------------------------------: | :-------------------------------------------------------------------: |
+|   <img src="static/out/dewarp/img_4126_grid.jpg" height="280px">   | <img src="static/out/dewarp/img_4126_ocr_dewarped.jpg" height="280px"> | <img src="static/out/dewarp/img_4126_ocr_reproj.jpg" height="280px"> |
+|   <img src="static/out/dewarp/img_4127_grid.jpg" width="250px">   | <img src="static/out/dewarp/img_4127_layout_dewarped.jpg" width="250px"> | <img src="static/out/dewarp/img_4127_layout_reproj.jpg" width="250px"> |
+
+The first row shows OCR (text detection and recognition) on a receipt (the upper part of the dewarped image is shown), the second row layout analysis on an open booklet.
+
+- `Yellow line`: estimated paper region (the darkened area is outside the paper)
+- `Red` / `Blue lines`: where the rows / columns of the dewarped image lie in the input image (grid)
+- `Green line`: outer frame of the dewarped image
+- When mapping back (`--dewarp_coordinate photo`), the rectangles found on the dewarped image are output as curved polygons on the input image.
+
 ## 📣 Release
 
+- **November 4, 2026 – YomiToku v0.15.0**: Added **geometric correction (dewarping) preprocessing** for photographed documents.
 - **July 30, 2026 – YomiToku v0.14.0**: Official release of the **Table Semantic Parser** (semantic table analysis with key-value/grid extraction and the `yomitoku_table` command).
 - **November 5, 2025 – YomiToku v0.10.1**: Added support for a **GPU-free OCR model optimized for CPU inference**.
 - **April 4, 2025 – YomiToku v0.8.0**: Added support for **handwritten character recognition**.
@@ -75,6 +121,16 @@ yomitoku ${path_data} -f md -o results -v --figure
 yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 ```
 
+### With Geometric Correction (Dewarping)
+
+Use the `--dewarp` option for document images photographed with a smartphone or similar. The dewarped image (`*_dewarped.jpg`) is also output.
+
+```bash
+yomitoku ${path_data} -f md -o results -v --dewarp
+```
+
+Do not use it for images of documents that are already flat, such as scans or PDFs (without the paper outline the correction brings nothing and may slightly distort the page).
+
 ## Command Line Arguments List
 
 | Argument Name | Description |
@@ -95,6 +151,8 @@ yomitoku ${path_data} -f md --lite -d cpu -o results -v --figure
 | `--ignore_ruby` | Excludes ruby (furigana) text from the output. |
 | `--ruby_threshold` | Specifies the threshold for ruby detection (default: 0.5). Used together with `--ignore_ruby`. |
 | `--disable-repetition-stop` | Disables early stopping of repeated-character loops in text recognition (enabled by default). |
+| `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg` and, with `--vis`, the estimated correction (paper region and grid) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it. |
+| `--dewarp_coordinate` | Coordinates of the output with `--dewarp`: `dewarped` (the dewarped image, default) or `photo` (the input image; each element gets a curved `polygon`). |
 
 For other options, please refer to the help documentation.
 

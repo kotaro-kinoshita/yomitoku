@@ -1,12 +1,25 @@
 from typing import List, Union
 
-from pydantic import conlist, Field
+from pydantic import conlist, Field, model_serializer
 
 from ..base import BaseSchema
 from ..export import export_csv, export_html, export_markdown, export_json
 
 
-class Element(BaseSchema):
+class _DropUnsetDewarpFields:
+    """`polygon` / `dewarp` / `preprocess` are set only with geometric correction; when unset they are left out of model_dump()
+    (and so of the JSON export), keeping the output of runs without it unchanged."""
+
+    @model_serializer(mode="wrap")
+    def _drop_unset_dewarp_fields(self, handler):
+        d = handler(self)
+        for k in ("polygon", "dewarp", "preprocess"):
+            if k in d and d[k] is None:
+                del d[k]
+        return d
+
+
+class Element(_DropUnsetDewarpFields, BaseSchema):
     id: Union[str, None] = Field(
         ...,
         description="Unique identifier of the element",
@@ -14,6 +27,10 @@ class Element(BaseSchema):
     box: conlist(int, min_length=4, max_length=4) = Field(
         ...,
         description="Bounding box of the layout element in the format [x1, y1, x2, y2]",
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     score: float = Field(
         ...,
@@ -29,10 +46,14 @@ class Element(BaseSchema):
     )
 
 
-class ParagraphSchema(BaseSchema):
+class ParagraphSchema(_DropUnsetDewarpFields, BaseSchema):
     box: conlist(int, min_length=4, max_length=4) = Field(
         ...,
         description="Bounding box of the paragraph in the format [x1, y1, x2, y2]",
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     contents: Union[str, None] = Field(
         ...,
@@ -52,7 +73,7 @@ class ParagraphSchema(BaseSchema):
     )
 
 
-class TableCellSchema(BaseSchema):
+class TableCellSchema(_DropUnsetDewarpFields, BaseSchema):
     col: int = Field(
         ...,
         description="Column index of the cell",
@@ -73,16 +94,24 @@ class TableCellSchema(BaseSchema):
         ...,
         description="Bounding box of the cell in the format [x1, y1, x2, y2]",
     )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+    )
     contents: Union[str, None] = Field(
         ...,
         description="Text content of the cell",
     )
 
 
-class TableLineSchema(BaseSchema):
+class TableLineSchema(_DropUnsetDewarpFields, BaseSchema):
     box: conlist(int, min_length=4, max_length=4) = Field(
         ...,
         description="Bounding box of the table line in the format [x1, y1, x2, y2]",
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     score: float = Field(
         ...,
@@ -90,10 +119,14 @@ class TableLineSchema(BaseSchema):
     )
 
 
-class TableStructureRecognizerSchema(BaseSchema):
+class TableStructureRecognizerSchema(_DropUnsetDewarpFields, BaseSchema):
     box: conlist(int, min_length=4, max_length=4) = Field(
         ...,
         description="Bounding box of the table in the format [x1, y1, x2, y2]",
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     n_row: int = Field(..., description="Number of rows in the table")
     n_col: int = Field(..., description="Number of columns in the table")
@@ -134,7 +167,7 @@ class LayoutAnalyzerSchema(BaseSchema):
     )
 
 
-class WordPrediction(BaseSchema):
+class WordPrediction(_DropUnsetDewarpFields, BaseSchema):
     points: conlist(
         conlist(int, min_length=2, max_length=2),
         min_length=4,
@@ -142,6 +175,10 @@ class WordPrediction(BaseSchema):
     ) = Field(
         ...,
         description="Bounding box of the word in the format [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]",
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     content: str = Field(..., description="Text content of the word")
     direction: str = Field(
@@ -186,9 +223,13 @@ class LayoutParserSchema(BaseSchema):
     figures: List[Element] = Field(..., description="List of detected figures")
 
 
-class FigureSchema(BaseSchema):
+class FigureSchema(_DropUnsetDewarpFields, BaseSchema):
     box: conlist(int, min_length=4, max_length=4) = Field(
         ..., description="Bounding box of the figure in the format [x1, y1, x2, y2]"
+    )
+    polygon: Union[List[conlist(int, min_length=2, max_length=2)], None] = Field(
+        None,
+        description="Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
     )
     order: Union[int, None] = Field(
         ..., description="Order of the figure in the document"
@@ -208,7 +249,46 @@ class FigureSchema(BaseSchema):
     )
 
 
-class DocumentAnalyzerSchema(BaseSchema):
+class DewarpSchema(BaseSchema):
+    status: str = Field(
+        ...,
+        description="'ok': the page was dewarped; 'rejected': the predicted correction looked broken, the page was not dewarped (the image may need to be retaken)",
+    )
+    reasons: List[str] = Field(
+        ..., description="Failed checks when rejected, e.g. ['mask_iou', 'spacing']"
+    )
+    coordinate: str = Field(
+        ...,
+        description="Coordinates of the results: 'dewarped' (the dewarped image) or 'photo' (the image before dewarping)",
+    )
+    size: Union[conlist(int, min_length=2, max_length=2), None] = Field(
+        ..., description="[width, height] of the dewarped image (None when rejected)"
+    )
+    mask_iou: Union[float, None] = Field(
+        ..., description="IoU of the predicted page grid and the predicted paper mask"
+    )
+    flipped_cells: float = Field(
+        ..., description="Share of predicted grid cells turned over"
+    )
+    spacing_ratio: float = Field(
+        ..., description="Longest / median predicted grid edge"
+    )
+    outside: float = Field(
+        ..., description="Share of predicted grid nodes far outside the image"
+    )
+
+
+class PreprocessSchema(_DropUnsetDewarpFields, BaseSchema):
+    dewarp: Union[DewarpSchema, None] = Field(
+        None, description="Geometric correction result; None when it is disabled"
+    )
+
+
+class DocumentAnalyzerSchema(_DropUnsetDewarpFields, BaseSchema):
+    preprocess: Union[PreprocessSchema, None] = Field(
+        None,
+        description="Preprocessing information of the document (geometric correction); None when disabled",
+    )
     paragraphs: List[ParagraphSchema] = Field(
         ..., description="List of detected paragraphs"
     )

@@ -30,6 +30,9 @@ yomitoku_table ${path_data} -o results -v
 | `--pages` | Pages to process (e.g. `1,2,5-10`, 1-indexed). Default: all pages |
 | `--dpi` | Resolution for loading PDFs. Default: `200` |
 | `--encoding` | Output file encoding (`utf-8` \| `utf-8-sig` \| `shift-jis` \| `euc-jp` \| `cp932`). |
+| `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg`. Cannot be combined with `--studio-template`. |
+| `--dewarp_coordinate` | Coordinates of the output with `--dewarp` (`dewarped`: the dewarped image (default) \| `photo`: the input image). |
+| `--dewarp_cfg` | Path to the config file (YAML) of the dewarping model. |
 
 Results are saved per page as `{stem}_p{page}.json`.
 
@@ -202,3 +205,13 @@ With `-v`, the following images are exported per page:
 ```bash
 yomitoku_table ${path_data} -o results -v
 ```
+
+## Geometric Correction (Dewarping)
+
+With `--dewarp`, the curvature, curl, tilt and keystone distortion of forms photographed with a smartphone or similar are corrected before the table analysis. The dewarped image is output as `*_dewarped.jpg` and, with `-v`, the estimated paper region and grid as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it.
+
+```bash
+yomitoku_table ${path_data} -o results -v --dewarp
+```
+
+With `--dewarp_coordinate photo`, the coordinates of the results are mapped back to the input image (the visualizations stay on the dewarped image). The outcome of the correction (`preprocess.dewarp`) is recorded in the `--raw` JSON. See the geometric correction section of [CLI Usage](cli.en.md) for details.
