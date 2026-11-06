@@ -209,7 +209,7 @@ yomitoku_table ${path_data} -o results -v
 
 ## Geometric Correction (Dewarping)
 
-With `--dewarp`, the curvature, curl, tilt and keystone distortion of forms photographed with a smartphone or similar are corrected before the table analysis. The dewarped image is output as `*_dewarped.jpg` and, with `-v`, the estimated paper region and grid as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it.
+With `--dewarp`, the curvature, curl, tilt and keystone distortion of forms photographed with a smartphone or similar are corrected before the table analysis. The dewarped image is output as `*_dewarped.jpg` and, with `-v`, the estimated correction (pages found and their grids) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it.
 
 ```bash
 yomitoku_table ${path_data} -o results -v --dewarp

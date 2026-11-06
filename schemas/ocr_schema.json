@@ -18,6 +18,27 @@
           "title": "Points",
           "type": "array"
         },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
+        },
         "content": {
           "description": "Text content of the word",
           "title": "Content",

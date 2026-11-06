@@ -1,5 +1,123 @@
 {
   "$defs": {
+    "DewarpSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "description": "'ok': the page was dewarped; 'rejected': the predicted correction looked broken, the page was not dewarped (the image may need to be retaken)",
+          "title": "Status",
+          "type": "string"
+        },
+        "reasons": {
+          "description": "Failed checks when rejected, e.g. ['mask_iou', 'spacing']",
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "coordinate": {
+          "description": "Coordinates of the results: 'dewarped' (the dewarped image) or 'photo' (the image before dewarping)",
+          "title": "Coordinate",
+          "type": "string"
+        },
+        "size": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "maxItems": 2,
+              "minItems": 2,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "[width, height] of the dewarped image (None when rejected)",
+          "title": "Size"
+        },
+        "mask_iou": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "IoU of the predicted page grid and the predicted paper mask",
+          "title": "Mask Iou"
+        },
+        "flipped_cells": {
+          "description": "Share of predicted grid cells turned over",
+          "title": "Flipped Cells",
+          "type": "number"
+        },
+        "spacing_ratio": {
+          "description": "Longest / median predicted grid edge",
+          "title": "Spacing Ratio",
+          "type": "number"
+        },
+        "outside": {
+          "description": "Share of predicted grid nodes far outside the image",
+          "title": "Outside",
+          "type": "number"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multi-page dewarper: index of this page among the pages found in the image (left to right, then top to bottom)",
+          "title": "Page"
+        },
+        "num_pages": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multi-page dewarper: number of pages found in the image (spread, receipts side by side, ...)",
+          "title": "Num Pages"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multi-page dewarper: page detection score",
+          "title": "Score"
+        }
+      },
+      "required": [
+        "status",
+        "reasons",
+        "coordinate",
+        "size",
+        "mask_iou",
+        "flipped_cells",
+        "spacing_ratio",
+        "outside"
+      ],
+      "title": "DewarpSchema",
+      "type": "object"
+    },
     "FigureSchema": {
       "additionalProperties": false,
       "properties": {
@@ -12,6 +130,27 @@
           "minItems": 4,
           "title": "Box",
           "type": "array"
+        },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
         },
         "order": {
           "anyOf": [
@@ -44,6 +183,19 @@
           ],
           "description": "Text direction, e.g., ['horizontal' or 'vertical']",
           "title": "Direction"
+        },
+        "figure_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Relative path to the exported figure image from the output file",
+          "title": "Figure Path"
         }
       },
       "required": [
@@ -67,6 +219,27 @@
           "minItems": 4,
           "title": "Box",
           "type": "array"
+        },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
         },
         "contents": {
           "anyOf": [
@@ -127,6 +300,25 @@
       "title": "ParagraphSchema",
       "type": "object"
     },
+    "PreprocessSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "dewarp": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DewarpSchema"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Geometric correction result; None when it is disabled"
+        }
+      },
+      "title": "PreprocessSchema",
+      "type": "object"
+    },
     "TableCellSchema": {
       "additionalProperties": false,
       "properties": {
@@ -159,6 +351,27 @@
           "minItems": 4,
           "title": "Box",
           "type": "array"
+        },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
         },
         "contents": {
           "anyOf": [
@@ -197,6 +410,27 @@
           "title": "Box",
           "type": "array"
         },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
+        },
         "score": {
           "description": "Confidence score of the table line detection",
           "title": "Score",
@@ -222,6 +456,27 @@
           "minItems": 4,
           "title": "Box",
           "type": "array"
+        },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
         },
         "n_row": {
           "description": "Number of rows in the table",
@@ -302,6 +557,27 @@
           "title": "Points",
           "type": "array"
         },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
+        },
         "content": {
           "description": "Text content of the word",
           "title": "Content",
@@ -336,6 +612,18 @@
   },
   "additionalProperties": false,
   "properties": {
+    "preprocess": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PreprocessSchema"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Preprocessing information of the document (geometric correction); None when disabled"
+    },
     "paragraphs": {
       "description": "List of detected paragraphs",
       "items": {

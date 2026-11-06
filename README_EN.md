@@ -78,16 +78,16 @@ Source of the image: Created by processing content from “Reiwa 6 Edition Infor
 
 With `--dewarp`, the curvature, curl, tilt and keystone distortion of photographed documents are corrected before the analysis. Rather than a simple correction that extracts the paper outline and applies a projective transform to its four corners, it estimates the distortion over the whole page (non-linear correction), so curved and curled paper is flattened as well. It is robust to photos where part of the paper is cut off by the frame and to shadows and uneven lighting.
 
-|               Estimated correction (paper region and grid)                |                     Results on the dewarped image                      |              Results mapped back to the input image               |
+|               Estimated correction (pages found and their grids)                |                     Results on the dewarped image                      |              Results mapped back to the input image               |
 | :-----------------------------------------------------------------------: | :----------------------------------------------------------------------: | :-------------------------------------------------------------------: |
 |   <img src="static/out/dewarp/img_4126_grid.jpg" height="280px">   | <img src="static/out/dewarp/img_4126_ocr_dewarped.jpg" height="280px"> | <img src="static/out/dewarp/img_4126_ocr_reproj.jpg" height="280px"> |
 |   <img src="static/out/dewarp/img_4127_grid.jpg" width="250px">   | <img src="static/out/dewarp/img_4127_layout_dewarped.jpg" width="250px"> | <img src="static/out/dewarp/img_4127_layout_reproj.jpg" width="250px"> |
 
-The first row shows OCR (text detection and recognition) on a receipt (the upper part of the dewarped image is shown), the second row layout analysis on an open booklet.
+The first row shows OCR (text detection and recognition) on a receipt (the upper part of the dewarped image is shown), the second row layout analysis on an open booklet: the spread is found as its left and right pages, each dewarped and analyzed on its own (the dewarped pages are shown side by side).
 
-- `Yellow line`: estimated paper region (the darkened area is outside the paper)
-- `Red` / `Blue lines`: where the rows / columns of the dewarped image lie in the input image (grid)
-- `Green line`: outer frame of the dewarped image
+- `Thin lines`: grid of each page found (where the rows / columns of the dewarped image lie in the input image, including the part cut off by the frame)
+- `Thick line`: the part of the page dewarped (the part in the image)
+- `Number`: page index (left to right, then top to bottom) and detection score
 - When mapping back (`--dewarp_coordinate photo`), the rectangles found on the dewarped image are output as curved polygons on the input image.
 
 ## 📣 Release
@@ -151,7 +151,7 @@ Do not use it for images of documents that are already flat, such as scans or PD
 | `--ignore_ruby` | Excludes ruby (furigana) text from the output. |
 | `--ruby_threshold` | Specifies the threshold for ruby detection (default: 0.5). Used together with `--ignore_ruby`. |
 | `--disable-repetition-stop` | Disables early stopping of repeated-character loops in text recognition (enabled by default). |
-| `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg` and, with `--vis`, the estimated correction (paper region and grid) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it. |
+| `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg` and, with `--vis`, the estimated correction (pages found and their grids) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it. |
 | `--dewarp_coordinate` | Coordinates of the output with `--dewarp`: `dewarped` (the dewarped image, default) or `photo` (the input image; each element gets a curved `polygon`). |
 | `--dewarp_model` | Dewarping model with `--dewarp`: `pagenet_v1` (finds every page of the image and outputs each as `*_p{page}_{k}.*`, default) or `uvdoc_v1` (dewarps the image as one page). |
 
