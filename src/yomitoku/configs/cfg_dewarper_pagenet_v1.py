@@ -47,7 +47,7 @@ class PostProcess:
 
 @dataclass
 class DewarperPageNetV1Config:
-    hf_hub_repo: str = "MLism/yomitoku-dewarper-pagenet-v1"
+    hf_hub_repo: str = "KotaroKinoshita/yomitoku-dewarper-pagenet-v1"
     width: int = 32
     kernel: int = 5
     roi_channels: int = 128
