@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 from .base import BaseModelCatalog, BaseModule
 from .configs import DewarperUVDocV1Config
@@ -9,14 +8,10 @@ from .models import DewarpNet
 from .schemas.document_analyzer import DewarpSchema
 from .utils.dewarp import (
     draw_dewarp,
-    DewarpResult,
-    _arc,
-    fill_background,
-    paper_mask,
-    output_aspect,
     reject_checks,
     smooth_grid,
     snap_grid,
+    unwarp,
 )
 
 
@@ -117,36 +112,15 @@ class Dewarper(BaseModule):
         """Flat image and DewarpResult for the grid g (2, nv, nu) in [-1, 1]; with the paper mask `sdf`, what lies
         outside the paper or the photo is painted with the paper colour."""
         pp = self._cfg.postprocess
-        H, W = img.shape[:2]
-        px = (g.transpose(1, 2, 0) + 1) / 2 * np.array([W, H], np.float32)
-        aspect = output_aspect(px, (H, W), f_diag=pp.focal_diag)
-        long_px = max(_arc(px, 1), _arc(px, 0)) * pp.scale
-        long_px = int(np.clip(long_px, 256, 1.25 * pp.scale * max(H, W)))
-        out_w, out_h = (
-            (long_px, round(long_px / aspect))
-            if aspect >= 1
-            else (round(long_px * aspect), long_px)
-        )
-        gu = F.interpolate(
-            torch.from_numpy(g)[None].float(),
-            size=(out_h, out_w),
-            mode="bicubic",
-            align_corners=True,
-        )[0].numpy()
-        mx = (((gu[0] + 1) * W - 1) / 2).astype(np.float32)
-        my = (((gu[1] + 1) * H - 1) / 2).astype(np.float32)
-        flat = cv2.remap(
+        return unwarp(
             img,
-            mx,
-            my,
-            cv2.INTER_CUBIC,
-            borderMode=cv2.BORDER_CONSTANT,
-            borderValue=(255, 255, 255),
+            g,
+            sdf,
+            scale=pp.scale,
+            focal_diag=pp.focal_diag,
+            fill=pp.fill_background,
+            fill_margin=pp.fill_margin,
         )
-        paper = paper_mask(mx, my, sdf, (H, W), margin=pp.fill_margin)
-        if pp.fill_background:
-            fill_background(flat, paper)
-        return flat, DewarpResult(g, mx, my, aspect, paper)
 
     def __call__(self, img, coordinate="dewarped"):
         tensor = self.preprocess(img)

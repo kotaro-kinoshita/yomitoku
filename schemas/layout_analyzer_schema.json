@@ -3,6 +3,18 @@
     "Element": {
       "additionalProperties": false,
       "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Unique identifier of the element",
+          "title": "Id"
+        },
         "box": {
           "description": "Bounding box of the layout element in the format [x1, y1, x2, y2]",
           "items": {
@@ -12,6 +24,27 @@
           "minItems": 4,
           "title": "Box",
           "type": "array"
+        },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
         },
         "score": {
           "description": "Confidence score of the layout element detection",
@@ -29,12 +62,26 @@
           ],
           "description": "Role of the element, e.g., ['section_headings', 'page_header', 'page_footer', 'list_item', 'caption', 'inline_formula', 'display_formula', 'index']",
           "title": "Role"
+        },
+        "contents": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Text content of the element",
+          "title": "Contents"
         }
       },
       "required": [
+        "id",
         "box",
         "score",
-        "role"
+        "role",
+        "contents"
       ],
       "title": "Element",
       "type": "object"
@@ -71,6 +118,27 @@
           "minItems": 4,
           "title": "Box",
           "type": "array"
+        },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
         },
         "contents": {
           "anyOf": [
@@ -109,6 +177,27 @@
           "title": "Box",
           "type": "array"
         },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
+        },
         "score": {
           "description": "Confidence score of the table line detection",
           "title": "Score",
@@ -134,6 +223,27 @@
           "minItems": 4,
           "title": "Box",
           "type": "array"
+        },
+        "polygon": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "integer"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Outline [[x, y], ...] in the photo before geometric correction, set only when the results were mapped back to it (box is then the outline's bounding box)",
+          "title": "Polygon"
         },
         "n_row": {
           "description": "Number of rows in the table",

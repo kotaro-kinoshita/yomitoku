@@ -439,8 +439,10 @@ class DocumentAnalyzer:
         dewarp_coordinate="dewarped",
     ):
         """enable_dewarp: run geometric correction (dewarping of curled, curved, tilted or keystoned pages) before
-        the analysis; when the predicted correction looks broken the page is not dewarped and
-        `results.preprocess.dewarp.status` is "rejected". dewarp_coordinate: coordinates of the results with
+        the analysis; when the predicted correction looks broken (or no page is found) the page is not dewarped and
+        `results.preprocess.dewarp.status` is "rejected". The default dewarper ("pagenet_v1") finds every page of
+        the image; use `analyze_pages` to analyze them all (`__call__` analyzes the first). The single-page
+        dewarper is configs={"preprocess": {"dewarper": {"model_name": "uvdoc_v1"}}}. dewarp_coordinate: coordinates of the results with
         dewarping, "dewarped" (the dewarped image, `self.processed_img`) or "photo" (mapped back to the input image; elements
         get a curved `polygon` and `box` becomes its bounding box)."""
         default_configs = {
@@ -499,6 +501,7 @@ class DocumentAnalyzer:
             )
         self.dewarp_coordinate = dewarp_coordinate
         self.processed_img = None  # the image analyzed (dewarped or not), as in TableSemanticParser and pro
+        self.processed_imgs = []  # analyze_pages: the image of each page
 
         self.ignore_meta = ignore_meta
         self.split_text_across_cells = split_text_across_cells
@@ -648,6 +651,9 @@ class DocumentAnalyzer:
             dewarper = self.preprocessor.dewarper
             if dewarper is not None and dewarper.last_result is not None:
                 paper = dewarper.last_result.paper
+        return await self._analyze(img, results_preprocess, paper)
+
+    async def _analyze(self, img, results_preprocess=None, paper=None):
         self.img = img
 
         with ThreadPoolExecutor(max_workers=2) as executor:
@@ -699,10 +705,9 @@ class DocumentAnalyzer:
         results = DocumentAnalyzerSchema(**outputs)
         return results, ocr, layout
 
-    def __call__(self, img):
-        self.img = img
-        results, ocr, layout = asyncio.run(self.run(img))
-
+    def _finish(self, results, ocr, layout, dewarp_result):
+        """Results of one page in the requested coordinates (mapped back to the input image with "photo") and the
+        visualizations to match."""
         dewarp = results.preprocess.dewarp if results.preprocess is not None else None
         if (
             dewarp is not None
@@ -712,9 +717,7 @@ class DocumentAnalyzer:
             from .utils.dewarp import draw_document, reproject_results
 
             photo = self.preprocessor.rotated_img
-            results = reproject_results(
-                results, self.preprocessor.dewarper.last_result, photo.shape[:2]
-            )
+            results = reproject_results(results, dewarp_result, photo.shape[:2])
             self.img = photo
             if self.visualize:
                 ocr = draw_document(photo, results, words_only=True)
@@ -726,3 +729,34 @@ class DocumentAnalyzer:
 
         self.processed_img = self.img
         return results, ocr, layout
+
+    def __call__(self, img):
+        """Analysis of the image; with the multi-page dewarper, of its first page only (see `analyze_pages`)."""
+        self.img = img
+        results, ocr, layout = asyncio.run(self.run(img))
+        dewarp_result = (
+            self.preprocessor.dewarper.last_result
+            if self.preprocessor is not None
+            else None
+        )
+        return self._finish(results, ocr, layout, dewarp_result)
+
+    def analyze_pages(self, img):
+        """Analysis of every page of the image: with the multi-page dewarper (enable_dewarp, model "pagenet_v1"), the
+        pages found (the two pages of a spread, receipts side by side, ...) are dewarped and analyzed one by one;
+        otherwise the image is one page. Returns [(results, ocr, layout)]; `self.processed_imgs` holds the image
+        each page's results refer to."""
+        if self.preprocessor is None:
+            outputs = [self(img)]
+            self.processed_imgs = [self.processed_img]
+            return outputs
+
+        outputs, self.processed_imgs = [], []
+        for results_preprocess, page_img, dewarp_result in self.preprocessor.pages(img):
+            paper = dewarp_result.paper if dewarp_result is not None else None
+            results, ocr, layout = asyncio.run(
+                self._analyze(page_img, results_preprocess, paper)
+            )
+            outputs.append(self._finish(results, ocr, layout, dewarp_result))
+            self.processed_imgs.append(self.processed_img)
+        return outputs

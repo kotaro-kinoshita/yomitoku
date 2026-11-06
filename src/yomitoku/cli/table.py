@@ -296,6 +296,13 @@ def main():
         help="coordinates of the results with --dewarp: 'dewarped' (default) or 'photo' (mapped back to the input image; layout visualizations stay on the dewarped image)",
     )
     parser.add_argument(
+        "--dewarp_model",
+        type=str,
+        default="pagenet_v1",
+        choices=["pagenet_v1", "uvdoc_v1"],
+        help="dewarper model with --dewarp: 'pagenet_v1' (default; finds every page of the image, e.g. both pages of a spread, and analyzes the first, left to right then top to bottom) or 'uvdoc_v1' (the image as one page)",
+    )
+    parser.add_argument(
         "--dewarp_cfg",
         type=str,
         default=None,
@@ -345,6 +352,7 @@ def main():
         },
         "preprocess": {
             "dewarper": {
+                "model_name": args.dewarp_model,
                 "path_cfg": args.dewarp_cfg,
             },
         },

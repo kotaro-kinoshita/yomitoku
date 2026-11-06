@@ -22,7 +22,7 @@ YomiToku is a Document AI engine specialized in Japanese document image analysis
 - 📈 By leveraging layout analysis, table structure parsing, and reading order estimation, it extracts information while preserving the semantic structure of the document layout.
 - 📄 Supports a variety of output formats, including HTML, Markdown, JSON, and CSV. It also allows for the extraction of diagrams and images contained within the documents.
 - ⚡ Operates efficiently in GPU environments, enabling fast document transcription and analysis. It requires less than 8GB of VRAM, eliminating the need for high-end GPUs.
-- 📷 Includes an optional geometric correction (dewarping) preprocessing step that removes the curvature, curl, tilt and keystone distortion of documents photographed with a smartphone. Being a non-linear correction, it also handles curved and curled paper and is robust to paper cut off by the frame and to poor lighting. Pages whose correction is judged to have failed are analyzed without it.
+- 📷 Includes an optional page detection and geometric correction (dewarping) preprocessing step: it detects the regions of multiple documents in a camera image (both pages of a spread, receipts side by side, ...), removes the curvature, curl, tilt and keystone distortion of each, and analyzes every page on its own. Being a non-linear correction, it also handles curved and curled paper and is robust to paper cut off by the frame and to poor lighting. Pages whose correction is judged to have failed are analyzed without it.
 
 ### Processing Pipeline
 
@@ -47,7 +47,7 @@ flowchart LR
     RO --> OUT[/"Output<br>JSON / HTML / Markdown / CSV / PDF"/]
 ```
 
-- **Preprocessing (geometric correction)**: runs only with `--dewarp`. Estimates the paper region and its distortion and corrects the image into a flat document.
+- **Preprocessing (geometric correction)**: runs only with `--dewarp`. Finds the pages of the image (both pages of a spread, receipts side by side, ...), estimates the distortion of each and corrects them into flat documents.
 - **OCR**: detects the text lines and recognizes the characters of each of them.
 - **Layout analysis**: detects paragraphs, figures and tables, and recognizes the cell structure (rows, columns, spans) of the tables.
 - **Reading order estimation**: merges the OCR and layout analysis results and estimates the reading order of the document.
@@ -74,20 +74,20 @@ For the results exported in Markdown, please refer to [static/out/in_demo_p1.md]
 
 Source of the image: Created by processing content from “Reiwa 6 Edition Information and Communications White Paper, Chapter 3, Section 2: Technologies Advancing with AI Evolution” (<https://www.soumu.go.jp/johotsusintokei/whitepaper/ja/r06/pdf/n1410000.pdf>)：(Ministry of Internal Affairs and Communications).
 
-### Geometric Correction (Dewarping)
+### Page Detection and Geometric Correction (Dewarping)
 
-With `--dewarp`, the curvature, curl, tilt and keystone distortion of photographed documents are corrected before the analysis. Rather than a simple correction that extracts the paper outline and applies a projective transform to its four corners, it estimates the distortion over the whole page (non-linear correction), so curved and curled paper is flattened as well. It is robust to photos where part of the paper is cut off by the frame and to shadows and uneven lighting.
+With `--dewarp`, the regions of multiple documents in a camera image (both pages of a spread, receipts or business cards side by side, ...) are detected, the curvature, curl, tilt and keystone distortion of each are corrected, and document analysis (OCR, layout analysis) runs page by page. Several documents in one photo are analyzed as separate flat documents, without retaking or cropping the photo. Rather than a simple correction that extracts the paper outline and applies a projective transform to its four corners, it estimates the distortion over the whole page (non-linear correction), so curved and curled paper is flattened as well. It is robust to photos where part of the paper is cut off by the frame and to shadows and uneven lighting.
 
-|               Estimated correction (paper region and grid)                |                     Results on the dewarped image                      |              Results mapped back to the input image               |
+|               Estimated correction (pages found and their grids)                |                     Results on the dewarped image                      |              Results mapped back to the input image               |
 | :-----------------------------------------------------------------------: | :----------------------------------------------------------------------: | :-------------------------------------------------------------------: |
-|   <img src="static/out/dewarp/img_4126_grid.jpg" height="280px">   | <img src="static/out/dewarp/img_4126_ocr_dewarped.jpg" height="280px"> | <img src="static/out/dewarp/img_4126_ocr_reproj.jpg" height="280px"> |
+|   <img src="static/out/dewarp/img_4133_grid.jpg" height="280px">   | <img src="static/out/dewarp/img_4133_ocr_dewarped.jpg" height="280px"> | <img src="static/out/dewarp/img_4133_ocr_reproj.jpg" height="280px"> |
 |   <img src="static/out/dewarp/img_4127_grid.jpg" width="250px">   | <img src="static/out/dewarp/img_4127_layout_dewarped.jpg" width="250px"> | <img src="static/out/dewarp/img_4127_layout_reproj.jpg" width="250px"> |
 
-The first row shows OCR (text detection and recognition) on a receipt (the upper part of the dewarped image is shown), the second row layout analysis on an open booklet.
+The first row shows OCR (text detection and recognition) on three receipts photographed side by side: each receipt is found as its own page, dewarped and analyzed on its own (the three dewarped pages are shown side by side); the second row layout analysis on an open booklet: the spread is found as its left and right pages, each dewarped and analyzed on its own (the dewarped pages are shown side by side).
 
-- `Yellow line`: estimated paper region (the darkened area is outside the paper)
-- `Red` / `Blue lines`: where the rows / columns of the dewarped image lie in the input image (grid)
-- `Green line`: outer frame of the dewarped image
+- `Thin lines`: grid of each page found (where the rows / columns of the dewarped image lie in the input image, including the part cut off by the frame)
+- `Thick line`: the part of the page dewarped (the part in the image)
+- `Number`: page index (left to right, then top to bottom) and detection score
 - When mapping back (`--dewarp_coordinate photo`), the rectangles found on the dewarped image are output as curved polygons on the input image.
 
 ## 📣 Release
@@ -151,8 +151,9 @@ Do not use it for images of documents that are already flat, such as scans or PD
 | `--ignore_ruby` | Excludes ruby (furigana) text from the output. |
 | `--ruby_threshold` | Specifies the threshold for ruby detection (default: 0.5). Used together with `--ignore_ruby`. |
 | `--disable-repetition-stop` | Disables early stopping of repeated-character loops in text recognition (enabled by default). |
-| `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg` and, with `--vis`, the estimated correction (paper region and grid) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it. |
+| `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg` and, with `--vis`, the estimated correction (pages found and their grids) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it. |
 | `--dewarp_coordinate` | Coordinates of the output with `--dewarp`: `dewarped` (the dewarped image, default) or `photo` (the input image; each element gets a curved `polygon`). |
+| `--dewarp_model` | Dewarping model with `--dewarp`: `pagenet_v1` (finds every page of the image and outputs each as `*_p{page}_{k}.*`, default) or `uvdoc_v1` (dewarps the image as one page). |
 
 For other options, please refer to the help documentation.
 

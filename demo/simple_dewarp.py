@@ -14,20 +14,18 @@ if __name__ == "__main__":
     imgs = load_image(PATH_IMGE)
 
     for i, img in enumerate(imgs):
-        results, ocr_vis, layout_vis = analyzer(img)
-
-        dewarp = results.preprocess.dewarp
-        print(dewarp.status, dewarp.reasons)
+        # every page found in the image (both pages of a spread, receipts side by side, ...)
+        outputs = analyzer.analyze_pages(img)
 
         dewarper = analyzer.preprocessor.dewarper
-        if dewarp.status == "ok":
-            dewarped_img = dewarper.last_dewarped_img
-            cv2.imwrite(f"output_dewarped_{i}.jpg", dewarped_img)
-
-        grid_vis_img = dewarper.visualize(
-            img
-        )  # paper region and grid on the input image
+        grid_vis_img = dewarper.visualize(img)  # pages found, drawn on the input image
         cv2.imwrite(f"output_dewarp_grid_{i}.jpg", grid_vis_img)
 
-        results.to_json(f"output_{i}.json")
-        cv2.imwrite(f"output_layout_{i}.jpg", layout_vis)
+        for k, (results, ocr_vis, layout_vis) in enumerate(outputs):
+            dewarp = results.preprocess.dewarp
+            print(dewarp.status, dewarp.reasons, dewarp.page, dewarp.num_pages)
+
+            # the image the results refer to (the dewarped page with dewarp_coordinate="dewarped")
+            cv2.imwrite(f"output_page_{i}_{k}.jpg", analyzer.processed_imgs[k])
+            results.to_json(f"output_{i}_{k}.json")
+            cv2.imwrite(f"output_layout_{i}_{k}.jpg", layout_vis)

@@ -7,6 +7,8 @@ from dataclasses import dataclass
 
 import cv2
 import numpy as np
+import torch
+import torch.nn.functional as F
 from typing import Optional
 from pydantic import BaseModel
 
@@ -227,6 +229,42 @@ def fill_background(flat, paper) -> None:
     flat[~paper] = np.median(flat[paper][::17], axis=0).astype(flat.dtype)
 
 
+def unwarp(img, g, sdf=None, scale=1.5, focal_diag=0.6, fill=True, fill_margin=0.0):
+    """Flat image and DewarpResult for the grid g (2, nv, nu) in [-1, 1] of `img`: output aspect from the grid
+    (`output_aspect`), long side `scale` x the page's size in the photo; with `fill`, what lies outside the paper
+    (`sdf`, when given) or the photo is painted with the paper colour."""
+    H, W = img.shape[:2]
+    px = (g.transpose(1, 2, 0) + 1) / 2 * np.array([W, H], np.float32)
+    aspect = output_aspect(px, (H, W), f_diag=focal_diag)
+    long_px = max(_arc(px, 1), _arc(px, 0)) * scale
+    long_px = int(np.clip(long_px, 256, 1.25 * scale * max(H, W)))
+    out_w, out_h = (
+        (long_px, max(1, round(long_px / aspect)))
+        if aspect >= 1
+        else (max(1, round(long_px * aspect)), long_px)
+    )
+    gu = F.interpolate(
+        torch.from_numpy(np.ascontiguousarray(g))[None].float(),
+        size=(out_h, out_w),
+        mode="bicubic",
+        align_corners=True,
+    )[0].numpy()
+    mx = (((gu[0] + 1) * W - 1) / 2).astype(np.float32)
+    my = (((gu[1] + 1) * H - 1) / 2).astype(np.float32)
+    flat = cv2.remap(
+        img,
+        mx,
+        my,
+        cv2.INTER_CUBIC,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=(255, 255, 255),
+    )
+    paper = paper_mask(mx, my, sdf, (H, W), margin=fill_margin)
+    if fill:
+        fill_background(flat, paper)
+    return flat, DewarpResult(g, mx, my, aspect, paper)
+
+
 def drop_off_paper_figures(figures, paper, max_off=0.5, max_cover=0.8):
     """Figures of the layout analysis on a dewarped image without those that are not on the page: mostly off the
     `paper` mask (share of the box > max_off: desk or the blank band of a page cut by the photo frame), or containing
@@ -444,3 +482,75 @@ def draw_document(img, results, words_only=False):
     for p in results.paragraphs:
         _poly(out, p.polygon, _COLORS["paragraph"], t)
     return out
+
+
+def grid_stats(g: np.ndarray) -> dict:
+    """Shape checks of a page grid (2, nv, nu) in [-1, 1], for the multi-page dewarper:
+    inside    share of grid nodes inside the photo
+    flip      share of grid cells folded against the majority orientation
+    cell_min  2nd-percentile / median cell area (a grid collapsed into a strip or a point)"""
+    a, b, c = g[:, :-1, :-1], g[:, :-1, 1:], g[:, 1:, :-1]
+    cross = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+    area = np.abs(cross)
+    return {
+        "inside": float((np.abs(g) <= 1).all(0).mean()),
+        "flip": float((np.sign(cross) != np.sign(np.median(cross))).mean()),
+        "cell_min": float(np.percentile(area, 2) / max(float(np.median(area)), 1e-9)),
+    }
+
+
+def grid_mask(g: np.ndarray, size: int = 256) -> np.ndarray:
+    """(size, size) bool mask of the photo covered by the outline of a grid (2, nv, nu) in [-1, 1]."""
+    P = (g.transpose(1, 2, 0) + 1) / 2 * (size - 1)
+    ring = np.concatenate([P[0], P[1:, -1], P[-1, ::-1][1:], P[::-1, 0][1:]])
+    m = np.zeros((size, size), np.uint8)
+    cv2.fillPoly(m, [np.round(ring).astype(np.int32)], 1)
+    return m.astype(bool)
+
+
+def seen_box(seen: np.ndarray, thresh: float = 0.5, up: int = 4, frac: float = 0.0):
+    """uv box (lo, hi) of a page's seen part from its node `seen` probabilities (nv, nu): trim columns, then rows,
+    from each side while no more than `frac` of the side line is seen. frac = 0 keeps every line with a seen node
+    (the bounding box of the seen part: nothing in the photo is cut off; what lies outside it is filled)."""
+    nv, nu = seen.shape
+    m = (
+        cv2.resize(
+            seen.astype(np.float32),
+            ((nu - 1) * up + 1, (nv - 1) * up + 1),
+            interpolation=cv2.INTER_LINEAR,
+        )
+        > thresh
+    )
+    if m.all() or not m.any():
+        return np.zeros(2, np.float32), np.ones(2, np.float32)
+    cols = np.nonzero(m.mean(0) > frac)[0]
+    cols = cols if len(cols) else np.array([int(np.argmax(m.mean(0)))])
+    c0, c1 = cols[0], cols[-1]
+    rows = np.nonzero(m[:, c0 : c1 + 1].mean(1) > frac)[0]
+    rows = rows if len(rows) else np.array([int(np.argmax(m[:, c0 : c1 + 1].mean(1)))])
+    W, H = m.shape[1] - 1, m.shape[0] - 1
+    return (
+        np.array([c0 / W, rows[0] / H], np.float32),
+        np.array([c1 / W, rows[-1] / H], np.float32),
+    )
+
+
+def resample_grid(g: np.ndarray, lo, hi) -> np.ndarray:
+    """Grid (2, nv, nu) sampled at uniform uv in [0, 1]^2 -> the same node count over the uv box [lo, hi]
+    (bicubic)."""
+    nv, nu = g.shape[1:]
+    mx = (lo[0] + (hi[0] - lo[0]) * np.linspace(0, 1, nu, dtype=np.float32)) * (nu - 1)
+    my = (lo[1] + (hi[1] - lo[1]) * np.linspace(0, 1, nv, dtype=np.float32)) * (nv - 1)
+    MX, MY = (a.astype(np.float32) for a in np.meshgrid(mx, my))
+    return np.stack(
+        [
+            cv2.remap(
+                g[c].astype(np.float32),
+                MX,
+                MY,
+                cv2.INTER_CUBIC,
+                borderMode=cv2.BORDER_REPLICATE,
+            )
+            for c in range(g.shape[0])
+        ]
+    )
