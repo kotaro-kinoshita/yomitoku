@@ -256,7 +256,7 @@ Output files:
 | `*_dewarped.jpg` | The dewarped image (only when the correction succeeded). Results in `dewarped` coordinates refer to this image. |
 | `*_dewarp_grid.jpg` | Only with `--vis`. `pagenet_v1`: for each page found, the grid of the whole page (thin lines), the part dewarped (thick line), the page index and the detection score. `uvdoc_v1`: the estimated paper region (yellow line, the outside darkened), where the rows (red) and columns (blue) of the dewarped image lie in the input image (grid), and the outer frame of the dewarped image (green). |
 
-When `pagenet_v1` finds several pages in one image, the output files of each page are `*_p{page}_{k}.*` (`k` from 1, left to right then top to bottom); with a single page they stay `*_p{page}.*`. One `*_dewarp_grid.jpg` is written per image.
+When `pagenet_v1` finds several pages in one image, the output files of each page are `*_p{page}_{k}.*` (`k` from 1, left to right then top to bottom); with a single page they stay `*_p{page}.*`. One `*_dewarp_grid.jpg` is written per image. With `--combine`, the pages of Markdown / HTML output are separated by a rule (`---` / `<hr>`) and a comment naming the page (`<!-- page p1_2 -->`, ...).
 
 With `--dewarp_coordinate photo`, the results obtained on the dewarped image are mapped back to the input image. Every element (paragraph, table, cell, figure, word) gets a curved `polygon` on the input image and `box` becomes its bounding box. The visualizations are drawn on the input image as well.
 

@@ -22,6 +22,8 @@ logger = set_logger(__name__, "INFO")
 
 
 def merge_all_pages(results):
+    """Results of every page joined into one output (--combine); md / html pages are separated by a rule and a
+    comment with the page's tag (p<page>, or p<page>_<k> for the k-th page found in an image)."""
     out = None
     for result in results:
         format = result["format"]
@@ -43,13 +45,13 @@ def merge_all_pages(results):
             if out is None:
                 out = data
             else:
-                out += "\n" + data
+                out += f"\n<hr>\n<!-- page {result['tag']} -->\n" + data
 
         elif format == "md":
             if out is None:
                 out = data
             else:
-                out += "\n" + data
+                out += f"\n\n---\n\n<!-- page {result['tag']} -->\n\n" + data
 
         elif format == "pdf":
             if out is None:
@@ -197,6 +199,7 @@ def process_single_file(args, analyzer, path, format):
                     {
                         "format": format,
                         "data": json.model_dump(),
+                        "tag": tag,
                     }
                 )
 
@@ -226,6 +229,7 @@ def process_single_file(args, analyzer, path, format):
                     {
                         "format": format,
                         "data": csv,
+                        "tag": tag,
                     }
                 )
 
@@ -257,6 +261,7 @@ def process_single_file(args, analyzer, path, format):
                     {
                         "format": format,
                         "data": html,
+                        "tag": tag,
                     }
                 )
 
@@ -288,6 +293,7 @@ def process_single_file(args, analyzer, path, format):
                     {
                         "format": format,
                         "data": md,
+                        "tag": tag,
                     }
                 )
             elif format == "pdf":
@@ -305,6 +311,7 @@ def process_single_file(args, analyzer, path, format):
                     {
                         "format": format,
                         "data": result,
+                        "tag": tag,
                     }
                 )
 
