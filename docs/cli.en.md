@@ -236,6 +236,8 @@ With the `--dewarp` option, the curvature, curl, tilt and keystone distortion of
 
 Rather than a simple correction that extracts the paper outline and applies a projective transform to its four corners, it estimates the distortion over the whole page (non-linear correction), so curved and curled paper is flattened as well. It is robust to photos where part of the paper is cut off by the frame and to shadows and uneven lighting.
 
+The default model (`pagenet_v1`) finds every page in the image (both pages of a spread, business cards or receipts side by side, ...) and dewarps and analyzes each page on its own. A spread is split at the binding into its left and right pages.
+
 ```bash
 yomitoku ${path_data} -v --dewarp
 ```
@@ -244,6 +246,7 @@ yomitoku ${path_data} -v --dewarp
 | :--- | :--- |
 | `--dewarp` | Enables the geometric correction. |
 | `--dewarp_coordinate` | Coordinates of the output: `dewarped` (the dewarped image, default) or `photo` (the input image). |
+| `--dewarp_model` | Dewarping model: `pagenet_v1` (finds and dewarps every page of the image, default) or `uvdoc_v1` (dewarps the image as one page). |
 | `--dewarp_cfg` | Path to the config (YAML) of the dewarping model. |
 
 Output files:
@@ -251,7 +254,9 @@ Output files:
 | File | Description |
 | :--- | :--- |
 | `*_dewarped.jpg` | The dewarped image (only when the correction succeeded). Results in `dewarped` coordinates refer to this image. |
-| `*_dewarp_grid.jpg` | Only with `--vis`. Draws the estimated paper region (yellow line, the outside darkened), where the rows (red) and columns (blue) of the dewarped image lie in the input image (grid), and the outer frame of the dewarped image (green). |
+| `*_dewarp_grid.jpg` | Only with `--vis`. `pagenet_v1`: for each page found, the grid of the whole page (thin lines), the part dewarped (thick line), the page index and the detection score. `uvdoc_v1`: the estimated paper region (yellow line, the outside darkened), where the rows (red) and columns (blue) of the dewarped image lie in the input image (grid), and the outer frame of the dewarped image (green). |
+
+When `pagenet_v1` finds several pages in one image, the output files of each page are `*_p{page}_{k}.*` (`k` from 1, left to right then top to bottom); with a single page they stay `*_p{page}.*`. One `*_dewarp_grid.jpg` is written per image.
 
 With `--dewarp_coordinate photo`, the results obtained on the dewarped image are mapped back to the input image. Every element (paragraph, table, cell, figure, word) gets a curved `polygon` on the input image and `box` becomes its bounding box. The visualizations are drawn on the input image as well.
 
@@ -261,7 +266,7 @@ yomitoku ${path_data} -f json -v --dewarp --dewarp_coordinate photo
 
 ### Detecting Failed Corrections
 
-When the estimated correction is judged broken (the paper region and the grid disagree, the grid folds over itself, ...), the page is analyzed on the input image without correction and a warning is logged. The outcome is recorded in `preprocess.dewarp` of the JSON output.
+When the estimated correction is judged broken (the paper region and the grid disagree, the grid folds over itself, ...; with `pagenet_v1`, when no page is found), the page is analyzed on the input image without correction and a warning is logged. With `pagenet_v1`, pages whose grid collapsed, pages lying inside a larger page and pages mostly cut off by the frame (such as the neighbouring page at the edge of a spread) are dropped before the correction. The outcome is recorded in `preprocess.dewarp` of the JSON output.
 
 ```json
 "preprocess": {
@@ -281,13 +286,16 @@ When the estimated correction is judged broken (the paper region and the grid di
 | Field | Description |
 | :--- | :--- |
 | `status` | `ok`: corrected, `rejected`: judged failed and analyzed without correction |
-| `reasons` | Reasons of a `rejected` status (`mask_iou`, `flipped_cells`, `spacing`, `outside`) |
+| `reasons` | Reasons of `rejected` (`uvdoc_v1`: `mask_iou`, `flipped_cells`, `spacing`, `outside`; `pagenet_v1`: `no_page`) |
 | `coordinate` | Coordinate system of the results (`dewarped` / `photo`); always `photo` when `rejected` |
 | `size` | Size of the dewarped image `[width, height]` |
-| `mask_iou` | IoU of the estimated paper region and the grid outline |
+| `mask_iou` | IoU of the estimated paper region and the grid outline (`uvdoc_v1` only) |
 | `flipped_cells` | Share of grid cells turned over |
 | `spacing_ratio` | Longest grid edge / median grid edge length |
 | `outside` | Share of grid points far outside the image |
+| `page` | `pagenet_v1` only. Index of the page among the pages found in the image (from 0, left to right then top to bottom) |
+| `num_pages` | `pagenet_v1` only. Number of pages found in the image |
+| `score` | `pagenet_v1` only. Page detection score |
 
 !!! note
     - The geometric correction targets documents photographed with a smartphone or similar. Do not use it for documents that are already flat, such as scans or PDFs: without the paper outline the correction brings nothing and may slightly distort the page.

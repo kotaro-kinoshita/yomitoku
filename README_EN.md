@@ -47,7 +47,7 @@ flowchart LR
     RO --> OUT[/"Output<br>JSON / HTML / Markdown / CSV / PDF"/]
 ```
 
-- **Preprocessing (geometric correction)**: runs only with `--dewarp`. Estimates the paper region and its distortion and corrects the image into a flat document.
+- **Preprocessing (geometric correction)**: runs only with `--dewarp`. Finds the pages of the image (both pages of a spread, receipts side by side, ...), estimates the distortion of each and corrects them into flat documents.
 - **OCR**: detects the text lines and recognizes the characters of each of them.
 - **Layout analysis**: detects paragraphs, figures and tables, and recognizes the cell structure (rows, columns, spans) of the tables.
 - **Reading order estimation**: merges the OCR and layout analysis results and estimates the reading order of the document.
@@ -153,6 +153,7 @@ Do not use it for images of documents that are already flat, such as scans or PD
 | `--disable-repetition-stop` | Disables early stopping of repeated-character loops in text recognition (enabled by default). |
 | `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg` and, with `--vis`, the estimated correction (paper region and grid) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it. |
 | `--dewarp_coordinate` | Coordinates of the output with `--dewarp`: `dewarped` (the dewarped image, default) or `photo` (the input image; each element gets a curved `polygon`). |
+| `--dewarp_model` | Dewarping model with `--dewarp`: `pagenet_v1` (finds every page of the image and outputs each as `*_p{page}_{k}.*`, default) or `uvdoc_v1` (dewarps the image as one page). |
 
 For other options, please refer to the help documentation.
 

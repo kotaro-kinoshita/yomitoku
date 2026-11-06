@@ -33,6 +33,7 @@ yomitoku_table ${path_data} -o results -v
 | `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg`. Cannot be combined with `--studio-template`. |
 | `--dewarp_coordinate` | Coordinates of the output with `--dewarp` (`dewarped`: the dewarped image (default) \| `photo`: the input image). |
 | `--dewarp_cfg` | Path to the config file (YAML) of the dewarping model. |
+| `--dewarp_model` | Dewarping model (`pagenet_v1`: finds the pages of the image and dewarps them, default; when several pages are found the first is analyzed \| `uvdoc_v1`: dewarps the image as one page). |
 
 Results are saved per page as `{stem}_p{page}.json`.
 

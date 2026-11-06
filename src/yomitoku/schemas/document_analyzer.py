@@ -7,13 +7,14 @@ from ..export import export_csv, export_html, export_markdown, export_json
 
 
 class _DropUnsetDewarpFields:
-    """`polygon` / `dewarp` / `preprocess` are set only with geometric correction; when unset they are left out of model_dump()
-    (and so of the JSON export), keeping the output of runs without it unchanged."""
+    """`polygon` / `dewarp` / `preprocess` are set only with geometric correction (and `page` / `num_pages` / `score`
+    only with the multi-page dewarper); when unset they are left out of model_dump() (and so of the JSON export),
+    keeping the output of runs without it unchanged."""
 
     @model_serializer(mode="wrap")
     def _drop_unset_dewarp_fields(self, handler):
         d = handler(self)
-        for k in ("polygon", "dewarp", "preprocess"):
+        for k in ("polygon", "dewarp", "preprocess", "page", "num_pages", "score"):
             if k in d and d[k] is None:
                 del d[k]
         return d
@@ -249,7 +250,7 @@ class FigureSchema(_DropUnsetDewarpFields, BaseSchema):
     )
 
 
-class DewarpSchema(BaseSchema):
+class DewarpSchema(_DropUnsetDewarpFields, BaseSchema):
     status: str = Field(
         ...,
         description="'ok': the page was dewarped; 'rejected': the predicted correction looked broken, the page was not dewarped (the image may need to be retaken)",
@@ -275,6 +276,17 @@ class DewarpSchema(BaseSchema):
     )
     outside: float = Field(
         ..., description="Share of predicted grid nodes far outside the image"
+    )
+    page: Union[int, None] = Field(
+        None,
+        description="Multi-page dewarper: index of this page among the pages found in the image (left to right, then top to bottom)",
+    )
+    num_pages: Union[int, None] = Field(
+        None,
+        description="Multi-page dewarper: number of pages found in the image (spread, receipts side by side, ...)",
+    )
+    score: Union[float, None] = Field(
+        None, description="Multi-page dewarper: page detection score"
     )
 
 

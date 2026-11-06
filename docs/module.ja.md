@@ -87,6 +87,8 @@ Layout Analyzer では、テキスト検知と検知したテキストに対し�
 
 `enable_dewarp=True` を指定すると、解析の前処理として幾何補正を実行します。補正に失敗したと判定したページは補正せずに解析を続行し、`results.preprocess.dewarp.status` が `"rejected"` になります。
 
+デフォルトのモデル(`pagenet_v1`)は、画像内のすべてのページ(見開きの左右のページ、並べた名刺やレシートなど)を検出します。すべてのページを解析するには `analyzer.analyze_pages(img)` を使用します。ページごとの `(results, ocr_vis, layout_vis)` のリストを、左から右、上から下の順に返します。`analyzer(img)` は 1 番目のページだけを解析します。画像全体を 1 ページとして補正する場合は、`configs={"preprocess": {"dewarper": {"model_name": "uvdoc_v1"}}}` を指定します。
+
 <!--codeinclude-->
 [demo/simple_dewarp.py](../demo/simple_dewarp.py)
 <!--/codeinclude-->
@@ -95,8 +97,10 @@ Layout Analyzer では、テキスト検知と検知したテキストに対し�
 | :--- | :--- |
 | `results.preprocess.dewarp` | 補正の結果(`status`, `reasons`, `coordinate`, `size` 等)。詳細は [CLI Usage](cli.ja.md) の幾何補正の節を参照してください。 |
 | `analyzer.processed_img` | 解析に使用した画像。`dewarp_coordinate="dewarped"` で補正に成功した場合は補正後の画像です。 |
+| `analyzer.processed_imgs` | `analyze_pages` で、各ページの解析に使用した画像のリスト。 |
+| `analyzer.preprocessor.dewarper.last_dewarped_imgs` | `pagenet_v1` のみ。直前の呼び出しで補正した各ページの画像のリスト。 |
 | `analyzer.preprocessor.dewarper.last_dewarped_img` | 直前の補正後の画像(`numpy.ndarray`, BGR)。補正に失敗した場合は `None` です。 |
-| `analyzer.preprocessor.dewarper.visualize(img)` | 直前の補正の推定結果(紙の領域と Grid)を入力画像 `img` 上に描画した画像を返します。 |
+| `analyzer.preprocessor.dewarper.visualize(img)` | 直前の補正の推定結果(`pagenet_v1`: 検出したページの Grid と切り出した範囲、`uvdoc_v1`: 紙の領域と Grid)を入力画像 `img` 上に描画した画像を返します。 |
 
 `dewarp_coordinate="photo"` を指定すると、解析結果を元の画像の座標に逆投影して返します。各要素に元の画像上の曲がった多角形 `polygon` が付与され、`box` はその外接矩形になります。
 
@@ -142,7 +146,15 @@ if dewarp_results.status == "ok":
 | `device` | `str` | 処理に用いるデバイスを指定します。（指定値: `cuda` \| `cpu` \| `mps`） | デフォルトは `"cuda"` です。 |
 | `path_cfg` | `str` | 補正の後処理や失敗判定の閾値を記述した YAML ファイルのパスを指定します。 | |
 
-`DocumentAnalyzer` の `configs` では `{"preprocess": {"dewarper": {...}}}` に同じパラメータを指定します。
+`DocumentAnalyzer` の `configs` では `{"preprocess": {"dewarper": {...}}}` に同じパラメータを指定します(モデルは `model_name` で `pagenet_v1` / `uvdoc_v1` を選択します)。
+
+### PageDewarper 単体での利用
+
+<!--codeinclude-->
+[demo/simple_page_dewarper.py](../demo/simple_page_dewarper.py)
+<!--/codeinclude-->
+
+`PageDewarper` は、画像内で見つかったページごとの `(結果, 補正後の画像)` のリストを、左から右、上から下の順に返します。ページが見つからない場合は、`status` が `"rejected"` の結果と入力画像の組を 1 つ返します。オプションは `Dewarper` と同じです。
 
 ## モデルの詳細設定 {: #model-config}
 

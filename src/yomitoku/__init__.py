@@ -1,6 +1,7 @@
 from importlib.metadata import version
 
 from .dewarper import Dewarper
+from .page_dewarper import PageDewarper
 from .document_analyzer import DocumentAnalyzer
 from .layout_analyzer import LayoutAnalyzer
 from .layout_parser import LayoutParser
@@ -30,5 +31,6 @@ __all__ = [
     "LayoutAnalyzer",
     "DocumentAnalyzer",
     "Dewarper",
+    "PageDewarper",
 ]
 __version__ = version(__package__)

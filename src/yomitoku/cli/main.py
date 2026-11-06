@@ -113,190 +113,200 @@ def process_single_file(args, analyzer, path, format):
         target_pages = parse_pages(args.pages)
 
     format_results = []
+    result_imgs = []  # the image each result refers to (dewarped pages, or the input)
     for page, img in enumerate(imgs):
         if (page + 1) not in target_pages:
             continue
 
-        result, ocr, layout = analyzer(img)
         dirname = _sanitize_path_component(path.parent.name)
         filename = path.stem
-
-        dewarp = result.preprocess.dewarp if result.preprocess is not None else None
-        if dewarp is not None:
-            if args.vis:
-                pre = analyzer.preprocessor
-                out_path = os.path.join(
-                    args.outdir,
-                    f"{dirname}_{filename}_p{page + 1}_dewarp_grid.jpg",
-                )
-                save_image(pre.dewarper.visualize(pre.rotated_img), out_path)
-                logger.info(f"Output file: {out_path}")
-            if dewarp.status == "ok":
-                out_path = os.path.join(
-                    args.outdir, f"{dirname}_{filename}_p{page + 1}_dewarped.jpg"
-                )
-                save_image(analyzer.preprocessor.dewarper.last_dewarped_img, out_path)
-                logger.info(f"Output file: {out_path}")
-            else:
-                logger.warning(
-                    f"Dewarping rejected ({', '.join(dewarp.reasons)}): {path} p{page + 1}; the page was analyzed without it"
-                )
-            img = analyzer.img  # coordinates of the results (figure crops)
-
-        if ocr is not None:
+        pre = analyzer.preprocessor
+        outputs = analyzer.analyze_pages(img)
+        if pre is not None and args.vis:
             out_path = os.path.join(
-                args.outdir, f"{dirname}_{filename}_p{page + 1}_ocr.jpg"
+                args.outdir,
+                f"{dirname}_{filename}_p{page + 1}_dewarp_grid.jpg",
             )
-
-            save_image(ocr, out_path)
+            save_image(pre.dewarper.visualize(pre.rotated_img), out_path)
             logger.info(f"Output file: {out_path}")
 
-        if layout is not None:
-            out_path = os.path.join(
-                args.outdir, f"{dirname}_{filename}_p{page + 1}_layout.jpg"
-            )
+        # pages found in the image by the multi-page dewarper: p<page>_<k>
+        for k, (result, ocr, layout) in enumerate(outputs):
+            tag = f"p{page + 1}" if len(outputs) == 1 else f"p{page + 1}_{k + 1}"
+            # the image the results refer to (figure crops)
+            img = analyzer.processed_imgs[k]
+            result_imgs.append(img)
 
-            save_image(layout, out_path)
-            logger.info(f"Output file: {out_path}")
+            dewarp = result.preprocess.dewarp if result.preprocess is not None else None
+            if dewarp is not None:
+                if dewarp.status == "ok":
+                    dewarped = (
+                        pre.dewarper.last_dewarped_imgs[k]
+                        if pre.multi_page
+                        else pre.dewarper.last_dewarped_img
+                    )
+                    out_path = os.path.join(
+                        args.outdir, f"{dirname}_{filename}_{tag}_dewarped.jpg"
+                    )
+                    save_image(dewarped, out_path)
+                    logger.info(f"Output file: {out_path}")
+                else:
+                    logger.warning(
+                        f"Dewarping rejected ({', '.join(dewarp.reasons)}): {path} {tag}; the page was analyzed without it"
+                    )
 
-        out_path = os.path.join(
-            args.outdir, f"{dirname}_{filename}_p{page + 1}.{format}"
-        )
-
-        if format == "json":
-            if args.combine:
-                json = convert_json(
-                    result,
-                    out_path,
-                    args.ignore_line_break,
-                    img,
-                    args.figure,
-                    args.figure_dir,
-                )
-            else:
-                json = result.to_json(
-                    out_path,
-                    ignore_line_break=args.ignore_line_break,
-                    encoding=args.encoding,
-                    img=img,
-                    export_figure=args.figure,
-                    figure_dir=args.figure_dir,
+            if ocr is not None:
+                out_path = os.path.join(
+                    args.outdir, f"{dirname}_{filename}_{tag}_ocr.jpg"
                 )
 
-            format_results.append(
-                {
-                    "format": format,
-                    "data": json.model_dump(),
-                }
-            )
+                save_image(ocr, out_path)
+                logger.info(f"Output file: {out_path}")
 
-        elif format == "csv":
-            if args.combine:
-                csv = convert_csv(
-                    result,
-                    out_path,
-                    args.ignore_line_break,
-                    img,
-                    args.figure,
-                    args.figure_letter,
-                    args.figure_dir,
-                )
-            else:
-                csv = result.to_csv(
-                    out_path,
-                    ignore_line_break=args.ignore_line_break,
-                    encoding=args.encoding,
-                    img=img,
-                    export_figure=args.figure,
-                    export_figure_letter=args.figure_letter,
-                    figure_dir=args.figure_dir,
+            if layout is not None:
+                out_path = os.path.join(
+                    args.outdir, f"{dirname}_{filename}_{tag}_layout.jpg"
                 )
 
-            format_results.append(
-                {
-                    "format": format,
-                    "data": csv,
-                }
-            )
+                save_image(layout, out_path)
+                logger.info(f"Output file: {out_path}")
 
-        elif format == "html":
-            if args.combine:
-                html, _ = convert_html(
-                    result,
-                    out_path,
-                    ignore_line_break=args.ignore_line_break,
-                    img=img,
-                    export_figure=args.figure,
-                    export_figure_letter=args.figure_letter,
-                    figure_width=args.figure_width,
-                    figure_dir=args.figure_dir,
-                )
-            else:
-                html = result.to_html(
-                    out_path,
-                    ignore_line_break=args.ignore_line_break,
-                    img=img,
-                    export_figure=args.figure,
-                    export_figure_letter=args.figure_letter,
-                    figure_width=args.figure_width,
-                    figure_dir=args.figure_dir,
-                    encoding=args.encoding,
-                )
+            out_path = os.path.join(args.outdir, f"{dirname}_{filename}_{tag}.{format}")
 
-            format_results.append(
-                {
-                    "format": format,
-                    "data": html,
-                }
-            )
+            if format == "json":
+                if args.combine:
+                    json = convert_json(
+                        result,
+                        out_path,
+                        args.ignore_line_break,
+                        img,
+                        args.figure,
+                        args.figure_dir,
+                    )
+                else:
+                    json = result.to_json(
+                        out_path,
+                        ignore_line_break=args.ignore_line_break,
+                        encoding=args.encoding,
+                        img=img,
+                        export_figure=args.figure,
+                        figure_dir=args.figure_dir,
+                    )
 
-        elif format == "md":
-            if args.combine:
-                md, _ = convert_markdown(
-                    result,
-                    out_path,
-                    ignore_line_break=args.ignore_line_break,
-                    img=img,
-                    export_figure=args.figure,
-                    export_figure_letter=args.figure_letter,
-                    figure_width=args.figure_width,
-                    figure_dir=args.figure_dir,
-                )
-            else:
-                md = result.to_markdown(
-                    out_path,
-                    ignore_line_break=args.ignore_line_break,
-                    img=img,
-                    export_figure=args.figure,
-                    export_figure_letter=args.figure_letter,
-                    figure_width=args.figure_width,
-                    figure_dir=args.figure_dir,
-                    encoding=args.encoding,
+                format_results.append(
+                    {
+                        "format": format,
+                        "data": json.model_dump(),
+                    }
                 )
 
-            format_results.append(
-                {
-                    "format": format,
-                    "data": md,
-                }
-            )
-        elif format == "pdf":
-            if not args.combine:
-                pil_image = Image.fromarray(img[:, :, ::-1])
-                create_searchable_pdf(
-                    [pil_image],
-                    [result],
-                    output_path=out_path,
-                    font_path=args.font_path,
-                    image_quality=args.pdf_quality,
+            elif format == "csv":
+                if args.combine:
+                    csv = convert_csv(
+                        result,
+                        out_path,
+                        args.ignore_line_break,
+                        img,
+                        args.figure,
+                        args.figure_letter,
+                        args.figure_dir,
+                    )
+                else:
+                    csv = result.to_csv(
+                        out_path,
+                        ignore_line_break=args.ignore_line_break,
+                        encoding=args.encoding,
+                        img=img,
+                        export_figure=args.figure,
+                        export_figure_letter=args.figure_letter,
+                        figure_dir=args.figure_dir,
+                    )
+
+                format_results.append(
+                    {
+                        "format": format,
+                        "data": csv,
+                    }
                 )
 
-            format_results.append(
-                {
-                    "format": format,
-                    "data": result,
-                }
-            )
+            elif format == "html":
+                if args.combine:
+                    html, _ = convert_html(
+                        result,
+                        out_path,
+                        ignore_line_break=args.ignore_line_break,
+                        img=img,
+                        export_figure=args.figure,
+                        export_figure_letter=args.figure_letter,
+                        figure_width=args.figure_width,
+                        figure_dir=args.figure_dir,
+                    )
+                else:
+                    html = result.to_html(
+                        out_path,
+                        ignore_line_break=args.ignore_line_break,
+                        img=img,
+                        export_figure=args.figure,
+                        export_figure_letter=args.figure_letter,
+                        figure_width=args.figure_width,
+                        figure_dir=args.figure_dir,
+                        encoding=args.encoding,
+                    )
+
+                format_results.append(
+                    {
+                        "format": format,
+                        "data": html,
+                    }
+                )
+
+            elif format == "md":
+                if args.combine:
+                    md, _ = convert_markdown(
+                        result,
+                        out_path,
+                        ignore_line_break=args.ignore_line_break,
+                        img=img,
+                        export_figure=args.figure,
+                        export_figure_letter=args.figure_letter,
+                        figure_width=args.figure_width,
+                        figure_dir=args.figure_dir,
+                    )
+                else:
+                    md = result.to_markdown(
+                        out_path,
+                        ignore_line_break=args.ignore_line_break,
+                        img=img,
+                        export_figure=args.figure,
+                        export_figure_letter=args.figure_letter,
+                        figure_width=args.figure_width,
+                        figure_dir=args.figure_dir,
+                        encoding=args.encoding,
+                    )
+
+                format_results.append(
+                    {
+                        "format": format,
+                        "data": md,
+                    }
+                )
+            elif format == "pdf":
+                if not args.combine:
+                    pil_image = Image.fromarray(img[:, :, ::-1])
+                    create_searchable_pdf(
+                        [pil_image],
+                        [result],
+                        output_path=out_path,
+                        font_path=args.font_path,
+                        image_quality=args.pdf_quality,
+                    )
+
+                format_results.append(
+                    {
+                        "format": format,
+                        "data": result,
+                    }
+                )
 
     out = merge_all_pages(format_results)
     if args.combine:
@@ -305,7 +315,7 @@ def process_single_file(args, analyzer, path, format):
             out_path,
             args,
             out,
-            imgs,
+            result_imgs,
         )
 
 
@@ -505,6 +515,13 @@ def main():
         help="coordinates of the results with --dewarp: 'dewarped' (the dewarped image, default) or 'photo' (mapped back to the input image, with curved polygons)",
     )
     parser.add_argument(
+        "--dewarp_model",
+        type=str,
+        default="pagenet_v1",
+        choices=["pagenet_v1", "uvdoc_v1"],
+        help="dewarper model with --dewarp: 'pagenet_v1' (default; finds every page of the image, e.g. both pages of a spread or receipts side by side, and outputs each as p<page>_<k>) or 'uvdoc_v1' (the image as one page)",
+    )
+    parser.add_argument(
         "--dewarp_cfg",
         type=str,
         default=None,
@@ -537,6 +554,7 @@ def main():
     configs = {
         "preprocess": {
             "dewarper": {
+                "model_name": args.dewarp_model,
                 "path_cfg": args.dewarp_cfg,
             },
         },
