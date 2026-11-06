@@ -2,7 +2,19 @@
 
 ## [Unreleased](https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD)
 
-[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.15.1...HEAD)
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.16.0...HEAD)
+
+**Implemented enhancements:**
+
+- 複数枚/複数ページに対応する幾何補正モデルへ更新 [\#277](https://github.com/kotaro-kinoshita/yomitoku/pull/277) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+## [v0.16.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.16.0) (2026-11-04)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.15.1...v0.16.0)
+
+**Implemented enhancements:**
+
+- feat: add geometric correction \(dewarping\) preprocessing for photogra… [\#267](https://github.com/kotaro-kinoshita/yomitoku/pull/267) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
 
 **Merged pull requests:**
 
