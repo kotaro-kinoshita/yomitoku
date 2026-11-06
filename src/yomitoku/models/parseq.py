@@ -145,6 +145,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         tgt_padding_mask: Optional[Tensor] = None,
         tgt_query: Optional[Tensor] = None,
         tgt_query_mask: Optional[Tensor] = None,
+        memory_kv: Optional[list[tuple[Tensor, Tensor]]] = None,
     ):
         N, L = tgt.shape
         # <bos> stands for the null context. We only supply position information for characters after <bos>.
@@ -161,6 +162,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
             tgt_query_mask,
             tgt_mask,
             tgt_padding_mask,
+            memory_kv=memory_kv,
         )
 
     def forward(
@@ -178,6 +180,10 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
         # +1 for <eos> at end of sequence.
         num_steps = max_length + 1
         memory = self.encode(images)
+        # The memory is fixed for the whole decode, so project it to the
+        # cross-attention keys and values once instead of at every AR step.
+        # The ONNX export keeps the per-call nn.MultiheadAttention graph.
+        memory_kv = None if self.export_onnx else self.decoder.project_memory(memory)
 
         # Query positions up to `num_steps`
         pos_queries = self.pos_queries[:, :num_steps].expand(bs, -1, -1)
@@ -222,6 +228,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     tgt_mask[:j, :j],
                     tgt_query=pos_queries[:, i:j],
                     tgt_query_mask=query_mask[i:j, :j],
+                    memory_kv=memory_kv,
                 )
                 # the next token probability is in the output's ith token position
                 p_i = self.head(tgt_out)
@@ -265,7 +272,9 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                 dtype=torch.long,
                 device=self._device,
             )
-            tgt_out = self.decode(tgt_in, memory, tgt_query=pos_queries)
+            tgt_out = self.decode(
+                tgt_in, memory, tgt_query=pos_queries, memory_kv=memory_kv
+            )
             logits = self.head(tgt_out)
 
         if self.refine_iters:
@@ -302,6 +311,7 @@ class PARSeq(nn.Module, PyTorchModelHubMixin):
                     tgt_padding_mask,
                     pos_queries,
                     query_mask[:, : tgt_in.shape[1]],
+                    memory_kv=memory_kv,
                 )
                 logits = self.head(tgt_out)
 
