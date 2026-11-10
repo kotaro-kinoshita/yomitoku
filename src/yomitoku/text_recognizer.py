@@ -308,7 +308,7 @@ class TextRecognizer(BaseModule):
             self.num_parallel_batches > 1
             and len(dataloader) > 1
             and not self.infer_onnx
-            and self.device == "cpu"
+            and self.device.type == "cpu"
         ):
             return self._run_batch_inference_parallel(dataloader, points)
 
