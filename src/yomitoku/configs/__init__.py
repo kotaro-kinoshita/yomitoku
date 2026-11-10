@@ -30,6 +30,7 @@ DEFAULT_CONFIGS = [
     LayoutParserRTDETRv2V2Config,
     TableStructureRecognizerRTDETRv2Config,
     TableCellParserRTDETRv2Config,
+    DewarperPageNetV1Config,
 ]
 
 __all__ = [
