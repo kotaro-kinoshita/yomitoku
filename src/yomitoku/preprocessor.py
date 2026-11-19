@@ -9,9 +9,9 @@ class Preprocessor:
     """Image corrections before analysis: geometric correction (dewarping of curled, curved, tilted or keystoned
     pages). Same interface as yomitoku-pro's Preprocessor (which also corrects the rotation first).
 
-    The dewarper is chosen by `configs["dewarper"]["model_name"]`: "pagenet_v1" (default) finds every page of the
-    image (the two pages of a spread, receipts side by side, ...) and dewarps each; "uvdoc_v1" dewarps the image as
-    one page.
+    The dewarper is chosen by `configs["dewarper"]["model_name"]`: "pagenet_v2" (default) finds every page of the
+    image (the two pages of a spread, receipts side by side, ...) and dewarps each, flat pages (scans, PDF renders)
+    being only rotated level; "pagenet_v1" is the earlier multi-page model; "uvdoc_v1" dewarps the image as one page.
 
     Args:
         dewarp_coordinate (str): "dewarped" (results are in the dewarped image, default) or "photo" (the caller maps
@@ -30,7 +30,7 @@ class Preprocessor:
         if dewarp_coordinate not in ("dewarped", "photo"):
             raise ValueError("dewarp_coordinate must be 'dewarped' or 'photo'")
 
-        model_name = dewarper_kwargs.setdefault("model_name", "pagenet_v1")
+        model_name = dewarper_kwargs.setdefault("model_name", "pagenet_v2")
         if model_name in PageDewarper.model_catalog.list_model():
             self.dewarper = PageDewarper(**dewarper_kwargs)
         else:

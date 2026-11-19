@@ -524,9 +524,9 @@ def main():
     parser.add_argument(
         "--dewarp_model",
         type=str,
-        default="pagenet_v1",
-        choices=["pagenet_v1", "uvdoc_v1"],
-        help="dewarper model with --dewarp: 'pagenet_v1' (default; finds every page of the image, e.g. both pages of a spread or receipts side by side, and outputs each as p<page>_<k>) or 'uvdoc_v1' (the image as one page)",
+        default="pagenet_v2",
+        choices=["pagenet_v2", "pagenet_v1", "uvdoc_v1"],
+        help="dewarper model with --dewarp: 'pagenet_v2' (default; finds every page of the image, e.g. both pages of a spread or receipts side by side, and outputs each as p<page>_<k>; flat pages such as scans are only rotated level), 'pagenet_v1' (the earlier multi-page model) or 'uvdoc_v1' (the image as one page)",
     )
     parser.add_argument(
         "--dewarp_cfg",

@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import pytest
 import torch
@@ -5,7 +6,16 @@ import torch
 from yomitoku.base import BaseModule
 from yomitoku.page_dewarper import PageDewarper
 from yomitoku.preprocessor import Preprocessor
-from yomitoku.utils.dewarp import grid_mask, grid_stats, resample_grid, seen_box
+from yomitoku.utils.dewarp import (
+    content_angle,
+    grid_mask,
+    grid_stats,
+    plane_frontal,
+    resample_grid,
+    rigid_grid,
+    rotate_crop,
+    seen_box,
+)
 
 
 def _grid(x0, y0, x1, y1, nv=45, nu=31):
@@ -155,9 +165,90 @@ def test_preprocessor_default_is_multi_page(monkeypatch):
         ),
     )
     pre = Preprocessor(device="cpu")
-    assert pre.multi_page and pre.dewarper._cfg.hf_hub_repo.endswith("pagenet-v1")
+    assert pre.multi_page and pre.dewarper._cfg.hf_hub_repo.endswith("pagenet-v2")
     img = np.full((300, 200, 3), 128, np.uint8)
     pages = pre.pages(img)
     assert len(pages) >= 1 and all(len(p) == 3 for p in pages)
     results, page_img = pre(img)
     assert results["dewarp"].status in ("ok", "rejected")
+
+
+def _ruled_page(deg, H=900, W=700):
+    """Photo of a ruled page (grey desk, white sheet with dark rules) turned by `deg` (cv2, + = counter-clockwise),
+    and the page's grid (2, 45, 31) in [-1, 1]."""
+    page = np.full((600, 420, 3), 250, np.uint8)
+    for y in range(40, 580, 30):
+        cv2.line(page, (30, y), (390, y), (30, 30, 30), 2)
+    img = np.full((H, W, 3), 90, np.uint8)
+    M = cv2.getRotationMatrix2D((210, 300), deg, 1.0)
+    M[:, 2] += [W / 2 - 210, H / 2 - 300]
+    cv2.warpAffine(
+        page, M, (W, H), img, flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_TRANSPARENT
+    )
+    v, u = np.meshgrid(np.linspace(0, 600, 45), np.linspace(0, 420, 31), indexing="ij")
+    P = np.stack([u, v], -1) @ M[:, :2].T + M[:, 2]
+    return img, (P / [W, H] * 2 - 1).transpose(2, 0, 1).astype(np.float32)
+
+
+def test_plane_frontal():
+    v, u = np.meshgrid(np.linspace(0, 1, 45), np.linspace(0, 0.7, 31), indexing="ij")
+    flat = np.stack([u, v, np.zeros_like(u)])
+    fl, tilt = plane_frontal(flat)
+    assert fl < 1e-6 and tilt < 1e-3
+    curved = np.stack([u, v, 0.1 * np.sin(np.pi * u / 0.7)])
+    assert plane_frontal(curved)[0] > 0.01
+    tilted = np.stack([u, v * np.cos(0.3), v * np.sin(0.3)])
+    assert plane_frontal(tilted)[1] == pytest.approx(np.degrees(0.3), abs=0.1)
+
+
+def test_rigid_grid_and_rotate_crop():
+    img, g = _ruled_page(3.0)
+    noisy = g + np.random.default_rng(0).normal(0, 0.002, g.shape).astype(np.float32)
+    r = rigid_grid(noisy, img.shape[:2])
+    assert np.abs(r - g).max() < 0.004
+    out, res, M = rotate_crop(img, r)
+    assert np.degrees(np.arctan2(M[0, 1], M[0, 0])) == pytest.approx(-3.0, abs=0.1)
+    assert abs(out.shape[1] - 420) <= 3 and abs(out.shape[0] - 600) <= 3
+    a = content_angle(out, _grid(-1, -1, 1, 1))  # rows level: no residual angle
+    assert a is None or abs(a) <= 0.1
+    # the output's corners map back onto the page's corners in the photo
+    H, W = img.shape[:2]
+    h, w = out.shape[:2]
+    corners = (np.stack([g[:, 0, 0], g[:, 0, -1], g[:, -1, -1], g[:, -1, 0]]) + 1) / 2
+    back = res.to_photo([[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]])
+    assert np.abs(back - corners * [W, H]).max() < 3
+
+
+def test_flat_page_call(dewarper, monkeypatch):
+    img, g = _ruled_page(-1.2)
+    # the rectangle fit is turned by 0.4 deg too little: the content deskew finds the rest
+    g0 = rigid_grid(g, img.shape[:2])
+    c = g0.reshape(2, -1).mean(1)[:, None, None]
+    H, W = img.shape[:2]
+    P = (g0 - c) * np.array([W, H])[:, None, None]
+    t = np.radians(0.4)
+    P = np.stack(
+        [np.cos(t) * P[0] + np.sin(t) * P[1], -np.sin(t) * P[0] + np.cos(t) * P[1]]
+    )
+    gt = (P / np.array([W, H])[:, None, None] + c).astype(np.float32)
+    v, u = np.meshgrid(np.linspace(0, 1, 45), np.linspace(0, 0.7, 31), indexing="ij")
+    page = _page(0.99, gt)
+    page["grid3d"] = np.stack([u, v, np.zeros_like(u)]).astype(np.float32)
+    monkeypatch.setattr(dewarper, "detect", lambda img: [page])
+    ((s, out),) = dewarper(img)
+    p = dewarper.last_pages[0]
+    assert s.flat is True and p["flat"] and p["deskew_src"] == "content"
+    assert s.rotation == pytest.approx(1.2, abs=0.1)
+    assert "flat" in s.model_dump() and "rotation" in s.model_dump()
+    assert dewarper.visualize(img).shape == img.shape
+
+    # a curved page (3D grid out of plane) is unwarped through its grid
+    page["grid3d"][2] = 0.1 * np.sin(np.pi * u / 0.7)
+    ((s, out),) = dewarper(img)
+    assert s.flat is None and "flat" not in s.model_dump()
+
+
+def test_sdf_head(dewarper):
+    with torch.no_grad():
+        feats = dewarper.model.features(torch.zeros(1, 3, 712, 488))
+        assert dewarper.model.sdf_map(feats).shape == (1, 1, 178, 122)
