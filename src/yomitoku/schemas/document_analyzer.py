@@ -8,13 +8,22 @@ from ..export import export_csv, export_html, export_markdown, export_json
 
 class _DropUnsetDewarpFields:
     """`polygon` / `dewarp` / `preprocess` are set only with geometric correction (and `page` / `num_pages` / `score`
-    only with the multi-page dewarper); when unset they are left out of model_dump() (and so of the JSON export),
+    / `flat` / `rotation` only with the multi-page dewarper); when unset they are left out of model_dump() (and so of the JSON export),
     keeping the output of runs without it unchanged."""
 
     @model_serializer(mode="wrap")
     def _drop_unset_dewarp_fields(self, handler):
         d = handler(self)
-        for k in ("polygon", "dewarp", "preprocess", "page", "num_pages", "score"):
+        for k in (
+            "polygon",
+            "dewarp",
+            "preprocess",
+            "page",
+            "num_pages",
+            "score",
+            "flat",
+            "rotation",
+        ):
             if k in d and d[k] is None:
                 del d[k]
         return d
@@ -287,6 +296,14 @@ class DewarpSchema(_DropUnsetDewarpFields, BaseSchema):
     )
     score: Union[float, None] = Field(
         None, description="Multi-page dewarper: page detection score"
+    )
+    flat: Union[bool, None] = Field(
+        None,
+        description="Multi-page dewarper: the page was found flat and facing the camera (a PDF render, a scan) and was only rotated and cropped, not unwarped",
+    )
+    rotation: Union[float, None] = Field(
+        None,
+        description="Multi-page dewarper, flat pages: rotation applied to the image in degrees (counter-clockwise positive)",
     )
 
 

@@ -103,6 +103,32 @@
           "default": null,
           "description": "Multi-page dewarper: page detection score",
           "title": "Score"
+        },
+        "flat": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multi-page dewarper: the page was found flat and facing the camera (a PDF render, a scan) and was only rotated and cropped, not unwarped",
+          "title": "Flat"
+        },
+        "rotation": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multi-page dewarper, flat pages: rotation applied to the image in degrees (counter-clockwise positive)",
+          "title": "Rotation"
         }
       },
       "required": [

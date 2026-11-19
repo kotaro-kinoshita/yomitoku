@@ -7,7 +7,9 @@ One backbone pass over the photo (DewarpNet's encoder and bridges, stride 4 / 8 
   - per page (ROI): features of the three levels and the photo are sampled on the quad of the four corners (expanded
     by ROI_MARGIN on each side) into a fixed ROI map; a small dilated CNN predicts, at each of the 45 x 31 grid
     nodes, the offset from the quad's bilinear position (in units of the quad size), the 3D position and whether the
-    node is seen (in the frame and not hidden by another page).
+    node is seen (in the frame and not hidden by another page);
+  - optionally (cfg.sdf, pagenet_v2), the paper signed-distance head of the single-page model (stride 4): + on any
+    page, used to snap each page's outline to the paper edge.
 """
 
 from types import SimpleNamespace
@@ -17,7 +19,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from huggingface_hub import PyTorchModelHubMixin
 
-from .dewarpnet import DewarpNet, _conv_bn_act
+from .dewarpnet import DewarpNet, SDFDecoder, _conv_bn_act
 
 GRID_HW = (45, 31)  # grid nodes (v, u) of a page
 DET_STRIDE = 8
@@ -93,6 +95,9 @@ class PageNet(nn.Module, PyTorchModelHubMixin):
             ResBlock(roi_c, 4),
         )
         self.roi_out = nn.Conv2d(roi_c, 2 + 3 + 1, 3, 1, 1)
+        self.sdf = bool(getattr(cfg, "sdf", False))
+        if self.sdf:
+            self.sdf_head = SDFDecoder(c16, c8, c4)
 
     def features(self, x):
         e = self.resnet_down
@@ -163,6 +168,14 @@ class PageNet(nn.Module, PyTorchModelHubMixin):
         )
         g2 = base + y[:, :2] * (size / 4).view(N, 1, 1, 1)
         return g2, y[:, 2:5], y[:, 5:6]
+
+    def sdf_map(self, feats):
+        """Paper SDF (B, 1, H/4, W/4) in units of 16 input px (trained clipped to +-1), + on a page; None without
+        the SDF head."""
+        if not self.sdf:
+            return None
+        f4, f8, f16 = feats
+        return self.sdf_head(f16, f8, f4)
 
     def forward(self, image):
         feats = self.features(image)

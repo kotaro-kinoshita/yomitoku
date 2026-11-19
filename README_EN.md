@@ -153,7 +153,7 @@ Do not use it for images of documents that are already flat, such as scans or PD
 | `--disable-repetition-stop` | Disables early stopping of repeated-character loops in text recognition (enabled by default). |
 | `--dewarp` | Corrects the curvature, curl, tilt and keystone distortion of photographed documents before the analysis. The dewarped image is output as `*_dewarped.jpg` and, with `--vis`, the estimated correction (pages found and their grids) as `*_dewarp_grid.jpg`. Pages whose correction is judged to have failed are analyzed without it. |
 | `--dewarp_coordinate` | Coordinates of the output with `--dewarp`: `dewarped` (the dewarped image, default) or `photo` (the input image; each element gets a curved `polygon`). |
-| `--dewarp_model` | Dewarping model with `--dewarp`: `pagenet_v1` (finds every page of the image and outputs each as `*_p{page}_{k}.*`, default) or `uvdoc_v1` (dewarps the image as one page). |
+| `--dewarp_model` | Dewarping model with `--dewarp`: `pagenet_v2` (finds every page of the image and outputs each as `*_p{page}_{k}.*`, default; flat pages such as scans and PDFs are only rotated level), `pagenet_v1` (the earlier multi-page model) or `uvdoc_v1` (dewarps the image as one page). |
 
 For other options, please refer to the help documentation.
 

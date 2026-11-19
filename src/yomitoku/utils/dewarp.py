@@ -554,3 +554,234 @@ def resample_grid(g: np.ndarray, lo, hi) -> np.ndarray:
             for c in range(g.shape[0])
         ]
     )
+
+
+# Flat pages (multi-page dewarper, `flat` in its config): a page the 3D head finds planar and facing the camera (a PDF
+# render, a flatbed scan, a sheet photographed from straight above) is not unwarped through its grid, whose slight
+# keystone and uneven spacing would bend straight lines; the photo is only rotated (one affine warp) and cropped.
+
+
+def plane_frontal(g3: np.ndarray) -> tuple[float, float]:
+    """3D grid (3, nv, nu) -> (out-of-plane spread / in-plane spread, angle in degrees of the plane normal to the
+    camera axis). PDF renders and flatbed scans give ~0.001 and ~0 deg; photos of pages ~0.04 and ~20 deg."""
+    c = g3.reshape(3, -1).T.astype(np.float64)
+    c = c - c.mean(0)
+    _, sv, vt = np.linalg.svd(c, full_matrices=False)
+    return float(sv[2] / max(sv[0], 1e-9)), float(
+        np.degrees(np.arccos(min(abs(vt[2, 2]), 1.0)))
+    )
+
+
+def _lattice(nv: int, nu: int):
+    v, u = np.meshgrid(np.linspace(0, 1, nv), np.linspace(0, 1, nu), indexing="ij")
+    return u, v
+
+
+def rigid_grid(g: np.ndarray, hw) -> np.ndarray:
+    """Least-squares fit of the grid (2, nv, nu) in [-1, 1] by a rectangle: rotation, separate u / v scales and
+    translation in photo pixels (image size hw = (H, W)), no shear: the map of a flat page facing the camera."""
+    H, W = hw
+    nv, nu = g.shape[1:]
+    u, v = _lattice(nv, nu)
+    P = g.reshape(2, -1).T * [W / 2, H / 2]
+    A = np.stack([u.ravel(), v.ravel(), np.ones(u.size)], 1)
+    M = np.linalg.lstsq(A, P, rcond=None)[0]  # rows: u axis, v axis, offset
+    tu, tv = np.arctan2(M[0, 1], M[0, 0]), np.arctan2(-M[1, 0], M[1, 1])
+    t = np.angle((np.exp(1j * tu) + np.exp(1j * tv)) / 2)  # mean axis angle
+    su, sv = np.linalg.norm(M[0]), np.linalg.norm(M[1])
+    L = np.stack([u.ravel() * su, v.ravel() * sv], 1) @ np.array(
+        [[np.cos(t), np.sin(t)], [-np.sin(t), np.cos(t)]]
+    )
+    o = (P - L).mean(0)
+    return ((L + o) / [W / 2, H / 2]).T.reshape(g.shape).astype(g.dtype)
+
+
+def rotate_grid(g: np.ndarray, deg: float, hw) -> np.ndarray:
+    """Grid whose output is the old output rotated by `deg` (cv2 convention, + = counter-clockwise) about its centre
+    (exact for affine grids such as rigid_grid's)."""
+    H, W = hw
+    nv, nu = g.shape[1:]
+    px = (g.transpose(1, 2, 0) + 1) / 2 * np.array([W, H])
+    aw, ah = _arc(px, 1), _arc(px, 0)
+    u, v = _lattice(nv, nu)
+    x, y = (u - 0.5) * aw, (v - 0.5) * ah
+    t = np.radians(deg)
+    xr, yr = np.cos(t) * x - np.sin(t) * y, np.sin(t) * x + np.cos(t) * y
+    ur, vr = xr / aw + 0.5, yr / ah + 0.5
+    A = np.stack([u.ravel(), v.ravel(), np.ones(u.size)], 1)
+    M = np.linalg.lstsq(A, g.reshape(2, -1).T, rcond=None)[0]
+    B = np.stack([ur.ravel(), vr.ravel(), np.ones(u.size)], 1)
+    return (B @ M).T.reshape(g.shape).astype(g.dtype)
+
+
+def _remap(img: np.ndarray, g: np.ndarray, out_hw) -> np.ndarray:
+    """`img` sampled through the grid g (2, nv, nu) in [-1, 1] into an image of size out_hw = (h, w)."""
+    H, W = img.shape[:2]
+    gu = F.interpolate(
+        torch.from_numpy(np.ascontiguousarray(g))[None].float(),
+        size=tuple(out_hw),
+        mode="bicubic",
+        align_corners=True,
+    )[0].numpy()
+    mx = (((gu[0] + 1) * W - 1) / 2).astype(np.float32)
+    my = (((gu[1] + 1) * H - 1) / 2).astype(np.float32)
+    return cv2.remap(
+        img,
+        mx,
+        my,
+        cv2.INTER_CUBIC,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=(255, 255, 255),
+    )
+
+
+def content_angle(
+    img: np.ndarray,
+    g: np.ndarray,
+    max_deg: float = 1.5,
+    step: float = 0.05,
+    long: int = 1200,
+    min_gain: float = 1.03,
+):
+    """Residual rotation (deg, cv2 convention) of the page cut out by the rectangle grid `g`, from its text lines and
+    rules: the angle that makes the row and column ink profiles sharpest. None when there is no confident peak (at the
+    search border, or barely sharper than no rotation: a nearly blank page, content that is not line-like)."""
+    H, W = img.shape[:2]
+    px = (g.transpose(1, 2, 0) + 1) / 2 * np.array([W, H])
+    aw, ah = _arc(px, 1), _arc(px, 0)
+    s = long / max(aw, ah, 1e-6)
+    out = _remap(img, g, (max(int(ah * s), 16), max(int(aw * s), 16)))
+    gray = out if out.ndim == 2 else cv2.cvtColor(out, cv2.COLOR_BGR2GRAY)
+    ink = (
+        cv2.adaptiveThreshold(
+            gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 31, 15
+        )
+        > 0
+    ).astype(np.float32)
+    h, w = ink.shape
+    ink[: h // 40] = 0  # scanner edges / frame
+    ink[-(h // 40) :] = 0
+    ink[:, : w // 40] = 0
+    ink[:, -(w // 40) :] = 0
+    solid = cv2.morphologyEx(
+        ink, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+    )
+    ink = np.clip(ink - cv2.dilate(solid, np.ones((5, 5), np.uint8)), 0, 1)  # photos
+    angles = np.arange(-max_deg, max_deg + 1e-9, step)
+    sc = np.empty(len(angles))
+    for i, a in enumerate(angles):
+        R = cv2.getRotationMatrix2D((w / 2, h / 2), float(a), 1.0)
+        r = cv2.warpAffine(ink, R, (w, h), flags=cv2.INTER_LINEAR)
+        sc[i] = float(r.sum(1).var() + r.sum(0).var())
+    i, i0 = int(sc.argmax()), int(np.abs(angles).argmin())
+    if i in (0, len(angles) - 1) or sc[i] < min_gain * max(sc[i0], 1e-9):
+        return None
+    return float(angles[i])
+
+
+def edge_angle(
+    img: np.ndarray,
+    g: np.ndarray,
+    max_deg: float = 2.0,
+    step: float = 0.1,
+    band: float = 0.03,
+    long: int = 1000,
+    n: int = 160,
+    min_contrast: float = 6.0,
+    min_sides: int = 2,
+):
+    """Residual rotation (deg, same convention as content_angle) of the page quad (corners of the grid `g`) from the
+    paper's edges in the photo: per side, the straight line within `band` (of the long side) and `max_deg` of it with
+    the strongest one-polarity intensity step; a side counts when the step is >= `min_contrast` gray levels and >= 3x
+    the median over the searched lines. Median of the counted sides, None with fewer than `min_sides` (no background
+    around the page, e.g. a full-frame scan). Needs no content: for nearly blank pages."""
+    H, W = img.shape[:2]
+    s = long / max(H, W)
+    small = cv2.resize(img, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
+    gray = small if small.ndim == 2 else cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (0, 0), 1.0).astype(np.float32)
+    h, w = gray.shape
+    C = (
+        (np.stack([g[:, 0, 0], g[:, 0, -1], g[:, -1, -1], g[:, -1, 0]]) + 1)
+        / 2
+        * [w, h]
+    )  # TL TR BR BL
+    ctr = C.mean(0)
+    B = int(round(band * long))
+    sub = 4  # line offsets in 1/sub px
+    offs = np.arange((-B - 2) * sub, (B + 2) * sub + 1) / sub
+    ks = np.tan(np.radians(np.arange(-max_deg, max_deg + 1e-9, step)))
+    angs = []
+    for i in range(4):
+        p0, p1 = C[i], C[(i + 1) % 4]
+        L = float(np.linalg.norm(p1 - p0))
+        if L < 20:
+            continue
+        d = (p1 - p0) / L
+        out = np.array([-d[1], d[0]])
+        if np.dot(out, (p0 + p1) / 2 - ctr) < 0:
+            out = -out
+        t = np.linspace(-0.4, 0.4, n) * L
+        P = (
+            (p0 + p1) / 2 + t[None, :, None] * d + offs[:, None, None] * out
+        )  # (O, n, 2)
+        valid = ((P >= 0) & (P <= [w - 1, h - 1])).all(-1)
+        S = cv2.remap(
+            gray,
+            P[..., 0].astype(np.float32),
+            P[..., 1].astype(np.float32),
+            cv2.INTER_LINEAR,
+        )
+        D = S[4 * sub :] - S[: -4 * sub]  # outer minus inner step (+-2 px)
+        Dv = valid[4 * sub :] & valid[: -4 * sub]
+        o0 = np.arange(0, D.shape[0], sub // 2)
+        sh = np.rint(t[None, :] * ks[:, None] * sub).astype(int)  # (A, n)
+        idx = o0[None, :, None] + sh[:, None, :]  # (A, O', n)
+        inb = (idx >= 0) & (idx < D.shape[0])
+        idc = np.clip(idx, 0, D.shape[0] - 1)
+        cols = np.broadcast_to(np.arange(n), idc.shape)
+        val = np.where(inb & Dv[idc, cols], D[idc, cols], np.nan)
+        ok = np.isfinite(val).mean(-1) >= 0.7
+        if not ok.any():
+            continue
+        med = np.full(ok.shape, 0.0)
+        med[ok] = np.abs(np.nanmedian(val[ok], -1))
+        a, o = np.unravel_index(int(med.argmax()), med.shape)
+        if med[a, o] >= min_contrast and med[a, o] >= 3 * np.median(med[ok]):
+            angs.append(-float(np.degrees(np.arctan(ks[a]))))
+    return float(np.median(angs)) if len(angs) >= min_sides else None
+
+
+def rotate_crop(img: np.ndarray, g: np.ndarray, scale: float = 1.0):
+    """Flat page without a grid unwarp: the photo rotated (one cv2.warpAffine, uniform `scale`, no shear or per-axis
+    scale) so that the rows of the rectangle grid `g` (2, nv, nu) in [-1, 1] are level, cropped to the page.
+    Returns (image, DewarpResult (its grid: `g` as the rectangle actually cut out), M 2x3 photo px -> output px)."""
+    H, W = img.shape[:2]
+    px = (g.transpose(1, 2, 0) + 1) / 2 * np.array([W, H])
+    d = (px[:, -1] - px[:, 0]).mean(0)  # row direction
+    ang = float(np.degrees(np.arctan2(d[1], d[0])))
+    C = np.stack([px[0, 0], px[0, -1], px[-1, -1], px[-1, 0]])
+    M = cv2.getRotationMatrix2D(tuple(map(float, C.mean(0))), ang, scale)
+    R = C @ M[:, :2].T + M[:, 2]
+    lo, hi = R.min(0), R.max(0)
+    M[:, 2] -= lo
+    w = max(1, int(round(hi[0] - lo[0])))
+    h = max(1, int(round(hi[1] - lo[1])))
+    out = cv2.warpAffine(
+        img,
+        M,
+        (w, h),
+        flags=cv2.INTER_CUBIC,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=(255, 255, 255),
+    )
+    Mi = cv2.invertAffineTransform(M)
+    ys, xs = np.mgrid[0:h, 0:w].astype(np.float32)
+    mx = (Mi[0, 0] * xs + Mi[0, 1] * ys + Mi[0, 2]).astype(np.float32)
+    my = (Mi[1, 0] * xs + Mi[1, 1] * ys + Mi[1, 2]).astype(np.float32)
+    nv, nu = g.shape[1:]
+    u, v = _lattice(nv, nu)
+    Q = np.stack([u.ravel() * w, v.ravel() * h], 1) @ Mi[:, :2].T + Mi[:, 2]
+    grid = (Q / [W, H] * 2 - 1).T.reshape(2, nv, nu).astype(np.float32)
+    paper = paper_mask(mx, my, None, (H, W))
+    return out, DewarpResult(grid, mx, my, w / h, paper), M

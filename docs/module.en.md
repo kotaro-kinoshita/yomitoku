@@ -87,7 +87,7 @@ Corrects the curvature, curl, tilt and keystone distortion of photographed docum
 
 With `enable_dewarp=True`, the geometric correction runs as a preprocessing step of the analysis. Pages whose correction is judged to have failed are analyzed without it and `results.preprocess.dewarp.status` is `"rejected"`.
 
-The default model (`pagenet_v1`) finds every page in the image (both pages of a spread, business cards or receipts side by side, ...). To analyze them all, use `analyzer.analyze_pages(img)`: it returns one `(results, ocr_vis, layout_vis)` per page, left to right then top to bottom. `analyzer(img)` analyzes the first page only. To dewarp the image as one page, pass `configs={"preprocess": {"dewarper": {"model_name": "uvdoc_v1"}}}`.
+The default model (`pagenet_v2`) finds every page in the image (both pages of a spread, business cards or receipts side by side, ...). Flat pages such as scans and PDFs are not unwarped through the grid, only rotated level and cropped (`flat` / `rotation` in the results). To analyze them all, use `analyzer.analyze_pages(img)`: it returns one `(results, ocr_vis, layout_vis)` per page, left to right then top to bottom. `analyzer(img)` analyzes the first page only. To dewarp the image as one page, pass `configs={"preprocess": {"dewarper": {"model_name": "uvdoc_v1"}}}`.
 
 <!--codeinclude-->
 [demo/simple_dewarp.py](../demo/simple_dewarp.py)
@@ -98,9 +98,9 @@ The default model (`pagenet_v1`) finds every page in the image (both pages of a 
 | `results.preprocess.dewarp` | Outcome of the correction (`status`, `reasons`, `coordinate`, `size`, ...). See the geometric correction section of [CLI Usage](cli.en.md). |
 | `analyzer.processed_img` | The image analyzed: the dewarped image when `dewarp_coordinate="dewarped"` and the correction succeeded. |
 | `analyzer.processed_imgs` | With `analyze_pages`, the image each page's results refer to. |
-| `analyzer.preprocessor.dewarper.last_dewarped_imgs` | `pagenet_v1` only. The dewarped image of each page of the last call. |
+| `analyzer.preprocessor.dewarper.last_dewarped_imgs` | `pagenet_v2` / `pagenet_v1` only. The dewarped image of each page of the last call. |
 | `analyzer.preprocessor.dewarper.last_dewarped_img` | The dewarped image of the last call (`numpy.ndarray`, BGR); `None` when the correction failed. |
-| `analyzer.preprocessor.dewarper.visualize(img)` | Returns the estimated correction of the last call (`pagenet_v1`: the grids of the pages found and the parts dewarped; `uvdoc_v1`: paper region and grid) drawn on its input image `img`. |
+| `analyzer.preprocessor.dewarper.visualize(img)` | Returns the estimated correction of the last call (`pagenet_v2` / `pagenet_v1`: the grids of the pages found and the parts dewarped; `uvdoc_v1`: paper region and grid) drawn on its input image `img`. |
 
 With `dewarp_coordinate="photo"`, the results are mapped back to the coordinates of the input image: every element gets a curved `polygon` on the input image and `box` becomes its bounding box.
 
@@ -146,7 +146,7 @@ The size of the dewarped image is also recorded in `results.preprocess.dewarp.si
 | `device` | `str` | Specifies the device to be used for processing. (`cuda` \| `cpu` \| `mps`) | The default is `"cuda"`. |
 | `path_cfg` | `str` | Path to a YAML file with the post-processing parameters and the failure-check thresholds. | |
 
-In the `configs` of `DocumentAnalyzer`, the same parameters go under `{"preprocess": {"dewarper": {...}}}` (the model is chosen with `model_name`: `pagenet_v1` / `uvdoc_v1`).
+In the `configs` of `DocumentAnalyzer`, the same parameters go under `{"preprocess": {"dewarper": {...}}}` (the model is chosen with `model_name`: `pagenet_v2` / `pagenet_v1` / `uvdoc_v1`).
 
 ### Using the PageDewarper alone
 

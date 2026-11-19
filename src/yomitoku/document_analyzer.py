@@ -440,7 +440,7 @@ class DocumentAnalyzer:
     ):
         """enable_dewarp: run geometric correction (dewarping of curled, curved, tilted or keystoned pages) before
         the analysis; when the predicted correction looks broken (or no page is found) the page is not dewarped and
-        `results.preprocess.dewarp.status` is "rejected". The default dewarper ("pagenet_v1") finds every page of
+        `results.preprocess.dewarp.status` is "rejected". The default dewarper ("pagenet_v2") finds every page of
         the image; use `analyze_pages` to analyze them all (`__call__` analyzes the first). The single-page
         dewarper is configs={"preprocess": {"dewarper": {"model_name": "uvdoc_v1"}}}. dewarp_coordinate: coordinates of the results with
         dewarping, "dewarped" (the dewarped image, `self.processed_img`) or "photo" (mapped back to the input image; elements
@@ -742,7 +742,7 @@ class DocumentAnalyzer:
         return self._finish(results, ocr, layout, dewarp_result)
 
     def analyze_pages(self, img):
-        """Analysis of every page of the image: with the multi-page dewarper (enable_dewarp, model "pagenet_v1"), the
+        """Analysis of every page of the image: with the multi-page dewarper (enable_dewarp, models "pagenet_v2" / "pagenet_v1"), the
         pages found (the two pages of a spread, receipts side by side, ...) are dewarped and analyzed one by one;
         otherwise the image is one page. Returns [(results, ocr, layout)]; `self.processed_imgs` holds the image
         each page's results refer to."""
