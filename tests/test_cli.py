@@ -1,11 +1,13 @@
+import inspect
 import os
 from pathlib import Path
 
 import pytest
 
 from yomitoku.cli import main
+from yomitoku.cli.main import build_parser, validate_encoding
+from yomitoku.document_analyzer import DocumentAnalyzer
 from yomitoku.utils.logger import set_logger
-from yomitoku.cli.main import validate_encoding
 
 logger = set_logger(__name__, "DEBUG")
 
@@ -239,3 +241,15 @@ def test_validate_encoding():
     assert validate_encoding("shift-jis")
     assert validate_encoding("euc-jp")
     assert validate_encoding("cp932")
+
+
+def test_ruby_threshold_default_matches_document_analyzer():
+    """Regression test for #279: the CLI default for --ruby_threshold must
+    agree with the DocumentAnalyzer default and the help text (2.0)."""
+    parser = build_parser()
+    args = parser.parse_args(["tests/data/test.png"])
+    analyzer_default = inspect.signature(DocumentAnalyzer.__init__).parameters[
+        "ruby_threshold"
+    ].default
+    assert args.ruby_threshold == analyzer_default == 2.0
+    assert "(default: 2.0)" in parser.format_help()

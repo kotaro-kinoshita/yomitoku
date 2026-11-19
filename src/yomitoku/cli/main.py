@@ -326,7 +326,8 @@ def process_single_file(args, analyzer, path, format):
         )
 
 
-def main():
+def build_parser():
+    """Build the CLI argument parser."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "arg1",
@@ -505,7 +506,7 @@ def main():
     parser.add_argument(
         "--ruby_threshold",
         type=float,
-        default=1.0,
+        default=2.0,
         help="bimodality separation threshold for ruby detection; higher values require stronger bimodality to use valley split (default: 2.0)",
     )
     parser.add_argument(
@@ -534,6 +535,11 @@ def main():
         default=None,
         help="path to the dewarper config yaml (e.g. hf_hub_repo pointing at local weights)",
     )
+    return parser
+
+
+def main():
+    parser = build_parser()
     args = parser.parse_args()
 
     path = Path(args.arg1)
