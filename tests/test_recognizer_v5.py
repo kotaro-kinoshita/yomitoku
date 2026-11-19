@@ -121,6 +121,24 @@ def test_recognizer_runtime_resolves_config(monkeypatch, override, expected):
     assert "℡".translate(rec.char_replace_table) == "TEL"
 
 
+def test_cpu_runs_mini_batches_in_parallel(monkeypatch):
+    cfg = OmegaConf.structured(TextRecognizerPARSeqTinyDynwV5Config)
+    monkeypatch.setattr(BaseModule, "__init__", lambda self, **kwargs: None)
+
+    def load(self, *args, **kwargs):
+        self._cfg = cfg
+        self.model = Mock()
+
+    monkeypatch.setattr(TextRecognizer, "load_model", load)
+    rec = object.__new__(TextRecognizer)
+    TextRecognizer.__init__(rec, device="cpu", num_parallel_batches=2)
+
+    parallel = Mock(return_value=([], [], []))
+    monkeypatch.setattr(rec, "_run_batch_inference_parallel", parallel)
+    rec._run_batch_inference([Mock(), Mock()], [])
+    parallel.assert_called_once()
+
+
 @pytest.mark.parametrize(
     "lite,explicit", [(False, None), (True, None), (False, "tiny"), (True, "old")]
 )
