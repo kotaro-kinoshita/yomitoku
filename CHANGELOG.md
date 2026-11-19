@@ -2,11 +2,31 @@
 
 ## [Unreleased](https://github.com/kotaro-kinoshita/yomitoku/tree/HEAD)
 
-[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.16.0...HEAD)
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.16.2...HEAD)
+
+**Implemented enhancements:**
+
+- feat: pagenet\_v2 dewarper \(paper SDF, flat pages rotated only\) [\#283](https://github.com/kotaro-kinoshita/yomitoku/pull/283) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+## [v0.16.2](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.16.2) (2026-11-10)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.16.1...v0.16.2)
+
+**Implemented enhancements:**
+
+- Feat/download dewarper model [\#280](https://github.com/kotaro-kinoshita/yomitoku/pull/280) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+## [v0.16.1](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.16.1) (2026-11-06)
+
+[Full Changelog](https://github.com/kotaro-kinoshita/yomitoku/compare/v0.16.0...v0.16.1)
 
 **Implemented enhancements:**
 
 - 複数枚/複数ページに対応する幾何補正モデルへ更新 [\#277](https://github.com/kotaro-kinoshita/yomitoku/pull/277) ([kotaro-kinoshita](https://github.com/kotaro-kinoshita))
+
+**Merged pull requests:**
+
+- perf: PARSeq のデコードでエンコーダ出力の K/V 射影をバッチごとに 1 回だけ計算する [\#274](https://github.com/kotaro-kinoshita/yomitoku/pull/274) ([privatenumber](https://github.com/privatenumber))
 
 ## [v0.16.0](https://github.com/kotaro-kinoshita/yomitoku/tree/v0.16.0) (2026-11-04)
 
